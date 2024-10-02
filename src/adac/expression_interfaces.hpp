@@ -28,8 +28,10 @@ struct negatable {
 };
 
 //! base class for bindable symbols/expressions
-template<typename T = dtype::any>
+template<concepts::dtype T = dtype::any>
 struct bindable {
+    using dtype = T;
+
     //! bind the given value to this symbol
     template<typename Self, typename V> requires(concepts::accepts<T, V>)
     constexpr auto operator=(this Self&& self, V&& value) noexcept {

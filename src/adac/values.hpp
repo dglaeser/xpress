@@ -24,10 +24,11 @@ namespace adac {
 //! symbol that represents a constant value
 template<auto v>
 struct value {
-    template<typename Self>
-    constexpr auto operator-(this Self&& self) {
-        return value<-v>{};
-    }
+    template<typename Self> constexpr auto operator-(this Self&& self) { return value<-v>{}; }
+    template<typename Self, auto k> constexpr auto operator+(this Self&& self, value<k>) { return value<v+k>{}; }
+    template<typename Self, auto k> constexpr auto operator-(this Self&& self, value<k>) { return value<v-k>{}; }
+    template<typename Self, auto k> constexpr auto operator*(this Self&& self, value<k>) { return value<v*k>{}; }
+    template<typename Self, auto k> constexpr auto operator/(this Self&& self, value<k>) { return value<v/k>{}; }
 };
 
 //! instance of a constant value
@@ -36,6 +37,9 @@ inline constexpr value<v> val;
 
 
 namespace traits {
+
+template<auto v, auto k>
+struct disable_generic_arithmetic_operators<value<v>, value<k>> : std::true_type {};
 
 template<auto v>
 struct value_of<value<v>> {

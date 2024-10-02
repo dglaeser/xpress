@@ -38,16 +38,23 @@ struct expression : bindable<dtype::common_dtype_of_t<T1, Ts...>>, negatable {
 template<typename op, typename... Ts>
 expression(op&&, Ts&&...) -> expression<std::remove_cvref_t<op>, std::remove_cvref_t<Ts>...>;
 
+
 template<concepts::expression A, concepts::expression B>
+    requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator+(const A&, const B&) noexcept {
     return expression<operators::add, A, B>{};
 }
+
 template<concepts::expression A, concepts::expression B>
+    requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator-(const A&, const B&) noexcept {
     return expression<operators::subtract, A, B>{};
 }
 
 namespace traits {
+
+template<typename op, typename... Ts>
+struct dtype_of<expression<op, Ts...>> : std::type_identity<typename expression<op, Ts...>::dtype> {};
 
 template<typename op, typename... Ts>
 struct value_of<expression<op, Ts...>> {
