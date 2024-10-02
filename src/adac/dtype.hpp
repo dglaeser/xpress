@@ -14,6 +14,15 @@
 
 
 namespace adac {
+
+namespace traits {
+
+template<typename T>
+struct dtype_of;
+
+}  // namespace traits
+
+
 namespace dtype {
 
 struct any {};
@@ -68,8 +77,11 @@ using common_dtype_of_t = common_dtype_t<typename traits::dtype_of<T1>::type, ty
 
 namespace concepts {
 
+template<typename T>
+concept dtype = dtype::detail::is_dtype<T>::value;
+
 template<typename T, typename Arg>
-concept accepts = is_complete_v<dtype::accepts<T, Arg>> and dtype::accepts<T, Arg>::value;
+concept accepts = dtype<T> and is_complete_v<dtype::accepts<T, Arg>> and dtype::accepts<T, Arg>::value;
 
 }  // namespace concepts
 }  // namespace adac

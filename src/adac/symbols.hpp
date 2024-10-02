@@ -21,7 +21,7 @@ namespace adac {
 //! \{
 
 //! Symbol to represent an independent variable
-template<typename T = dtype::any, auto = [] () {}>
+template<concepts::dtype T = dtype::any, auto = [] () {}>
 struct var : negatable, bindable<T> {
     using bindable<T>::operator=;
 
@@ -31,7 +31,7 @@ struct var : negatable, bindable<T> {
 };
 
 //! Symbol to represent a parameter
-template<typename T = dtype::any, auto = [] () {}>
+template<concepts::dtype T = dtype::any, auto = [] () {}>
 struct let : negatable, bindable<T> {
     using bindable<T>::operator=;
 
@@ -42,6 +42,9 @@ struct let : negatable, bindable<T> {
 
 
 namespace traits {
+
+template<typename T, auto _> struct dtype_of<var<T, _>> : std::type_identity<T> {};
+template<typename T, auto _> struct dtype_of<let<T, _>> : std::type_identity<T> {};
 
 template<typename T>
 struct _symbol_value {
