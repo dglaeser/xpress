@@ -7,6 +7,25 @@ int main() {
     using namespace adac;
     using namespace adac::dtype;
 
+    "let_var_value_nodes_of"_test = [] () {
+        let a;
+        var b;
+        value<42> c;
+        static_assert(std::is_same_v<
+            typename traits::nodes_of<decltype(a)>::type,
+            type_list<decltype(a)>
+        >);
+        static_assert(std::is_same_v<
+            typename traits::nodes_of<decltype(b)>::type,
+            type_list<decltype(b)>
+        >);
+        static_assert(std::is_same_v<
+            typename traits::nodes_of<decltype(c)>::type,
+            type_list<decltype(c)>
+        >);
+    };
+
+
     "let_var_eval"_test = [] () {
         static constexpr let a;
         static constexpr var b;

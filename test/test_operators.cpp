@@ -97,5 +97,23 @@ int main() {
         expect(eq(evaluate(d_db, at(a = 2., b = 42.)), 0.0 - 1.0*2.0/(42.0*42.0)));
     };
 
+    "expression_nodes_of"_test = [] () {
+        let a;
+        var b;
+        var c;
+        auto sum = a + b;
+        auto c_times_sum = c*sum;
+        auto result = c_times_sum*val<42>;
+        using nodes = nodes_of_t<decltype(result)>;
+        static_assert(type_list_size_v<nodes> == 7);
+        static_assert(is_any_of_v<decltype(a), nodes>);
+        static_assert(is_any_of_v<decltype(b), nodes>);
+        static_assert(is_any_of_v<decltype(c), nodes>);
+        static_assert(is_any_of_v<decltype(sum), nodes>);
+        static_assert(is_any_of_v<decltype(c_times_sum), nodes>);
+        static_assert(is_any_of_v<decltype(result), nodes>);
+        static_assert(is_any_of_v<value<42>, nodes>);
+    };
+
     return 0;
 }

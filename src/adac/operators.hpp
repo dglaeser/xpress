@@ -71,6 +71,14 @@ namespace traits {
 template<typename op, typename... Ts>
 struct dtype_of<expression<op, Ts...>> : std::type_identity<typename expression<op, Ts...>::dtype> {};
 
+template<typename op, typename T, typename... Ts>
+struct nodes_of<expression<op, T, Ts...>> {
+    using type = merged_types_t<
+        merged_types_t<type_list<expression<op, T, Ts...>>, typename nodes_of<T>::type>,
+        typename nodes_of<Ts>::type...
+    >;
+};
+
 template<typename op, typename... Ts>
 struct value_of<expression<op, Ts...>> {
     template<typename... V>

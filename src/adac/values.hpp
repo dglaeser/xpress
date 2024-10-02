@@ -42,6 +42,9 @@ template<auto v, auto k>
 struct disable_generic_arithmetic_operators<value<v>, value<k>> : std::true_type {};
 
 template<auto v>
+struct nodes_of<value<v>> : std::type_identity<type_list<value<v>>> {};
+
+template<auto v>
 struct value_of<value<v>> {
     template<typename... T>
     static constexpr auto from(const bindings<T...>&) noexcept {

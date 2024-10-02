@@ -26,6 +26,9 @@ template<typename T> struct derivative_of;
 //! Trait for expressions/symbol to specialize if arithmetic operators are defined in-class
 template<typename A, typename B> struct disable_generic_arithmetic_operators : std::false_type {};
 
+//! Trait to get a list of all nodes in this expression (tree)
+template<typename T> struct nodes_of;
+
 }  // namespace traits
 
 
