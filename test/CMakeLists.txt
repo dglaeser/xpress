@@ -12,6 +12,8 @@ function (ad_add_test NAME SOURCE)
     add_test(NAME ${NAME} COMMAND ./${NAME})
 endfunction ()
 
+ad_add_test(test_dtype test_dtype.cpp)
 ad_add_test(test_utils test_utils.cpp)
 ad_add_test(test_symbols test_symbols.cpp)
 ad_add_test(test_bindings test_bindings.cpp)
+ad_add_test(test_operators test_operators.cpp)
