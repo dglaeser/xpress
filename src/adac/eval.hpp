@@ -50,6 +50,12 @@ inline constexpr auto evaluate(const E&, const bindings<V...>& values) noexcept 
     return traits::value_of<E>::from(values);
 }
 
+template<typename E>
+    requires(concepts::evaluatable_with<E>)
+inline constexpr auto evaluate(const E&) noexcept {
+    return traits::value_of<E>::from(bindings<>{});
+}
+
 template<typename E, typename V>
     requires(concepts::differentiable_wrt<E, V>)
 inline constexpr auto differentiate(const E&, const type_list<V>& var) noexcept {
