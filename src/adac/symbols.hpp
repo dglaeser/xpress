@@ -9,37 +9,16 @@
 
 #include <utility>
 
+#include <adac/eval.hpp>
 #include <adac/utils.hpp>
 #include <adac/dtype.hpp>
-#include <adac/bindings.hpp>
-#include <adac/eval.hpp>
+#include <adac/expression_interfaces.hpp>
 
 
 namespace adac {
 
 //! \addtogroup Symbols
 //! \{
-
-//! symbol that represents a constant value
-template<auto v>
-struct value {
-    template<typename Self>
-    constexpr auto operator-(this Self&& self) {
-        return value<-v>{};
-    }
-};
-
-//! instance of a constant value
-template<auto v>
-inline constexpr value<v> val;
-
-//! Base class for negatable symbols
-struct negatable {
-    template<typename Self>
-    constexpr auto operator-(this Self&& self) {
-        return val<-1>*std::forward<Self>(self);
-    }
-};
 
 //! Symbol to represent an independent variable
 template<typename T = dtype::any, auto = [] () {}>
@@ -65,7 +44,7 @@ struct let : negatable, bindable<T> {
 namespace traits {
 
 template<typename T>
-struct symbol_value {
+struct _symbol_value {
     template<typename... V>
         requires(bindings<V...>::template has_bindings_for<T>)
     static constexpr auto from(const bindings<V...>& bindings) noexcept {
@@ -73,18 +52,11 @@ struct symbol_value {
     }
 };
 
-template<typename T, auto _> struct value_of<var<T, _>> : symbol_value<var<T, _>> {};
-template<typename T, auto _> struct value_of<let<T, _>> : symbol_value<let<T, _>> {};
-template<auto v>
-struct value_of<value<v>> {
-    template<typename... T>
-    static constexpr auto from(const bindings<T...>&) noexcept {
-        return v;
-    }
-};
+template<typename T, auto _> struct value_of<var<T, _>> : _symbol_value<var<T, _>> {};
+template<typename T, auto _> struct value_of<let<T, _>> : _symbol_value<let<T, _>> {};
 
 template<typename T>
-struct symbol_derivative {
+struct _symbol_derivative {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
         if constexpr (concepts::same_remove_cvref_t_as<T, V>)
@@ -94,15 +66,8 @@ struct symbol_derivative {
     }
 };
 
-template<typename T, auto _> struct derivative_of<var<T, _>> : symbol_derivative<var<T, _>> {};
-template<typename T, auto _> struct derivative_of<let<T, _>> : symbol_derivative<let<T, _>> {};
-template<auto v>
-struct derivative_of<value<v>> {
-    template<typename V>
-    static constexpr auto wrt(const bindings<V>&) noexcept {
-        return val<0>;
-    }
-};
+template<typename T, auto _> struct derivative_of<var<T, _>> : _symbol_derivative<var<T, _>> {};
+template<typename T, auto _> struct derivative_of<let<T, _>> : _symbol_derivative<let<T, _>> {};
 
 }  // namespace traits
 

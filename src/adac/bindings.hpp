@@ -45,17 +45,6 @@ template<typename S, typename V>
 value_binder(S&&, V&&) -> value_binder<std::remove_cvref_t<S>, V>;
 
 
-//! base class for bindable symbols
-template<typename T>
-struct bindable {
-    //! bind the given value to this symbol
-    template<typename Self, typename V> requires(concepts::accepts<T, V>)
-    constexpr auto operator=(this Self&& self, V&& value) noexcept {
-        return value_binder(std::forward<Self>(self), std::forward<V>(value));
-    }
-};
-
-
 namespace concepts {
 
 //! Concept for types that bind values to symbols
