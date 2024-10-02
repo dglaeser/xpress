@@ -1,0 +1,3 @@
+[submodule "deps/cpputils"]
+	path = deps/cpputils
+	url = https://github.com/dglaeser/cpputils.git
