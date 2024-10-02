@@ -26,6 +26,7 @@ namespace operators {
 struct add : std::plus<void> {};
 struct subtract : std::minus<void> {};
 struct multiply : std::multiplies<void> {};
+struct divide : std::divides<void> {};
 
 }  // namespace operators
 
@@ -56,6 +57,12 @@ template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator*(const A&, const B&) noexcept {
     return expression<operators::multiply, A, B>{};
+}
+
+template<concepts::expression A, concepts::expression B>
+    requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
+inline constexpr auto operator/(const A&, const B&) noexcept {
+    return expression<operators::divide, A, B>{};
 }
 
 
@@ -93,6 +100,14 @@ struct derivative_of<expression<operators::multiply, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& vars) noexcept {
         return differentiate(T1{}, vars)*T2{} + T1{}*differentiate(T2{}, vars);
+    }
+};
+
+template<typename T1, typename T2>
+struct derivative_of<expression<operators::divide, T1, T2>> {
+    template<typename V>
+    static constexpr auto wrt(const type_list<V>& vars) noexcept {
+        return differentiate(T1{}, vars)/T2{} - T1{}*differentiate(T2{}, vars)/(T2{}*T2{});
     }
 };
 

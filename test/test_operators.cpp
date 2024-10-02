@@ -77,5 +77,25 @@ int main() {
         expect(eq(evaluate(d_db, at(a = 43, b = 1)), 43));
     };
 
+    "division_operator_value"_test = [] () {
+        static constexpr let a;
+        static constexpr var b;
+        constexpr auto divided = a/b;
+        static_assert(evaluate(divided, at(a = 42, b = 2)) == 21);
+        expect(eq(evaluate(divided, at(a = 42, b = 2)), 21));
+    };
+
+    "division_operator_derivative"_test = [] () {
+        static constexpr let a;
+        static constexpr var b;
+        constexpr auto divided = a/b;
+        constexpr auto d_da = differentiate(divided, wrt(a));
+        constexpr auto d_db = differentiate(divided, wrt(b));
+        static_assert(evaluate(d_da, at(a = 1., b = 42.)) == 1.0/42.0);
+        static_assert(evaluate(d_db, at(a = 2., b = 42.)) == 0.0 - 1.0*2.0/(42.0*42.0));
+        expect(eq(evaluate(d_da, at(a = 1., b = 42.)), 1.0/42.0));
+        expect(eq(evaluate(d_db, at(a = 2., b = 42.)), 0.0 - 1.0*2.0/(42.0*42.0)));
+    };
+
     return 0;
 }
