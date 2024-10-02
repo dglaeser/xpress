@@ -55,5 +55,27 @@ int main() {
         expect(eq(evaluate(d_db), -1));
     };
 
+    "multiply_operator_value"_test = [] () {
+        static constexpr let a;
+        static constexpr var b;
+        constexpr auto multiplied = a*b;
+        static_assert(evaluate(multiplied, at(a = 2, b = 42)) == 84);
+        static_assert(evaluate(multiplied, at(a = 43, b = 2)) == 86);
+        expect(eq(evaluate(multiplied, at(a = 2, b = 42)), 84));
+        expect(eq(evaluate(multiplied, at(a = 43, b = 2)), 86));
+    };
+
+    "multiply_operator_derivative"_test = [] () {
+        static constexpr let a;
+        static constexpr var b;
+        constexpr auto multiplied = a*b;
+        constexpr auto d_da = differentiate(multiplied, wrt(a));
+        constexpr auto d_db = differentiate(multiplied, wrt(b));
+        static_assert(evaluate(d_da, at(a = 1, b = 42)) == 42);
+        static_assert(evaluate(d_db, at(a = 43, b = 1)) == 43);
+        expect(eq(evaluate(d_da, at(a = 1, b = 42)), 42));
+        expect(eq(evaluate(d_db, at(a = 43, b = 1)), 43));
+    };
+
     return 0;
 }
