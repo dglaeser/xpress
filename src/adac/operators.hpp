@@ -24,6 +24,7 @@ namespace adac {
 namespace operators {
 
 struct add : std::plus<void> {};
+struct subtract : std::minus<void> {};
 
 }  // namespace operators
 
@@ -41,7 +42,10 @@ template<concepts::expression A, concepts::expression B>
 inline constexpr auto operator+(const A&, const B&) noexcept {
     return expression<operators::add, A, B>{};
 }
-
+template<concepts::expression A, concepts::expression B>
+inline constexpr auto operator-(const A&, const B&) noexcept {
+    return expression<operators::subtract, A, B>{};
+}
 
 namespace traits {
 
@@ -58,6 +62,14 @@ struct derivative_of<expression<operators::add, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& vars) noexcept {
         return differentiate(T1{}, vars) + differentiate(T2{}, vars);
+    }
+};
+
+template<typename T1, typename T2>
+struct derivative_of<expression<operators::subtract, T1, T2>> {
+    template<typename V>
+    static constexpr auto wrt(const type_list<V>& vars) noexcept {
+        return differentiate(T1{}, vars) - differentiate(T2{}, vars);
     }
 };
 
