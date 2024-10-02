@@ -8,6 +8,7 @@
 #pragma once
 
 #include <utility>
+#include <type_traits>
 
 #include <adac/utils.hpp>
 #include <adac/dtype.hpp>
@@ -50,6 +51,19 @@ struct derivative_of<value<v>> {
     static constexpr auto wrt(const bindings<V>&) noexcept {
         return val<0>;
     }
+};
+
+template<auto v>
+struct dtype_of<value<v>> {
+    using type = std::conditional_t<
+        std::is_floating_point_v<decltype(v)>,
+        dtype::real,
+        std::conditional_t<
+            std::is_integral_v<decltype(v)>,
+            dtype::integral,
+            dtype::any
+        >
+    >;
 };
 
 }  // namespace traits
