@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <type_traits>
+
 #include <adac/utils.hpp>
 #include <adac/bindings.hpp>
 
@@ -28,6 +30,9 @@ template<typename A, typename B> struct disable_generic_arithmetic_operators : s
 
 //! Trait to get a list of all nodes in this expression (tree)
 template<typename T> struct nodes_of;
+
+//! Trait to compare two expressions for equality (can be specialized e.g. for commutative operators)
+template<typename A, typename B> struct is_equal_node : std::is_same<A, B> {};
 
 }  // namespace traits
 
@@ -73,6 +78,38 @@ template<typename... V>
 inline constexpr auto wrt(const V&...) {
     return type_list<V...>{};
 }
+
+//! All nodes in the given expression
+template<typename T> requires(is_complete_v<traits::nodes_of<T>>)
+using nodes_of_t = traits::nodes_of<T>::type;
+
+
+#ifndef DOXYGEN
+namespace detail {
+
+    template<typename T>
+    struct unique_nodes_of;
+
+    template<typename T, typename... Ts>
+    struct unique_nodes_of<type_list<T, Ts...>> {
+        using type = std::conditional_t<
+            std::disjunction_v<traits::is_equal_node<T, Ts>...>,
+            typename unique_nodes_of<type_list<Ts...>>::type,
+            merged_types_t<type_list<T>, typename unique_nodes_of<type_list<Ts...>>::type>
+        >;
+    };
+
+    template<>
+    struct unique_nodes_of<type_list<>> {
+        using type = type_list<>;
+    };
+
+}  // namespace detail
+#endif  // DOXYGEN
+
+//! All unique nodes in the given expression
+template<typename T> requires(is_complete_v<traits::nodes_of<T>>)
+using unique_nodes_of_t = detail::unique_nodes_of<nodes_of_t<T>>::type;
 
 //! \} group Evaluation
 

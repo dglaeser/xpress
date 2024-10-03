@@ -28,7 +28,21 @@ struct subtract : std::minus<void> {};
 struct multiply : std::multiplies<void> {};
 struct divide : std::divides<void> {};
 
+
+namespace traits {
+
+template<typename op> struct is_commutative : std::false_type {};
+template<> struct is_commutative<add> : std::true_type {};
+template<> struct is_commutative<multiply> : std::true_type {};
+
+}  // namespace traits
+
+
+template<typename op>
+inline constexpr bool is_commutative_v = traits::is_commutative<op>::value;
+
 }  // namespace operators
+
 
 //! Class to represent expressions resulting from an operator applied to the given terms
 template<typename op, concepts::expression T1, concepts::expression... Ts>
@@ -70,6 +84,10 @@ namespace traits {
 
 template<typename op, typename... Ts>
 struct dtype_of<expression<op, Ts...>> : std::type_identity<typename expression<op, Ts...>::dtype> {};
+
+template<typename op, typename T1, typename T2>
+    requires(operators::is_commutative_v<op>)
+struct is_equal_node<expression<op, T1, T2>, expression<op, T2, T1>> : std::true_type {};
 
 template<typename op, typename T, typename... Ts>
 struct nodes_of<expression<op, T, Ts...>> {

@@ -115,5 +115,37 @@ int main() {
         static_assert(is_any_of_v<value<42>, nodes>);
     };
 
+    "expression_unique_nodes_of"_test = [] () {
+        let a;
+        var b;
+        auto sum_1 = a + b;
+        auto sum_2 = b + a;
+        auto expr = sum_1 + sum_2;
+
+        using nodes = nodes_of_t<decltype(expr)>;
+        static_assert(type_list_size_v<nodes> == 7);
+        static_assert(is_any_of_v<decltype(a), nodes>);
+        static_assert(is_any_of_v<decltype(b), nodes>);
+        static_assert(is_any_of_v<decltype(sum_1), nodes>);
+        static_assert(is_any_of_v<decltype(sum_2), nodes>);
+        static_assert(is_any_of_v<decltype(expr), nodes>);
+
+        // duplicates of a & b should disappear
+        using made_unique = unique_types_t<nodes>;
+        static_assert(type_list_size_v<made_unique> == 5);
+        static_assert(is_any_of_v<decltype(a), made_unique>);
+        static_assert(is_any_of_v<decltype(b), made_unique>);
+        static_assert(is_any_of_v<decltype(sum_1), made_unique>);
+        static_assert(is_any_of_v<decltype(sum_2), made_unique>);
+        static_assert(is_any_of_v<decltype(expr), made_unique>);
+
+        // sum_1 & sum_2 should be identified as equal nodes
+        using unique_nodes = unique_nodes_of_t<decltype(expr)>;
+        static_assert(type_list_size_v<unique_nodes> == 4);
+        static_assert(is_any_of_v<decltype(a), unique_nodes>);
+        static_assert(is_any_of_v<decltype(b), unique_nodes>);
+        static_assert(is_any_of_v<decltype(expr), unique_nodes>);
+    };
+
     return 0;
 }
