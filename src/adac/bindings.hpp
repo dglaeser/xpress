@@ -70,10 +70,7 @@ namespace detail {
 }  // namespace detail
 #endif  // DOXYGEN
 
-/*!
- * \ingroup Backward
- * \brief Data structure to store values bound to symbols.
- */
+//! Data structure to store values bound to symbols.
 template<typename... B>
     requires(are_unique_v<B...> and detail::are_binders<B...>)
 struct bindings : private variadic_accessor<B...> {
