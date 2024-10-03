@@ -104,6 +104,8 @@ struct value_of<expression<op, Ts...>> {
     }
 };
 
+
+// traits for addition
 template<typename T1, typename T2>
 struct derivative_of<expression<operators::add, T1, T2>> {
     template<typename V>
@@ -113,6 +115,18 @@ struct derivative_of<expression<operators::add, T1, T2>> {
 };
 
 template<typename T1, typename T2>
+struct stream<expression<operators::add, T1, T2>> {
+    template<typename... V>
+    static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
+        write_to(out, T1{}, values);
+        out << " + ";
+        write_to(out, T2{}, values);
+    }
+};
+
+
+// traits for subtraction
+template<typename T1, typename T2>
 struct derivative_of<expression<operators::subtract, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& vars) noexcept {
@@ -120,6 +134,18 @@ struct derivative_of<expression<operators::subtract, T1, T2>> {
     }
 };
 
+template<typename T1, typename T2>
+struct stream<expression<operators::subtract, T1, T2>> {
+    template<typename... V>
+    static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
+        write_to(out, T1{}, values);
+        out << " - ";
+        write_to(out, T2{}, values);
+    }
+};
+
+
+// traits for multiplication
 template<typename T1, typename T2>
 struct derivative_of<expression<operators::multiply, T1, T2>> {
     template<typename V>
@@ -129,10 +155,48 @@ struct derivative_of<expression<operators::multiply, T1, T2>> {
 };
 
 template<typename T1, typename T2>
+struct stream<expression<operators::multiply, T1, T2>> {
+    template<typename... V>
+    static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
+        static constexpr bool has_subterms_1 = type_list_size_v<nodes_of_t<T1>> > 1;
+        if constexpr (has_subterms_1) out << "(";
+        write_to(out, T1{}, values);
+        if constexpr (has_subterms_1) out << ")";
+
+        out << "*";
+
+        static constexpr bool has_subterms_2 = type_list_size_v<nodes_of_t<T2>> > 1;
+        if constexpr (has_subterms_2) out << "(";
+        write_to(out, T2{}, values);
+        if constexpr (has_subterms_2) out << ")";
+    }
+};
+
+
+// traits for division
+template<typename T1, typename T2>
 struct derivative_of<expression<operators::divide, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& vars) noexcept {
         return differentiate(T1{}, vars)/T2{} - T1{}*differentiate(T2{}, vars)/(T2{}*T2{});
+    }
+};
+
+template<typename T1, typename T2>
+struct stream<expression<operators::divide, T1, T2>> {
+    template<typename... V>
+    static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
+        static constexpr bool has_subterms_1 = type_list_size_v<nodes_of_t<T1>> > 1;
+        if constexpr (has_subterms_1) out << "(";
+        write_to(out, T1{}, values);
+        if constexpr (has_subterms_1) out << ")";
+
+        out << "/";
+
+        static constexpr bool has_subterms_2 = type_list_size_v<nodes_of_t<T2>> > 1;
+        if constexpr (has_subterms_2) out << "(";
+        write_to(out, T2{}, values);
+        if constexpr (has_subterms_2) out << ")";
     }
 };
 

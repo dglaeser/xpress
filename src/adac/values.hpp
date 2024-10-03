@@ -73,6 +73,14 @@ struct dtype_of<value<v>> {
     >;
 };
 
+template<auto v>
+struct stream<value<v>> {
+    template<typename... V>
+    static constexpr void to(std::ostream& out, const bindings<V...>&) {
+        out << v;
+    }
+};
+
 }  // namespace traits
 
 //! \} group Values

@@ -8,6 +8,8 @@
 #pragma once
 
 #include <utility>
+#include <ostream>
+#include <concepts>
 #include <type_traits>
 
 #include <adac/utils.hpp>
@@ -54,6 +56,11 @@ concept differentiable_wrt = is_complete_v<traits::derivative_of<T>> and require
     { traits::derivative_of<T>::wrt(vars) };
 };
 
+template<typename T, typename... V>
+concept streamable_with = is_complete_v<traits::stream<T>> and requires(const T&, std::ostream& out, const bindings<V...>& values) {
+    { traits::stream<T>::to(out, values) } -> std::same_as<void>;
+};
+
 template<typename T>
 concept expression = is_complete_v<traits::value_of<T>> and is_complete_v<traits::derivative_of<T>>;
 
@@ -76,6 +83,12 @@ template<typename E, typename V>
     requires(concepts::differentiable_wrt<E, V>)
 inline constexpr auto differentiate(const E&, const type_list<V>& var) noexcept {
     return traits::derivative_of<E>::wrt(var);
+}
+
+template<typename E, typename... V>
+    requires(concepts::streamable_with<E, V...>)
+inline constexpr void write_to(std::ostream& out, const E&, const bindings<V...>& values) noexcept {
+    traits::stream<E>::to(out, values);
 }
 
 //! Create a type_list containing the given terms

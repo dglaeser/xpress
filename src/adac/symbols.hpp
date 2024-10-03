@@ -48,6 +48,7 @@ template<typename T, auto _> struct dtype_of<let<T, _>> : std::type_identity<T> 
 template<typename T, auto _> struct nodes_of<var<T, _>> : std::type_identity<type_list<var<T, _>>> {};
 template<typename T, auto _> struct nodes_of<let<T, _>> : std::type_identity<type_list<let<T, _>>> {};
 
+
 template<typename T>
 struct _symbol_value {
     template<typename... V>
@@ -59,6 +60,7 @@ struct _symbol_value {
 
 template<typename T, auto _> struct value_of<var<T, _>> : _symbol_value<var<T, _>> {};
 template<typename T, auto _> struct value_of<let<T, _>> : _symbol_value<let<T, _>> {};
+
 
 template<typename T>
 struct _symbol_derivative {
@@ -73,6 +75,18 @@ struct _symbol_derivative {
 
 template<typename T, auto _> struct derivative_of<var<T, _>> : _symbol_derivative<var<T, _>> {};
 template<typename T, auto _> struct derivative_of<let<T, _>> : _symbol_derivative<let<T, _>> {};
+
+
+template<typename T>
+struct _bound_symbol_stream {
+    template<typename... V>
+    static constexpr void to(std::ostream& out, const bindings<V...>& values) {
+        out << values[T{}];
+    }
+};
+
+template<typename T, auto _> struct stream<var<T, _>> : _bound_symbol_stream<var<T, _>> {};
+template<typename T, auto _> struct stream<let<T, _>> : _bound_symbol_stream<let<T, _>> {};
 
 }  // namespace traits
 

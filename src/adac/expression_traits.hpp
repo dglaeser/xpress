@@ -29,6 +29,9 @@ template<typename T> struct nodes_of;
 //! Trait to compare two expressions for equality (can be specialized e.g. for commutative operators)
 template<typename A, typename B> struct is_equal_node : std::is_same<A, B> {};
 
+//! Trait to write an expression to an output stream
+template<typename T> struct stream;
+
 //! \} group Expressions
 
 }  // namespace adac::traits
