@@ -145,6 +145,12 @@ inline constexpr auto at(B&&... b) {
     return bindings{std::forward<B>(b)...};
 }
 
+//! Alternative syntax for creating bindings
+template<typename... B> requires(detail::are_binders<B...>)
+inline constexpr auto with(B&&... b) {
+    return bindings{std::forward<B>(b)...};
+}
+
 //! \} group Bindings
 
 }  // namespace adac
