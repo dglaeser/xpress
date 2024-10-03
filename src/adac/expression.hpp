@@ -122,12 +122,23 @@ namespace detail {
         using type = type_list<>;
     };
 
+    template<typename T>
+    struct common_dtype_of;
+    template<typename T, typename... Ts>
+    struct common_dtype_of<type_list<T, Ts...>> {
+        using type = dtype::common_dtype_of_t<T, Ts...>;
+    };
+
 }  // namespace detail
 #endif  // DOXYGEN
 
 //! All unique nodes in the given expression
 template<typename T> requires(is_complete_v<traits::nodes_of<T>>)
 using unique_nodes_of_t = detail::unique_nodes_of<nodes_of_t<T>>::type;
+
+//! Deduce the dtype of the given expressions
+template<concepts::expression T>
+using dtype_of_t = typename detail::common_dtype_of<unique_nodes_of_t<T>>::type;
 
 //! \} group Expressions
 

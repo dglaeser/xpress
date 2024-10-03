@@ -147,5 +147,21 @@ int main() {
         static_assert(is_any_of_v<decltype(expr), unique_nodes>);
     };
 
+    "expression_dtype_with_any"_test = [] () {
+        let<dtype::real> a;
+        let<dtype::integral> b;
+        let<dtype::any> c;
+        auto expr = (a + b)*c;
+        static_assert(std::is_same_v<dtype_of_t<decltype(expr)>, dtype::any>);
+    };
+
+    "expression_dtype_yielding_real"_test = [] () {
+        let<dtype::real> a;
+        let<dtype::integral> b;
+        let<dtype::integral> c;
+        auto expr = (a + b)*c;
+        static_assert(std::is_same_v<dtype_of_t<decltype(expr)>, dtype::real>);
+    };
+
     return 0;
 }
