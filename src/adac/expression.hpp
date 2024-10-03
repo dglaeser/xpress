@@ -2,39 +2,44 @@
 // SPDX-License-Identifier: MIT
 /*!
  * \file
- * \ingroup Evaluation
- * \brief Interface for getting values, derivatives, etc.
+ * \ingroup Expressions
+ * \brief Interface for expressions.
  */
 #pragma once
 
+#include <utility>
 #include <type_traits>
 
 #include <adac/utils.hpp>
+#include <adac/dtype.hpp>
 #include <adac/bindings.hpp>
+#include <adac/values.hpp>
+#include <adac/expression_traits.hpp>
 
 namespace adac {
 
-//! \addtogroup Evaluation
+//! \addtogroup Expressions
 //! \{
 
-namespace traits {
+//! Base class for negatable symbols/expressions
+struct negatable {
+    template<typename Self>
+    constexpr auto operator-(this Self&& self) {
+        return value<-1>{}*std::forward<Self>(self);
+    }
+};
 
-//! Trait to get the value of an expression
-template<typename T> struct value_of;
+//! base class for bindable symbols/expressions
+template<concepts::dtype T = dtype::any>
+struct bindable {
+    using dtype = T;
 
-//! Trait to get the derivative of an expression wrt to a variable
-template<typename T> struct derivative_of;
-
-//! Trait for expressions/symbol to specialize if arithmetic operators are defined in-class
-template<typename A, typename B> struct disable_generic_arithmetic_operators : std::false_type {};
-
-//! Trait to get a list of all nodes in this expression (tree)
-template<typename T> struct nodes_of;
-
-//! Trait to compare two expressions for equality (can be specialized e.g. for commutative operators)
-template<typename A, typename B> struct is_equal_node : std::is_same<A, B> {};
-
-}  // namespace traits
+    //! bind the given value to this symbol
+    template<typename Self, typename V> requires(concepts::accepts<T, V>)
+    constexpr auto operator=(this Self&& self, V&& value) noexcept {
+        return value_binder(std::forward<Self>(self), std::forward<V>(value));
+    }
+};
 
 
 namespace concepts {
@@ -111,6 +116,6 @@ namespace detail {
 template<typename T> requires(is_complete_v<traits::nodes_of<T>>)
 using unique_nodes_of_t = detail::unique_nodes_of<nodes_of_t<T>>::type;
 
-//! \} group Evaluation
+//! \} group Expressions
 
 }  // namespace adac
