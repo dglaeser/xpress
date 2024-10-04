@@ -11,7 +11,7 @@ project(adac)
 set(ADAC_NAMESPACE adac)
 option(ADAC_BUILD_TESTS "Control if tests should be built" ON)
 # option(ADAC_BUILD_EXAMPLES "Control if examples should be built" OFF)
-# option(ADAC_BUILD_BENCHMARK "Control if benchmarks should be built" OFF)
+option(ADAC_BUILD_BENCHMARK "Control if benchmarks should be built" OFF)
 
 include(GNUInstallDirs)
 add_library(${PROJECT_NAME} INTERFACE)
@@ -63,9 +63,10 @@ if (NOT ADAC_SUBPROJECT)
             ${ADAC_INSTALL_CMAKE_DATA_DIR}
     )
 
-    # if (ADAC_BUILD_BENCHMARK)
-    #     add_subdirectory(benchmark)
-    # endif ()
+    if (ADAC_BUILD_BENCHMARK)
+        enable_testing()
+        add_subdirectory(benchmark)
+    endif ()
 
     if (ADAC_BUILD_TESTS)
         enable_testing()

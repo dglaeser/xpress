@@ -6,6 +6,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ut)
 
+find_package(adac)
 function (ad_add_test NAME SOURCE)
     add_executable(${NAME} ${SOURCE})
     target_link_libraries(${NAME} PRIVATE adac::adac Boost::ut)
