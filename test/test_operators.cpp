@@ -104,6 +104,7 @@ int main() {
         auto sum = a + b;
         auto c_times_sum = c*sum;
         auto result = c_times_sum*val<42>;
+
         using nodes = nodes_of_t<decltype(result)>;
         static_assert(type_list_size_v<nodes> == 7);
         static_assert(is_any_of_v<decltype(a), nodes>);
@@ -113,6 +114,19 @@ int main() {
         static_assert(is_any_of_v<decltype(c_times_sum), nodes>);
         static_assert(is_any_of_v<decltype(result), nodes>);
         static_assert(is_any_of_v<value<42>, nodes>);
+
+        using leafs = leaf_nodes_of_t<decltype(result)>;
+        static_assert(type_list_size_v<leafs> == 4);
+        static_assert(is_any_of_v<decltype(a), leafs>);
+        static_assert(is_any_of_v<decltype(b), leafs>);
+        static_assert(is_any_of_v<decltype(c), leafs>);
+        static_assert(is_any_of_v<value<42>, leafs>);
+
+        using composites = composite_nodes_of_t<decltype(result)>;
+        static_assert(type_list_size_v<composites> == 3);
+        static_assert(is_any_of_v<decltype(sum), composites>);
+        static_assert(is_any_of_v<decltype(c_times_sum), composites>);
+        static_assert(is_any_of_v<decltype(result), composites>);
     };
 
     "expression_unique_nodes_of"_test = [] () {
@@ -145,6 +159,16 @@ int main() {
         static_assert(is_any_of_v<decltype(a), unique_nodes>);
         static_assert(is_any_of_v<decltype(b), unique_nodes>);
         static_assert(is_any_of_v<decltype(expr), unique_nodes>);
+
+        using unique_leafs = unique_leaf_nodes_of_t<decltype(expr)>;
+        static_assert(type_list_size_v<unique_leafs> == 2);
+        static_assert(is_any_of_v<decltype(a), unique_leafs>);
+        static_assert(is_any_of_v<decltype(b), unique_leafs>);
+
+        using unique_composites = unique_composite_nodes_of_t<decltype(expr)>;
+        static_assert(type_list_size_v<unique_leafs> == 2);
+        static_assert(is_any_of_v<decltype(sum_1), made_unique> || is_any_of_v<decltype(sum_2), made_unique>);
+        static_assert(is_any_of_v<decltype(expr), made_unique>);
     };
 
     "expression_dtype_with_any"_test = [] () {

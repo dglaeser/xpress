@@ -9,6 +9,8 @@
 
 #include <type_traits>
 
+#include <adac/utils.hpp>
+
 namespace adac::traits {
 
 //! \addtogroup Expressions
@@ -31,6 +33,12 @@ template<typename A, typename B> struct is_equal_node : std::is_same<A, B> {};
 
 //! Trait to write an expression to an output stream
 template<typename T> struct stream;
+
+//! Trait to determine if a node is a leaf node (defaults to checking if the tree below this node has only one node)
+template<typename T> struct is_leaf_node : std::bool_constant<type_list_size_v<typename nodes_of<T>::type> == 1> {};
+
+//! Trait to determine if a node is a composite node (i.e. not a leaf node)
+template<typename T> struct is_composite_node : std::bool_constant<!is_leaf_node<T>::value> {};
 
 //! \} group Expressions
 

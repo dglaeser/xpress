@@ -101,6 +101,14 @@ inline constexpr auto wrt(const V&...) {
 template<typename T> requires(is_complete_v<traits::nodes_of<T>>)
 using nodes_of_t = traits::nodes_of<T>::type;
 
+//! All leaf nodes in the given expresssion
+template<typename T>
+using leaf_nodes_of_t = filtered_types_t<traits::is_leaf_node, nodes_of_t<T>>;
+
+//! All non-leaf nodes in the given expression
+template<typename T>
+using composite_nodes_of_t = filtered_types_t<traits::is_composite_node, nodes_of_t<T>>;
+
 
 #ifndef DOXYGEN
 namespace detail {
@@ -136,7 +144,15 @@ namespace detail {
 template<typename T> requires(is_complete_v<traits::nodes_of<T>>)
 using unique_nodes_of_t = detail::unique_nodes_of<nodes_of_t<T>>::type;
 
-//! Deduce the dtype of the given expressions
+//! All leaf nodes in the given expresssion
+template<typename T>
+using unique_leaf_nodes_of_t = filtered_types_t<traits::is_leaf_node, unique_nodes_of_t<T>>;
+
+//! All unique non-leaf nodes in the given expression
+template<typename T>
+using unique_composite_nodes_of_t = filtered_types_t<traits::is_composite_node, unique_nodes_of_t<T>>;
+
+//! Deduce the dtype of the given expression
 template<concepts::expression T>
 using dtype_of_t = typename detail::common_dtype_of<unique_nodes_of_t<T>>::type;
 
