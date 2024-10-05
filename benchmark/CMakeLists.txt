@@ -6,3 +6,4 @@ function (adac_add_benchmark NAME SOURCE)
 endfunction ()
 
 adac_add_benchmark(expression_evaluation expression_evaluation.cpp)
+adac_add_benchmark(expression_differentiation expression_differentiation.cpp)
