@@ -46,6 +46,8 @@ inline constexpr bool is_commutative_v = traits::is_commutative<op>::value;
 //! Class to represent expressions resulting from an operator applied to the given terms
 template<typename op, concepts::expression T1, concepts::expression... Ts>
 struct expression : bindable<dtype::common_dtype_of_t<T1, Ts...>>, negatable {
+    using bindable<dtype::common_dtype_of_t<T1, Ts...>>::operator=;
+
     constexpr expression() = default;
     constexpr expression(const op&, const Ts&...) noexcept {}
 };
@@ -99,8 +101,12 @@ struct nodes_of<expression<op, T, Ts...>> {
 template<typename op, typename... Ts>
 struct value_of<expression<op, Ts...>> {
     template<typename... V>
-    static constexpr auto from(const bindings<V...>& bindings) noexcept {
-        return op{}(evaluate(Ts{}, bindings)...);
+    static constexpr auto from(const bindings<V...>& binders) noexcept {
+        using self = expression<op, Ts...>;
+        if constexpr (bindings<V...>::template has_bindings_for<self>)
+            return binders[self{}];
+        else
+            return op{}(evaluate(Ts{}, binders)...);
     }
 };
 
