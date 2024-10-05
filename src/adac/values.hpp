@@ -55,7 +55,7 @@ struct value_of<value<v>> {
 template<auto v>
 struct derivative_of<value<v>> {
     template<typename V>
-    static constexpr auto wrt(const bindings<V>&) noexcept {
+    static constexpr auto wrt(const type_list<V>&) noexcept {
         return val<0>;
     }
 };
