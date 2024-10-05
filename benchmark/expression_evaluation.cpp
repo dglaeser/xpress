@@ -3,7 +3,7 @@
 #include <adac/adac.hpp>
 
 #include "common.hpp"
-#include "test_expression.hpp"
+#include "benchmark_expression.hpp"
 
 int main() {
     using namespace adac;
