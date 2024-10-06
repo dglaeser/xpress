@@ -1,21 +1,55 @@
 #include <iostream>
 
+#ifndef USE_AUTODIFF
+#define USE_AUTODIFF 0
+#endif
+
+#if USE_AUTODIFF
+#include <autodiff/forward/dual.hpp>
+#include <autodiff/reverse/var.hpp>
+#else
 #include <adac/adac.hpp>
+#endif
 
 #include "common.hpp"
 #include "benchmark_expression.hpp"
 
+#if USE_AUTODIFF
+autodiff::dual f(autodiff::dual _a, autodiff::dual _b) {
+    return GENERATE_EXPRESSION(_a, _b);
+}
+#endif
+
 int main() {
     using namespace adac;
 
+    const double a_value = 2.0;
+    const double b_value = 5.0;
+
+#if USE_AUTODIFF
+    #if USE_AUTODIFF_BACKWARD
+        autodiff::var a = a_value;
+        autodiff::var b = b_value;
+        auto [measurement, result] = benchmark::measure([&] () {
+            const autodiff::var r = GENERATE_EXPRESSION(a, b);
+            return r;
+        });
+    #else
+        autodiff::dual a = a_value;
+        autodiff::dual b = b_value;
+        auto [measurement, result] = benchmark::measure([&] () {
+            autodiff::dual r = GENERATE_EXPRESSION(a, b);
+            return r;
+        });
+    #endif
+#else
     var a;
     var b;
-    const auto expression = GENERATE_EXPRESSION(a, b);
-    benchmark::print_expression_tree_size_to(std::cout, expression);
-
-    auto measurement = benchmark::measure([&] () {
-        evaluate(expression, at(a = 2.0, b = 5.0));
+    auto [measurement, result] = benchmark::measure([&] () {
+        return evaluate(GENERATE_EXPRESSION(a, b), at(a = a_value, b = b_value));
     });
+#endif
+    std::cout << "Value = " << result << std::endl;
     measurement.write_report_to(std::cout);
 
     return 0;

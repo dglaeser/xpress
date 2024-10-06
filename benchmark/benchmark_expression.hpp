@@ -6,7 +6,7 @@
 #define ADD_16(x) ADD_8(x) + ADD_8(x)
 #define ADD_32(x) ADD_16(x) + ADD_16(x)
 #define ADD_64(x) ADD_32(x) + ADD_32(x)
-#define ADD_128(x) ADD_64(x) + ADD_64(x)
+#define ADD_192(x) ADD_64(x) + ADD_64(x) + ADD_64(x)
 
-#define UNIT_EXPRESSION(a, b) val<2>*a*((a + b)*b*val<4> + (a*b) + b*val<8>)
-#define GENERATE_EXPRESSION(a, b) ADD_128(UNIT_EXPRESSION(a, b))
+#define UNIT_EXPRESSION(a, b) a*((a + b)*b + (a*b) + b)
+#define GENERATE_EXPRESSION(a, b) ADD_192(UNIT_EXPRESSION(a, b))

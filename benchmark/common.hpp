@@ -1,16 +1,13 @@
 #pragma once
 
+#include <type_traits>
 #include <concepts>
 #include <iostream>
+#include <utility>
 #include <vector>
 #include <chrono>
 
 namespace adac::benchmark {
-
-template<typename E>
-void print_expression_tree_size_to(std::ostream& out, const E&) {
-    std::cout << "Expression tree size: " << type_list_size_v<nodes_of_t<E>> << std::endl;
-}
 
 class Measurement {
  public:
@@ -23,7 +20,7 @@ class Measurement {
         for (const auto& m : _measurements)
             average += m;
         average /= static_cast<double>(_measurements.size());
-        out << " -- average runtime: " << average << std::endl;
+        out << "average runtime: " << average << std::endl;
     }
 
  private:
@@ -31,27 +28,29 @@ class Measurement {
 };
 
 template<std::invocable action>
-double measure_invocation(action&& a) {
+auto measure_invocation(action&& a) {
     auto t1 = std::chrono::steady_clock::now();
-    a();
+    auto result = a();
     auto t2 = std::chrono::steady_clock::now();
-    return std::chrono::duration<double>(t2 - t1).count();
+    return std::make_pair(std::chrono::duration<double>(t2 - t1).count(), result);
 }
 
 // TODO: instead of size_ts for warmup phase etc, decide automatically based on fluctuations
 template<std::invocable action>
-Measurement measure(action&& a, std::size_t warmup = 10, std::size_t measurements = 20) {
-    std::cout << " -- starting measurement" << std::endl;
-
-    std::cout << " -- warmup phase" << std::endl;
-    for (std::size_t i = 0; i < 10; ++i)
+auto measure(action&& a, std::size_t warmup = 10, std::size_t measurements = 20) {
+    for (std::size_t i = 0; i < warmup; ++i)
         a();
 
     Measurement measurement;
-    std::cout << " -- measurement phase" << std::endl;
-    for (std::size_t i = 0; i < 10; ++i)
-        measurement.push(measure_invocation(a));
-    return measurement;
+    for (std::size_t i = 0; i < measurements - 1; ++i) {
+        auto [runtime, _] = measure_invocation(a);
+        measurement.push(runtime);
+    }
+
+    auto [runtime, result] = measure_invocation(a);
+    measurement.push(runtime);
+
+    return std::make_pair(measurement, result);
 }
 
 }  // namespace adac::benchmark
