@@ -17,6 +17,8 @@
 #include <adac/bindings.hpp>
 #include <adac/values.hpp>
 #include <adac/expression_traits.hpp>
+#include <adac/traits.hpp>
+
 
 namespace adac {
 
@@ -32,12 +34,12 @@ struct negatable {
 };
 
 //! base class for bindable symbols/expressions
-template<concepts::dtype T = dtype::any>
+template<typename T = dtype::any>
 struct bindable {
     using dtype = T;
 
     //! bind the given value to this symbol
-    template<typename Self, typename V> requires(concepts::accepts<T, V>)
+    template<typename Self, concepts::bindable_to<dtype> V>
     constexpr auto operator=(this Self&& self, V&& value) noexcept {
         return value_binder(std::forward<Self>(self), std::forward<V>(value));
     }
@@ -134,7 +136,7 @@ namespace detail {
     struct common_dtype_of;
     template<typename T, typename... Ts>
     struct common_dtype_of<type_list<T, Ts...>> {
-        using type = dtype::common_dtype_of_t<T, Ts...>;
+        using type = traits::common_dtype_t<traits::dtype_of_t<T>, traits::dtype_of_t<Ts>...>;
     };
 
 }  // namespace detail
