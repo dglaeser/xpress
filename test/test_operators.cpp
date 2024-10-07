@@ -97,7 +97,7 @@ int main() {
         expect(eq(evaluate(d_db, at(a = 2., b = 42.)), 0.0 - 1.0*2.0/(42.0*42.0)));
     };
 
-    "expression_derivative_wrt_expression"_test = [] () {
+    "operation_derivative_wrt_expression"_test = [] () {
         static constexpr let a;
         static constexpr var b;
         static constexpr auto sum = a + b;
@@ -107,7 +107,7 @@ int main() {
         expect(eq(evaluate(d_dsum, at(a = 0, b = 0)), 42));
     };
 
-    "expression_nodes_of"_test = [] () {
+    "operation_nodes_of"_test = [] () {
         using namespace adac::traits;
 
         let a;
@@ -141,7 +141,7 @@ int main() {
         static_assert(is_any_of_v<decltype(result), composites>);
     };
 
-    "expression_unique_nodes_of"_test = [] () {
+    "operation_unique_nodes_of"_test = [] () {
         using namespace adac::traits;
 
         let a;
@@ -185,7 +185,7 @@ int main() {
         static_assert(is_any_of_v<decltype(expr), made_unique>);
     };
 
-    "expression_symbols_variables_of"_test = [] () {
+    "operation_symbols_variables_of"_test = [] () {
         using namespace adac::traits;
 
         let a;
@@ -204,7 +204,7 @@ int main() {
         static_assert(is_any_of_v<decltype(b), variables>);
     };
 
-    "expression_dtype_with_any"_test = [] () {
+    "operation_dtype_with_any"_test = [] () {
         let<dtype::real> a;
         let<dtype::integral> b;
         let<dtype::any> c;
@@ -212,7 +212,7 @@ int main() {
         static_assert(std::is_same_v<typename decltype(expr)::dtype, dtype::any>);
     };
 
-    "expression_dtype_yielding_real"_test = [] () {
+    "operation_dtype_yielding_real"_test = [] () {
         let<dtype::real> a;
         let<dtype::integral> b;
         let<dtype::integral> c;
