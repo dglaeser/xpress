@@ -13,7 +13,7 @@
 #include <adac/utils.hpp>
 #include <adac/dtype.hpp>
 #include <adac/bindings.hpp>
-#include <adac/expression_traits.hpp>
+#include <adac/traits.hpp>
 
 
 namespace adac {

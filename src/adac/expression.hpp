@@ -16,7 +16,6 @@
 #include <adac/dtype.hpp>
 #include <adac/bindings.hpp>
 #include <adac/values.hpp>
-#include <adac/expression_traits.hpp>
 #include <adac/traits.hpp>
 
 
