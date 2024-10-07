@@ -97,6 +97,16 @@ int main() {
         expect(eq(evaluate(d_db, at(a = 2., b = 42.)), 0.0 - 1.0*2.0/(42.0*42.0)));
     };
 
+    "expression_derivative_wrt_expression"_test = [] () {
+        static constexpr let a;
+        static constexpr var b;
+        static constexpr auto sum = a + b;
+        static constexpr auto result = val<42>*sum;
+        constexpr auto d_dsum = differentiate(result, wrt(sum));
+        static_assert(evaluate(d_dsum, at(a = 0, b = 0)) == 42);
+        expect(eq(evaluate(d_dsum, at(a = 0, b = 0)), 42));
+    };
+
     "expression_nodes_of"_test = [] () {
         using namespace adac::traits;
 
