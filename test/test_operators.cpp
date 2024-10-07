@@ -29,10 +29,10 @@ int main() {
         constexpr auto added = a + b;
         constexpr auto d_da = differentiate(added, wrt(a));
         constexpr auto d_db = differentiate(added, wrt(a));
-        static_assert(evaluate(d_da) == 1);
-        static_assert(evaluate(d_db) == 1);
-        expect(eq(evaluate(d_da), 1));
-        expect(eq(evaluate(d_db), 1));
+        static_assert(evaluate(d_da, at()) == 1);
+        static_assert(evaluate(d_db, at()) == 1);
+        expect(eq(evaluate(d_da, at()), 1));
+        expect(eq(evaluate(d_db, at()), 1));
     };
 
     "subtract_operator_value"_test = [] () {
@@ -49,10 +49,10 @@ int main() {
         constexpr auto subtracted = a - b;
         constexpr auto d_da = differentiate(subtracted, wrt(a));
         constexpr auto d_db = differentiate(subtracted, wrt(b));
-        static_assert(evaluate(d_da) == 1);
-        static_assert(evaluate(d_db) == -1);
-        expect(eq(evaluate(d_da), 1));
-        expect(eq(evaluate(d_db), -1));
+        static_assert(evaluate(d_da, at()) == 1);
+        static_assert(evaluate(d_db, at()) == -1);
+        expect(eq(evaluate(d_da, at()), 1));
+        expect(eq(evaluate(d_db, at()), -1));
     };
 
     "multiply_operator_value"_test = [] () {

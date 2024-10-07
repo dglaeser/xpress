@@ -54,13 +54,6 @@ inline constexpr auto evaluate(const E&, const bindings<V...>& values) noexcept 
     return traits::value_of<E>::from(values);
 }
 
-//! Specialization for expressions w/o any symbols
-template<typename E>
-    requires(concepts::evaluatable_with<E>)
-inline constexpr auto evaluate(const E&) noexcept {
-    return traits::value_of<E>::from(bindings<>{});
-}
-
 //! Return the derivative expression of the given expression w.r.t. the given variable
 template<typename E, typename V>
     requires(concepts::differentiable_wrt<E, V>)
