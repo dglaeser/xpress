@@ -72,10 +72,24 @@ inline constexpr auto differentiate(const E&, const type_list<V>& var) noexcept 
 }
 
 //! Return the derivative expression of the given expression w.r.t. the given variables
-template<typename E, typename... V>
+template<typename E, typename... V> requires(sizeof...(V) > 1)
 inline constexpr auto differentiate(const E& expression, const type_list<V...>& vars) noexcept {
     return derivatives{
         derivative{differentiate(expression, type_list<V>{}), V{}}...
+    };
+}
+
+//! Return the derivative of the given expression w.r.t the given variable, evaluated at the given values
+template<typename E, typename V, typename... B>
+inline constexpr auto derivative_of(const E& expr, const type_list<V>& vars, const bindings<B...>& vals) noexcept {
+    return evaluate(differentiate(expr, vars), vals);
+}
+
+//! Return the derivatives of the given expression w.r.t the given variables, evaluated at the given values
+template<typename E, typename... V, typename... B>
+inline constexpr auto derivatives_of(const E& expr, const type_list<V...>&, const bindings<B...>& vals) noexcept {
+    return bindings{
+        value_binder{V{}, evaluate(differentiate(expr, wrt(V{})), vals)}...
     };
 }
 

@@ -107,6 +107,15 @@ int main() {
         expect(eq(evaluate(d_dsum, at(a = 0, b = 0)), 42));
     };
 
+    "operation_direct_derivative_evaluation"_test = [] () {
+        static constexpr let a;
+        static constexpr var b;
+        static constexpr auto sum = a + b;
+        static constexpr auto result = val<42>*sum;
+        static_assert(derivative_of(result, wrt(sum), at(a = 0, b = 0)) == 42);
+        expect(eq(derivative_of(result, wrt(sum), at(a = 0, b = 0)), 42));
+    };
+
     "operation_derivative_wrt_multiple_vars"_test = [] () {
         static constexpr let a;
         static constexpr var b;
@@ -119,6 +128,20 @@ int main() {
         expect(eq(evaluate(derivs.wrt(a), at(a = 0, b = 0, c = 0)), 42));
         expect(eq(evaluate(derivs.wrt(b), at(a = 0, b = 0, c = 0)), 84));
         expect(eq(evaluate(derivs.wrt(c), at(a = 0, b = 0, c = 0)), 1));
+    };
+
+    "operation_direct_derivatives_evaluation"_test = [] () {
+        static constexpr let a;
+        static constexpr var b;
+        static constexpr var c;
+        static constexpr auto expression = val<42>*(a + val<2>*b) + c;
+        static constexpr auto derivs = derivatives_of(expression, wrt(a, b, c), at(a = 0, b = 0, c = 0));
+        static_assert(derivs[a] == 42);
+        static_assert(derivs[b] == 84);
+        static_assert(derivs[c] == 1);
+        expect(eq(derivs[a], 42));
+        expect(eq(derivs[b], 84));
+        expect(eq(derivs[c], 1));
     };
 
     "operation_nodes_of"_test = [] () {
