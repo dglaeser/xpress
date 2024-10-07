@@ -50,7 +50,7 @@ struct bindable {
 //! Evaluate the given expression from the given value bindings
 template<typename E, typename... V>
     requires(concepts::evaluatable_with<E, V...>)
-inline constexpr auto evaluate(const E&, const bindings<V...>& values) noexcept {
+inline constexpr auto value_of(const E&, const bindings<V...>& values) noexcept {
     return traits::value_of<E>::from(values);
 }
 
@@ -75,14 +75,14 @@ inline constexpr auto differentiate(const E& expression, const type_list<V...>& 
 //! Return the derivative of the given expression w.r.t the given variable, evaluated at the given values
 template<typename E, typename V, typename... B>
 inline constexpr auto derivative_of(const E& expr, const type_list<V>& vars, const bindings<B...>& vals) noexcept {
-    return evaluate(differentiate(expr, vars), vals);
+    return value_of(differentiate(expr, vars), vals);
 }
 
 //! Return the derivatives of the given expression w.r.t the given variables, evaluated at the given values
 template<typename E, typename... V, typename... B>
 inline constexpr auto derivatives_of(const E& expr, const type_list<V...>&, const bindings<B...>& vals) noexcept {
     return bindings{
-        value_binder{V{}, evaluate(differentiate(expr, wrt(V{})), vals)}...
+        value_binder{V{}, value_of(differentiate(expr, wrt(V{})), vals)}...
     };
 }
 

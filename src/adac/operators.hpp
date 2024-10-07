@@ -134,7 +134,7 @@ struct value_of<operation<op, Ts...>> {
         if constexpr (bindings<V...>::template has_bindings_for<self>)
             return binders[self{}];
         else
-            return op{}(evaluate(Ts{}, binders)...);
+            return op{}(adac::value_of(Ts{}, binders)...);
     }
 };
 

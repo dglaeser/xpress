@@ -46,7 +46,7 @@ int main() {
     var a;
     var b;
     auto [measurement, result] = benchmark::measure([&] () {
-        return evaluate(GENERATE_EXPRESSION(a, b), at(a = a_value, b = b_value));
+        return value_of(GENERATE_EXPRESSION(a, b), at(a = a_value, b = b_value));
     });
 #endif
     std::cout << "Value = " << result << std::endl;
