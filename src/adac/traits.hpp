@@ -181,6 +181,18 @@ struct unique_composite_nodes_of : std::type_identity<filtered_types_t<traits::i
 template<typename T>
 using unique_composite_nodes_of_t = typename unique_composite_nodes_of<T>::type;
 
+//! All symbols in the given expression
+template<typename T>
+struct symbols_of : std::type_identity<filtered_types_t<traits::is_symbol, unique_leaf_nodes_of_t<T>>> {};
+template<typename T>
+using symbols_of_t = typename symbols_of<T>::type;
+
+//! All variables in the given expression
+template<typename T>
+struct variables_of : std::type_identity<filtered_types_t<traits::is_variable, unique_leaf_nodes_of_t<T>>> {};
+template<typename T>
+using variables_of_t = typename variables_of<T>::type;
+
 //! \} group Expressions
 
 }  // namespace adac::traits

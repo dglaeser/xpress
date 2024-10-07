@@ -175,6 +175,25 @@ int main() {
         static_assert(is_any_of_v<decltype(expr), made_unique>);
     };
 
+    "expression_symbols_variables_of"_test = [] () {
+        using namespace adac::traits;
+
+        let a;
+        var b;
+        auto sum_1 = a + b;
+        auto sum_2 = b + a;
+        auto expr = sum_1 + sum_2*val<42>;
+
+        using symbols = symbols_of_t<decltype(expr)>;
+        static_assert(type_list_size_v<symbols> == 2);
+        static_assert(is_any_of_v<decltype(a), symbols>);
+        static_assert(is_any_of_v<decltype(b), symbols>);
+
+        using variables = variables_of_t<decltype(expr)>;
+        static_assert(type_list_size_v<variables> == 1);
+        static_assert(is_any_of_v<decltype(b), variables>);
+    };
+
     "expression_dtype_with_any"_test = [] () {
         let<dtype::real> a;
         let<dtype::integral> b;
