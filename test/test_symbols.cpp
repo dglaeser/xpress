@@ -10,8 +10,19 @@ int main() {
     "let_var_symbol_concept"_test = [] () {
         let a;
         var b;
+        value<42> c;
         static_assert(concepts::symbol<decltype(a)>);
         static_assert(concepts::symbol<decltype(b)>);
+        static_assert(!concepts::symbol<decltype(c)>);
+    };
+
+    "let_var_value_variable_concept"_test = [] () {
+        var a;
+        let b;
+        value<42> c;
+        static_assert(concepts::symbol<decltype(a)>);
+        static_assert(!concepts::variable<decltype(b)>);
+        static_assert(!concepts::variable<decltype(c)>);
     };
 
     "let_var_value_nodes_of"_test = [] () {

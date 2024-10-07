@@ -80,9 +80,15 @@ template<typename T> struct stream;
 
 //! Trait to register a type as a symbol, i.e. a leaf node in an expression tree to which values can be bound
 template<typename T>
-struct is_symbol;
+struct is_symbol : std::false_type {};
 template<typename T>
 inline constexpr bool is_symbol_v = is_symbol<T>::value;
+
+//! Trait to register a type as a variable, i.e. a symbol that represents an independent variable of an expression
+template<typename T>
+struct is_variable : std::false_type {};
+template<typename T>
+inline constexpr bool is_variable_v = is_variable<T>::value;
 
 //! Trait for expressions/symbol to specialize if arithmetic operators are defined in-class
 template<typename A, typename B>

@@ -43,6 +43,8 @@ struct let : negatable, bindable<T> {
 
 namespace traits {
 
+template<typename T, auto _> struct is_variable<var<T, _>> : std::true_type {};
+
 template<typename T, auto _> struct is_symbol<var<T, _>> : std::true_type {};
 template<typename T, auto _> struct is_symbol<let<T, _>> : std::true_type {};
 
