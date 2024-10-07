@@ -68,24 +68,28 @@ concept expression = is_complete_v<traits::value_of<T>> and is_complete_v<traits
 }  // namespace concepts
 
 
+//! Evaluate the given expression from the given value bindings
 template<typename E, typename... V>
     requires(concepts::evaluatable_with<E, V...>)
 inline constexpr auto evaluate(const E&, const bindings<V...>& values) noexcept {
     return traits::value_of<E>::from(values);
 }
 
+//! Specialization for expressions w/o any symbols
 template<typename E>
     requires(concepts::evaluatable_with<E>)
 inline constexpr auto evaluate(const E&) noexcept {
     return traits::value_of<E>::from(bindings<>{});
 }
 
+//! Return the derivative expression of the given expression w.r.t. the given variable
 template<typename E, typename V>
     requires(concepts::differentiable_wrt<E, V>)
 inline constexpr auto differentiate(const E&, const type_list<V>& var) noexcept {
     return traits::derivative_of<E>::wrt(var);
 }
 
+//! Write the given expression to the given stream with the given value bindings
 template<typename E, typename... V>
     requires(concepts::streamable_with<E, V...>)
 inline constexpr void write_to(std::ostream& out, const E&, const bindings<V...>& values) noexcept {
@@ -152,10 +156,6 @@ using unique_leaf_nodes_of_t = filtered_types_t<traits::is_leaf_node, unique_nod
 //! All unique non-leaf nodes in the given expression
 template<typename T>
 using unique_composite_nodes_of_t = filtered_types_t<traits::is_composite_node, unique_nodes_of_t<T>>;
-
-//! Deduce the dtype of the given expression
-template<concepts::expression T>
-using dtype_of_t = typename detail::common_dtype_of<unique_nodes_of_t<T>>::type;
 
 //! \} group Expressions
 

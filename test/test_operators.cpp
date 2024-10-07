@@ -176,7 +176,7 @@ int main() {
         let<dtype::integral> b;
         let<dtype::any> c;
         auto expr = (a + b)*c;
-        static_assert(std::is_same_v<dtype_of_t<decltype(expr)>, dtype::any>);
+        static_assert(std::is_same_v<typename decltype(expr)::dtype, dtype::any>);
     };
 
     "expression_dtype_yielding_real"_test = [] () {
@@ -184,7 +184,7 @@ int main() {
         let<dtype::integral> b;
         let<dtype::integral> c;
         auto expr = (a + b)*c;
-        static_assert(std::is_same_v<dtype_of_t<decltype(expr)>, dtype::real>);
+        static_assert(std::is_same_v<typename decltype(expr)::dtype, dtype::real>);
     };
 
     return 0;
