@@ -10,8 +10,8 @@
 #include <concepts>
 #include <type_traits>
 
-#include <adac/utils.hpp>
-#include <adac/traits.hpp>
+#include "utils.hpp"
+#include "traits.hpp"
 
 
 namespace adac {

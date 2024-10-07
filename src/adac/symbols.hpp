@@ -10,9 +10,9 @@
 #include <utility>
 #include <type_traits>
 
-#include <adac/utils.hpp>
-#include <adac/dtype.hpp>
-#include <adac/expressions.hpp>
+#include "utils.hpp"
+#include "dtype.hpp"
+#include "expressions.hpp"
 
 
 namespace adac {

@@ -12,12 +12,12 @@
 #include <concepts>
 #include <type_traits>
 
-#include <adac/utils.hpp>
-#include <adac/dtype.hpp>
-#include <adac/bindings.hpp>
-#include <adac/values.hpp>
-#include <adac/traits.hpp>
-#include <adac/concepts.hpp>
+#include "utils.hpp"
+#include "dtype.hpp"
+#include "bindings.hpp"
+#include "values.hpp"
+#include "traits.hpp"
+#include "concepts.hpp"
 
 
 namespace adac {
