@@ -12,7 +12,7 @@
 
 #include <adac/utils.hpp>
 #include <adac/dtype.hpp>
-#include <adac/expression.hpp>
+#include <adac/expressions.hpp>
 
 
 namespace adac {
