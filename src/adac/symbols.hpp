@@ -20,7 +20,7 @@ namespace adac {
 //! \{
 
 //! Symbol to represent an independent variable
-template<concepts::dtype T = dtype::any, auto = [] () {}>
+template<typename T = dtype::any, auto = [] () {}>
 struct var : negatable, bindable<T> {
     using bindable<T>::operator=;
 
@@ -30,7 +30,7 @@ struct var : negatable, bindable<T> {
 };
 
 //! Symbol to represent a parameter
-template<concepts::dtype T = dtype::any, auto = [] () {}>
+template<typename T = dtype::any, auto = [] () {}>
 struct let : negatable, bindable<T> {
     using bindable<T>::operator=;
 
