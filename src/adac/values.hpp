@@ -11,7 +11,6 @@
 #include <type_traits>
 
 #include <adac/utils.hpp>
-#include <adac/dtype.hpp>
 #include <adac/bindings.hpp>
 #include <adac/traits.hpp>
 
@@ -45,6 +44,9 @@ template<auto v>
 struct nodes_of<value<v>> : std::type_identity<type_list<value<v>>> {};
 
 template<auto v>
+struct dtype_of<value<v>> : std::type_identity<decltype(v)> {};
+
+template<auto v>
 struct value_of<value<v>> {
     template<typename... T>
     static constexpr auto from(const bindings<T...>&) noexcept {
@@ -58,19 +60,6 @@ struct derivative_of<value<v>> {
     static constexpr auto wrt(const type_list<V>&) noexcept {
         return val<0>;
     }
-};
-
-template<auto v>
-struct dtype_of<value<v>> {
-    using type = std::conditional_t<
-        std::is_floating_point_v<decltype(v)>,
-        dtype::real,
-        std::conditional_t<
-            std::is_integral_v<decltype(v)>,
-            dtype::integral,
-            dtype::any
-        >
-    >;
 };
 
 template<auto v>
