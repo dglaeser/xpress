@@ -3,7 +3,7 @@
 /*!
  * \file
  * \ingroup Operators
- * \brief Arithmetic operators on symbols/expressions.
+ * \brief Mathematical operations on symbols/expressions.
  */
 #pragma once
 
@@ -45,64 +45,64 @@ inline constexpr bool is_commutative_v = traits::is_commutative<op>::value;
 
 //! Class to represent expressions resulting from an operator applied to the given terms
 template<typename op, concepts::expression... Ts>
-struct expression : bindable<traits::common_dtype_t<traits::dtype_of_t<Ts>...>>, negatable {
+struct operation : bindable<traits::common_dtype_t<traits::dtype_of_t<Ts>...>>, negatable {
     using bindable<traits::common_dtype_t<traits::dtype_of_t<Ts>...>>::operator=;
 
-    constexpr expression() = default;
-    constexpr expression(const op&, const Ts&...) noexcept {}
+    constexpr operation() = default;
+    constexpr operation(const op&, const Ts&...) noexcept {}
 };
 
 template<typename op, typename... Ts>
-expression(op&&, Ts&&...) -> expression<std::remove_cvref_t<op>, std::remove_cvref_t<Ts>...>;
+operation(op&&, Ts&&...) -> operation<std::remove_cvref_t<op>, std::remove_cvref_t<Ts>...>;
 
 
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator+(const A&, const B&) noexcept {
-    return expression<operators::add, A, B>{};
+    return operation<operators::add, A, B>{};
 }
 
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator-(const A&, const B&) noexcept {
-    return expression<operators::subtract, A, B>{};
+    return operation<operators::subtract, A, B>{};
 }
 
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator*(const A&, const B&) noexcept {
-    return expression<operators::multiply, A, B>{};
+    return operation<operators::multiply, A, B>{};
 }
 
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator/(const A&, const B&) noexcept {
-    return expression<operators::divide, A, B>{};
+    return operation<operators::divide, A, B>{};
 }
 
 
 namespace traits {
 
 template<typename op, typename... Ts>
-struct dtype_of<expression<op, Ts...>> : std::type_identity<typename expression<op, Ts...>::dtype> {};
+struct dtype_of<operation<op, Ts...>> : std::type_identity<typename operation<op, Ts...>::dtype> {};
 
 template<typename op, typename T1, typename T2>
     requires(operators::is_commutative_v<op>)
-struct is_equal_node<expression<op, T1, T2>, expression<op, T2, T1>> : std::true_type {};
+struct is_equal_node<operation<op, T1, T2>, operation<op, T2, T1>> : std::true_type {};
 
 template<typename op, typename T, typename... Ts>
-struct nodes_of<expression<op, T, Ts...>> {
+struct nodes_of<operation<op, T, Ts...>> {
     using type = merged_types_t<
-        merged_types_t<type_list<expression<op, T, Ts...>>, typename nodes_of<T>::type>,
+        merged_types_t<type_list<operation<op, T, Ts...>>, typename nodes_of<T>::type>,
         typename nodes_of<Ts>::type...
     >;
 };
 
 template<typename op, typename... Ts>
-struct value_of<expression<op, Ts...>> {
+struct value_of<operation<op, Ts...>> {
     template<typename... V>
     static constexpr auto from(const bindings<V...>& binders) noexcept {
-        using self = expression<op, Ts...>;
+        using self = operation<op, Ts...>;
         if constexpr (bindings<V...>::template has_bindings_for<self>)
             return binders[self{}];
         else
@@ -113,7 +113,7 @@ struct value_of<expression<op, Ts...>> {
 
 // traits for addition
 template<typename T1, typename T2>
-struct derivative_of<expression<operators::add, T1, T2>> {
+struct derivative_of<operation<operators::add, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& vars) noexcept {
         return differentiate(T1{}, vars) + differentiate(T2{}, vars);
@@ -121,7 +121,7 @@ struct derivative_of<expression<operators::add, T1, T2>> {
 };
 
 template<typename T1, typename T2>
-struct stream<expression<operators::add, T1, T2>> {
+struct stream<operation<operators::add, T1, T2>> {
     template<typename... V>
     static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
         write_to(out, T1{}, values);
@@ -133,7 +133,7 @@ struct stream<expression<operators::add, T1, T2>> {
 
 // traits for subtraction
 template<typename T1, typename T2>
-struct derivative_of<expression<operators::subtract, T1, T2>> {
+struct derivative_of<operation<operators::subtract, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& vars) noexcept {
         return differentiate(T1{}, vars) - differentiate(T2{}, vars);
@@ -141,7 +141,7 @@ struct derivative_of<expression<operators::subtract, T1, T2>> {
 };
 
 template<typename T1, typename T2>
-struct stream<expression<operators::subtract, T1, T2>> {
+struct stream<operation<operators::subtract, T1, T2>> {
     template<typename... V>
     static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
         write_to(out, T1{}, values);
@@ -153,7 +153,7 @@ struct stream<expression<operators::subtract, T1, T2>> {
 
 // traits for multiplication
 template<typename T1, typename T2>
-struct derivative_of<expression<operators::multiply, T1, T2>> {
+struct derivative_of<operation<operators::multiply, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& vars) noexcept {
         return differentiate(T1{}, vars)*T2{} + T1{}*differentiate(T2{}, vars);
@@ -161,7 +161,7 @@ struct derivative_of<expression<operators::multiply, T1, T2>> {
 };
 
 template<typename T1, typename T2>
-struct stream<expression<operators::multiply, T1, T2>> {
+struct stream<operation<operators::multiply, T1, T2>> {
     template<typename... V>
     static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
         static constexpr bool has_subterms_1 = type_list_size_v<nodes_of_t<T1>> > 1;
@@ -181,7 +181,7 @@ struct stream<expression<operators::multiply, T1, T2>> {
 
 // traits for division
 template<typename T1, typename T2>
-struct derivative_of<expression<operators::divide, T1, T2>> {
+struct derivative_of<operation<operators::divide, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& vars) noexcept {
         return differentiate(T1{}, vars)/T2{} - T1{}*differentiate(T2{}, vars)/(T2{}*T2{});
@@ -189,7 +189,7 @@ struct derivative_of<expression<operators::divide, T1, T2>> {
 };
 
 template<typename T1, typename T2>
-struct stream<expression<operators::divide, T1, T2>> {
+struct stream<operation<operators::divide, T1, T2>> {
     template<typename... V>
     static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
         static constexpr bool has_subterms_1 = type_list_size_v<nodes_of_t<T1>> > 1;
