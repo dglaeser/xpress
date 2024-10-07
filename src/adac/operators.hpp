@@ -117,11 +117,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::add, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        using self = operation<operators::add, T1, T2>;
-        if constexpr (std::is_same_v<V, self>)
-            return val<1>;
-        else
-            return differentiate(T1{}, var) + differentiate(T2{}, var);
+        return differentiate(T1{}, var) + differentiate(T2{}, var);
     }
 };
 
@@ -141,11 +137,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::subtract, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        using self = operation<operators::subtract, T1, T2>;
-        if constexpr (std::is_same_v<V, self>)
-            return val<1>;
-        else
-            return differentiate(T1{}, var) - differentiate(T2{}, var);
+        return differentiate(T1{}, var) - differentiate(T2{}, var);
     }
 };
 
@@ -165,11 +157,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::multiply, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        using self = operation<operators::multiply, T1, T2>;
-        if constexpr (std::is_same_v<V, self>)
-            return val<1>;
-        else
-            return differentiate(T1{}, var)*T2{} + T1{}*differentiate(T2{}, var);
+        return differentiate(T1{}, var)*T2{} + T1{}*differentiate(T2{}, var);
     }
 };
 
@@ -197,11 +185,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::divide, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        using self = operation<operators::divide, T1, T2>;
-        if constexpr (std::is_same_v<V, self>)
-            return val<1>;
-        else
-            return differentiate(T1{}, var)/T2{} - T1{}*differentiate(T2{}, var)/(T2{}*T2{});
+        return differentiate(T1{}, var)/T2{} - T1{}*differentiate(T2{}, var)/(T2{}*T2{});
     }
 };
 

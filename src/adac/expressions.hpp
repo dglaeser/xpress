@@ -64,7 +64,10 @@ inline constexpr auto evaluate(const E&) noexcept {
 template<typename E, typename V>
     requires(concepts::differentiable_wrt<E, V>)
 inline constexpr auto differentiate(const E&, const type_list<V>& var) noexcept {
-    return traits::derivative_of<E>::wrt(var);
+    if constexpr (std::is_same_v<E, V>)
+        return val<1>;
+    else
+        return traits::derivative_of<E>::wrt(var);
 }
 
 //! Write the given expression to the given stream with the given value bindings
