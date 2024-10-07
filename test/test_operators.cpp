@@ -107,6 +107,20 @@ int main() {
         expect(eq(evaluate(d_dsum, at(a = 0, b = 0)), 42));
     };
 
+    "operation_derivative_wrt_multiple_vars"_test = [] () {
+        static constexpr let a;
+        static constexpr var b;
+        static constexpr var c;
+        static constexpr auto expression = val<42>*(a + val<2>*b) + c;
+        static constexpr auto derivs = differentiate(expression, wrt(a, b, c));
+        static_assert(evaluate(derivs.wrt(a), at(a = 0, b = 0, c = 0)) == 42);
+        static_assert(evaluate(derivs.wrt(b), at(a = 0, b = 0, c = 0)) == 84);
+        static_assert(evaluate(derivs.wrt(c), at(a = 0, b = 0, c = 0)) == 1);
+        expect(eq(evaluate(derivs.wrt(a), at(a = 0, b = 0, c = 0)), 42));
+        expect(eq(evaluate(derivs.wrt(b), at(a = 0, b = 0, c = 0)), 84));
+        expect(eq(evaluate(derivs.wrt(c), at(a = 0, b = 0, c = 0)), 1));
+    };
+
     "operation_nodes_of"_test = [] () {
         using namespace adac::traits;
 

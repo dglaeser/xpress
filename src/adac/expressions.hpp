@@ -18,6 +18,7 @@
 #include "values.hpp"
 #include "traits.hpp"
 #include "concepts.hpp"
+#include "derivatives.hpp"
 
 
 namespace adac {
@@ -68,6 +69,14 @@ inline constexpr auto differentiate(const E&, const type_list<V>& var) noexcept 
         return val<1>;
     else
         return traits::derivative_of<E>::wrt(var);
+}
+
+//! Return the derivative expression of the given expression w.r.t. the given variables
+template<typename E, typename... V>
+inline constexpr auto differentiate(const E& expression, const type_list<V...>& vars) noexcept {
+    return derivatives{
+        derivative{differentiate(expression, type_list<V>{}), V{}}...
+    };
 }
 
 //! Write the given expression to the given stream with the given value bindings
