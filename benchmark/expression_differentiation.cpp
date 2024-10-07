@@ -49,9 +49,9 @@ int main() {
     var a;
     var b;
     auto [measurement, result] = benchmark::measure([&] () {
-        // TODO: implement derivatives_of(expr, wrt(a, b))
-        const auto d_da = evaluate(differentiate(GENERATE_EXPRESSION(a, b), wrt(a)), at(a = a_value, b = b_value));
-        const auto d_db = evaluate(differentiate(GENERATE_EXPRESSION(a, b), wrt(b)), at(a = a_value, b = b_value));
+        const auto derivs = differentiate(GENERATE_EXPRESSION(a, b), wrt(a, b));
+        const auto d_da = evaluate(derivs.wrt(a), at(a = a_value, b = b_value));
+        const auto d_db = evaluate(derivs.wrt(b), at(a = a_value, b = b_value));
         return std::make_tuple(d_da, d_db);
     });
 #endif
