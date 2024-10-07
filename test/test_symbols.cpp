@@ -7,6 +7,16 @@ int main() {
     using namespace adac;
     using namespace adac::dtype;
 
+    "unit_value"_test = [] () {
+        static_assert(traits::is_unit_value_v<value<1>>);
+        static_assert(traits::is_unit_value_v<value<1.0>>);
+    };
+
+    "zero_value"_test = [] () {
+        static_assert(traits::is_zero_value_v<value<0>>);
+        static_assert(traits::is_zero_value_v<value<0.0>>);
+    };
+
     "let_var_symbol_concept"_test = [] () {
         let a;
         var b;

@@ -193,6 +193,18 @@ struct variables_of : std::type_identity<filtered_types_t<traits::is_variable, u
 template<typename T>
 using variables_of_t = typename variables_of<T>::type;
 
+//! Trait to flag a type as representing a unit value
+template<typename T>
+struct is_unit_value : std::false_type {};
+template<typename T>
+inline constexpr bool is_unit_value_v = is_unit_value<T>::value;
+
+//! Trait to flag a type as representing a value of zero
+template<typename T>
+struct is_zero_value : std::false_type {};
+template<typename T>
+inline constexpr bool is_zero_value_v = is_zero_value<T>::value;
+
 //! \} group Expressions
 
 }  // namespace adac::traits

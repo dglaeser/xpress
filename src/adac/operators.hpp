@@ -60,25 +60,48 @@ operation(op&&, Ts&&...) -> operation<std::remove_cvref_t<op>, std::remove_cvref
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator+(const A&, const B&) noexcept {
-    return operation<operators::add, A, B>{};
+    if constexpr (traits::is_zero_value_v<A>)
+        return B{};
+    else if constexpr (traits::is_zero_value_v<B>)
+        return A{};
+    else
+        return operation<operators::add, A, B>{};
 }
 
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator-(const A&, const B&) noexcept {
-    return operation<operators::subtract, A, B>{};
+    if constexpr (traits::is_zero_value_v<A>)
+        return -B{};
+    else if constexpr (traits::is_zero_value_v<B>)
+        return A{};
+    else
+        return operation<operators::subtract, A, B>{};
 }
 
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator*(const A&, const B&) noexcept {
-    return operation<operators::multiply, A, B>{};
+    if constexpr (traits::is_zero_value_v<A> || traits::is_zero_value_v<B>)
+        return val<0>;
+    else if constexpr (traits::is_unit_value_v<A>)
+        return B{};
+    else if constexpr (traits::is_unit_value_v<B>)
+        return A{};
+    else
+        return operation<operators::multiply, A, B>{};
 }
 
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator/(const A&, const B&) noexcept {
-    return operation<operators::divide, A, B>{};
+    static_assert(!traits::is_zero_value_v<B>, "Attempted division by zero.");
+    if constexpr (traits::is_zero_value_v<A>)
+        return val<0>;
+    else if constexpr (traits::is_unit_value_v<B>)
+        return A{};
+    else
+        return operation<operators::divide, A, B>{};
 }
 
 

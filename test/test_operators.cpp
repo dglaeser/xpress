@@ -103,8 +103,8 @@ int main() {
         static constexpr auto sum = a + b;
         static constexpr auto result = val<42>*sum;
         constexpr auto d_dsum = differentiate(result, wrt(sum));
-        static_assert(evaluate(d_dsum, at(a = 0, b = 0)) == 42);
-        expect(eq(evaluate(d_dsum, at(a = 0, b = 0)), 42));
+        static_assert(evaluate(d_dsum, at()) == 42);
+        expect(eq(evaluate(d_dsum, at()), 42));
     };
 
     "operation_direct_derivative_evaluation"_test = [] () {
@@ -112,8 +112,8 @@ int main() {
         static constexpr var b;
         static constexpr auto sum = a + b;
         static constexpr auto result = val<42>*sum;
-        static_assert(derivative_of(result, wrt(sum), at(a = 0, b = 0)) == 42);
-        expect(eq(derivative_of(result, wrt(sum), at(a = 0, b = 0)), 42));
+        static_assert(derivative_of(result, wrt(sum), at()) == 42);
+        expect(eq(derivative_of(result, wrt(sum), at()), 42));
     };
 
     "operation_derivative_wrt_multiple_vars"_test = [] () {
