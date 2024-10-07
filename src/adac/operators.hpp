@@ -116,12 +116,12 @@ struct value_of<operation<op, Ts...>> {
 template<typename T1, typename T2>
 struct derivative_of<operation<operators::add, T1, T2>> {
     template<typename V>
-    static constexpr auto wrt(const type_list<V>& vars) noexcept {
+    static constexpr auto wrt(const type_list<V>& var) noexcept {
         using self = operation<operators::add, T1, T2>;
         if constexpr (std::is_same_v<V, self>)
             return val<1>;
         else
-            return differentiate(T1{}, vars) + differentiate(T2{}, vars);
+            return differentiate(T1{}, var) + differentiate(T2{}, var);
     }
 };
 
@@ -140,12 +140,12 @@ struct stream<operation<operators::add, T1, T2>> {
 template<typename T1, typename T2>
 struct derivative_of<operation<operators::subtract, T1, T2>> {
     template<typename V>
-    static constexpr auto wrt(const type_list<V>& vars) noexcept {
+    static constexpr auto wrt(const type_list<V>& var) noexcept {
         using self = operation<operators::subtract, T1, T2>;
         if constexpr (std::is_same_v<V, self>)
             return val<1>;
         else
-            return differentiate(T1{}, vars) - differentiate(T2{}, vars);
+            return differentiate(T1{}, var) - differentiate(T2{}, var);
     }
 };
 
@@ -164,12 +164,12 @@ struct stream<operation<operators::subtract, T1, T2>> {
 template<typename T1, typename T2>
 struct derivative_of<operation<operators::multiply, T1, T2>> {
     template<typename V>
-    static constexpr auto wrt(const type_list<V>& vars) noexcept {
+    static constexpr auto wrt(const type_list<V>& var) noexcept {
         using self = operation<operators::multiply, T1, T2>;
         if constexpr (std::is_same_v<V, self>)
             return val<1>;
         else
-            return differentiate(T1{}, vars)*T2{} + T1{}*differentiate(T2{}, vars);
+            return differentiate(T1{}, var)*T2{} + T1{}*differentiate(T2{}, var);
     }
 };
 
@@ -196,12 +196,12 @@ struct stream<operation<operators::multiply, T1, T2>> {
 template<typename T1, typename T2>
 struct derivative_of<operation<operators::divide, T1, T2>> {
     template<typename V>
-    static constexpr auto wrt(const type_list<V>& vars) noexcept {
+    static constexpr auto wrt(const type_list<V>& var) noexcept {
         using self = operation<operators::divide, T1, T2>;
         if constexpr (std::is_same_v<V, self>)
             return val<1>;
         else
-            return differentiate(T1{}, vars)/T2{} - T1{}*differentiate(T2{}, vars)/(T2{}*T2{});
+            return differentiate(T1{}, var)/T2{} - T1{}*differentiate(T2{}, var)/(T2{}*T2{});
     }
 };
 

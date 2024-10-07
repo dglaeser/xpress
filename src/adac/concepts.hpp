@@ -28,9 +28,9 @@ concept evaluatable_with = is_complete_v<traits::value_of<T>> and requires(const
     { traits::value_of<T>::from(values) };
 };
 
-template<typename T, typename... V>
-concept differentiable_wrt = is_complete_v<traits::derivative_of<T>> and requires(const type_list<V...>& vars) {
-    { traits::derivative_of<T>::wrt(vars) };
+template<typename T, typename V>
+concept differentiable_wrt = is_complete_v<traits::derivative_of<T>> and requires(const type_list<V>& var) {
+    { traits::derivative_of<T>::wrt(var) };
 };
 
 template<typename T, typename... V>
