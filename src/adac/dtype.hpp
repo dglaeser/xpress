@@ -41,8 +41,8 @@ struct is_bindable<dtype::real, Arg> : public std::bool_constant<
 #ifndef DOXYGEN
 namespace detail {
 
-    template<typename T> requires(is_scalar_v<T>)
-    using dtype_for = std::conditional_t<std::floating_point<T>, dtype::real, dtype::integral>;
+    template<typename T> requires(is_value_v<T>)
+    using dtype_for = std::conditional_t<std::floating_point<value_type_t<T>>, dtype::real, dtype::integral>;
 
 }  // namespace detail
 #endif  // DOXYGEN
@@ -50,11 +50,11 @@ namespace detail {
 template<> struct common_dtype<dtype::real, dtype::integral> : std::type_identity<dtype::real> {};
 template<> struct common_dtype<dtype::integral, dtype::real> : std::type_identity<dtype::real> {};
 
-template<typename T> requires(is_scalar_v<T>) struct common_dtype<dtype::integral, T> : std::type_identity<detail::dtype_for<T>> {};
-template<typename T> requires(is_scalar_v<T>) struct common_dtype<T, dtype::integral> : std::type_identity<detail::dtype_for<T>> {};
+template<typename T> requires(is_value_v<T>) struct common_dtype<dtype::integral, T> : std::type_identity<detail::dtype_for<T>> {};
+template<typename T> requires(is_value_v<T>) struct common_dtype<T, dtype::integral> : std::type_identity<detail::dtype_for<T>> {};
 
-template<typename T> requires(is_scalar_v<T>) struct common_dtype<dtype::real, T> : std::type_identity<dtype::real> {};
-template<typename T> requires(is_scalar_v<T>) struct common_dtype<T, dtype::real> : std::type_identity<dtype::real> {};
+template<typename T> requires(is_value_v<T>) struct common_dtype<dtype::real, T> : std::type_identity<dtype::real> {};
+template<typename T> requires(is_value_v<T>) struct common_dtype<T, dtype::real> : std::type_identity<dtype::real> {};
 
 template<typename T> requires(not std::is_same_v<T, dtype::any>) struct common_dtype<T, dtype::any> : std::type_identity<dtype::any> {};
 template<typename T> requires(not std::is_same_v<T, dtype::any>) struct common_dtype<dtype::any, T> : std::type_identity<dtype::any> {};

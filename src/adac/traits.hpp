@@ -3,12 +3,15 @@
 /*!
  * \file
  * \ingroup Traits
- * \brief Traits that act as customization points for external types.
+ * \brief Type traits for symbols, expressions and values.
  */
 #pragma once
 
 #include <concepts>
 #include <type_traits>
+
+#include "utils.hpp"
+
 
 namespace adac::traits {
 
@@ -28,6 +31,12 @@ template<typename T> requires(is_scalar<T>::value)
 struct value_type<T> : std::type_identity<T> {};
 template<typename T>
 using value_type_t = typename value_type<T>::type;
+
+//! Trait to register a type as a value, i.e. a value that can be bound to a symbol/expression
+template<typename T>
+struct is_value : is_complete<value_type<T>> {};
+template<typename T>
+inline constexpr bool is_value_v = is_value<T>::value;
 
 //! Trait to specify if an instance of type Arg can be bound for a symbol with data type T
 template<typename T, typename Arg>
