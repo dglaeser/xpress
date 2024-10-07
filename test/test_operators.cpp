@@ -98,6 +98,8 @@ int main() {
     };
 
     "expression_nodes_of"_test = [] () {
+        using namespace adac::traits;
+
         let a;
         var b;
         var c;
@@ -130,6 +132,8 @@ int main() {
     };
 
     "expression_unique_nodes_of"_test = [] () {
+        using namespace adac::traits;
+
         let a;
         var b;
         auto sum_1 = a + b;

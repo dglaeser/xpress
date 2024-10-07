@@ -17,6 +17,7 @@
 #include <adac/bindings.hpp>
 #include <adac/values.hpp>
 #include <adac/traits.hpp>
+#include <adac/concepts.hpp>
 
 
 namespace adac {
@@ -43,29 +44,6 @@ struct bindable {
         return value_binder(std::forward<Self>(self), std::forward<V>(value));
     }
 };
-
-
-namespace concepts {
-
-template<typename T, typename... V>
-concept evaluatable_with = is_complete_v<traits::value_of<T>> and requires(const bindings<V...>& values) {
-    { traits::value_of<T>::from(values) };
-};
-
-template<typename T, typename... V>
-concept differentiable_wrt = is_complete_v<traits::derivative_of<T>> and requires(const type_list<V...>& vars) {
-    { traits::derivative_of<T>::wrt(vars) };
-};
-
-template<typename T, typename... V>
-concept streamable_with = is_complete_v<traits::stream<T>> and requires(const T&, std::ostream& out, const bindings<V...>& values) {
-    { traits::stream<T>::to(out, values) } -> std::same_as<void>;
-};
-
-template<typename T>
-concept expression = is_complete_v<traits::value_of<T>> and is_complete_v<traits::derivative_of<T>> and is_complete_v<traits::nodes_of<T>>;
-
-}  // namespace concepts
 
 
 //! Evaluate the given expression from the given value bindings
@@ -101,61 +79,6 @@ template<typename... V>
 inline constexpr auto wrt(const V&...) {
     return type_list<V...>{};
 }
-
-//! All nodes in the given expression
-template<typename T> requires(is_complete_v<traits::nodes_of<T>>)
-using nodes_of_t = traits::nodes_of<T>::type;
-
-//! All leaf nodes in the given expresssion
-template<typename T>
-using leaf_nodes_of_t = filtered_types_t<traits::is_leaf_node, nodes_of_t<T>>;
-
-//! All non-leaf nodes in the given expression
-template<typename T>
-using composite_nodes_of_t = filtered_types_t<traits::is_composite_node, nodes_of_t<T>>;
-
-
-#ifndef DOXYGEN
-namespace detail {
-
-    template<typename T>
-    struct unique_nodes_of;
-
-    template<typename T, typename... Ts>
-    struct unique_nodes_of<type_list<T, Ts...>> {
-        using type = std::conditional_t<
-            std::disjunction_v<traits::is_equal_node<T, Ts>...>,
-            typename unique_nodes_of<type_list<Ts...>>::type,
-            merged_types_t<type_list<T>, typename unique_nodes_of<type_list<Ts...>>::type>
-        >;
-    };
-
-    template<>
-    struct unique_nodes_of<type_list<>> {
-        using type = type_list<>;
-    };
-
-    template<typename T>
-    struct common_dtype_of;
-    template<typename T, typename... Ts>
-    struct common_dtype_of<type_list<T, Ts...>> {
-        using type = traits::common_dtype_t<traits::dtype_of_t<T>, traits::dtype_of_t<Ts>...>;
-    };
-
-}  // namespace detail
-#endif  // DOXYGEN
-
-//! All unique nodes in the given expression
-template<typename T> requires(is_complete_v<traits::nodes_of<T>>)
-using unique_nodes_of_t = detail::unique_nodes_of<nodes_of_t<T>>::type;
-
-//! All leaf nodes in the given expresssion
-template<typename T>
-using unique_leaf_nodes_of_t = filtered_types_t<traits::is_leaf_node, unique_nodes_of_t<T>>;
-
-//! All unique non-leaf nodes in the given expression
-template<typename T>
-using unique_composite_nodes_of_t = filtered_types_t<traits::is_composite_node, unique_nodes_of_t<T>>;
 
 //! \} group Expressions
 

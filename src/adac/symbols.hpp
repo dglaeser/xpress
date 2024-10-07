@@ -8,6 +8,7 @@
 #pragma once
 
 #include <utility>
+#include <type_traits>
 
 #include <adac/utils.hpp>
 #include <adac/dtype.hpp>
@@ -41,6 +42,9 @@ struct let : negatable, bindable<T> {
 
 
 namespace traits {
+
+template<typename T, auto _> struct is_symbol<var<T, _>> : std::true_type {};
+template<typename T, auto _> struct is_symbol<let<T, _>> : std::true_type {};
 
 template<typename T, auto _> struct dtype_of<var<T, _>> : std::type_identity<T> {};
 template<typename T, auto _> struct dtype_of<let<T, _>> : std::type_identity<T> {};
