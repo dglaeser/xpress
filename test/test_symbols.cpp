@@ -7,6 +7,13 @@ int main() {
     using namespace adac;
     using namespace adac::dtype;
 
+    "let_var_symbol_concept"_test = [] () {
+        let a;
+        var b;
+        static_assert(concepts::symbol<decltype(a)>);
+        static_assert(concepts::symbol<decltype(b)>);
+    };
+
     "let_var_value_nodes_of"_test = [] () {
         let a;
         var b;

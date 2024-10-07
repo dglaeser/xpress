@@ -39,6 +39,9 @@ concept streamable_with = is_complete_v<traits::stream<T>> and requires(const T&
 };
 
 template<typename T>
+concept symbol = traits::is_symbol_v<T>;
+
+template<typename T>
 concept expression = is_complete_v<traits::value_of<T>> and is_complete_v<traits::derivative_of<T>> and is_complete_v<traits::nodes_of<T>>;
 
 
