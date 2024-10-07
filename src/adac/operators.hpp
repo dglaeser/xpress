@@ -57,6 +57,7 @@ template<typename op, typename... Ts>
 operation(op&&, Ts&&...) -> operation<std::remove_cvref_t<op>, std::remove_cvref_t<Ts>...>;
 
 
+//! Add two expressions
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator+(const A&, const B&) noexcept {
@@ -68,6 +69,7 @@ inline constexpr auto operator+(const A&, const B&) noexcept {
         return operation<operators::add, A, B>{};
 }
 
+//! Subtract two expressions
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator-(const A&, const B&) noexcept {
@@ -79,6 +81,7 @@ inline constexpr auto operator-(const A&, const B&) noexcept {
         return operation<operators::subtract, A, B>{};
 }
 
+//! Multiply two expressions
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator*(const A&, const B&) noexcept {
@@ -92,6 +95,7 @@ inline constexpr auto operator*(const A&, const B&) noexcept {
         return operation<operators::multiply, A, B>{};
 }
 
+//! Divide two expressions
 template<concepts::expression A, concepts::expression B>
     requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
 inline constexpr auto operator/(const A&, const B&) noexcept {
