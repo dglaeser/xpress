@@ -46,12 +46,37 @@ struct bindable {
     }
 };
 
+//! Exposes an interface for the evaluation of an expression
+template<concepts::expression E>
+struct expression_evaluator {
+    constexpr expression_evaluator(const E&) noexcept {}
+
+    //! Evaluate the expression at the given values
+    template<typename... V>
+    constexpr auto at(V&&... values) const noexcept {
+        return at(bindings{std::forward<V>(values)...});
+    }
+
+    //! Evaluate the expression at the given value bindings
+    template<typename... V>
+        requires(concepts::evaluatable_with<E, V...>)
+    constexpr auto at(const bindings<V...>& values) const noexcept {
+        return traits::value_of<E>::from(values);
+    }
+};
+
+
+//! Return an evaluator for the given expression
+template<typename E>
+inline constexpr auto value_of(const E& expr) noexcept {
+    return expression_evaluator{expr};
+}
 
 //! Evaluate the given expression from the given value bindings
 template<typename E, typename... V>
     requires(concepts::evaluatable_with<E, V...>)
-inline constexpr auto value_of(const E&, const bindings<V...>& values) noexcept {
-    return traits::value_of<E>::from(values);
+inline constexpr auto value_of(const E& expr, const bindings<V...>& values) noexcept {
+    return value_of(expr).at(values);
 }
 
 //! Return the derivative expression of the given expression w.r.t. the given variable
