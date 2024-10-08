@@ -46,6 +46,21 @@ struct bindable {
     }
 };
 
+
+#ifndef DOXYGEN
+namespace detail {
+
+    template<typename E, typename V>
+    inline constexpr auto differentiate(const type_list<V>&) noexcept {
+        if constexpr (std::is_same_v<E, V>)
+            return val<1>;
+        else
+            return traits::derivative_of<E>::wrt(type_list<V>{});
+    }
+
+}  // namespace detail
+#endif  // DOXYGEN
+
 //! Exposes an interface for the evaluation of an expression
 template<concepts::expression E>
 struct expression_evaluator {
@@ -70,22 +85,16 @@ template<concepts::expression E>
 struct expression_differentiator {
     constexpr expression_differentiator(const E&) noexcept {}
 
-    //! Return the expression of the derivative w.r.t. to itself
-    template<typename V> requires(std::is_same_v<E, V>)
+    //! Return the expression of the derivative w.r.t. to the given variable
+    template<typename V>
     constexpr auto wrt(const V&) const noexcept {
-        return val<1>;
-    }
-
-    //! Return the expression of the derivative w.r.t. the given variable
-    template<typename V> requires(!std::is_same_v<E, V> and concepts::differentiable_wrt<E, V>)
-    constexpr auto wrt(const V&) const noexcept {
-        return traits::derivative_of<E>::wrt(type_list<V>{});
+        return detail::differentiate<E>(type_list<V>{});
     }
 
     //! Evaluate the expressions of the derivatives w.r.t. the given variables
     template<typename... V>
     constexpr auto wrt_n(V&&... vars) const noexcept {
-        return derivatives{derivative{wrt(V{}), V{}}...};
+        return derivatives{derivative{wrt(vars), vars}...};
     }
 };
 

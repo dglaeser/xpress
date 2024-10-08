@@ -144,7 +144,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::add, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        return adac::derivative_of(T1{}, var) + adac::derivative_of(T2{}, var);
+        return adac::detail::differentiate<T1>(var) + adac::detail::differentiate<T2>(var);
     }
 };
 
@@ -164,7 +164,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::subtract, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        return adac::derivative_of(T1{}, var) - adac::derivative_of(T2{}, var);
+        return adac::detail::differentiate<T1>(var) - adac::detail::differentiate<T2>(var);
     }
 };
 
@@ -184,7 +184,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::multiply, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        return adac::derivative_of(T1{}, var)*T2{} + T1{}*adac::derivative_of(T2{}, var);
+        return adac::detail::differentiate<T1>(var)*T2{} + T1{}*adac::detail::differentiate<T2>(var);
     }
 };
 
@@ -212,7 +212,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::divide, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        return adac::derivative_of(T1{}, var)/T2{} - T1{}*adac::derivative_of(T2{}, var)/(T2{}*T2{});
+        return adac::detail::differentiate<T1>(var)/T2{} - T1{}*adac::detail::differentiate<T2>(var)/(T2{}*T2{});
     }
 };
 
