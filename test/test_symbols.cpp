@@ -63,8 +63,8 @@ int main() {
         expect(eq(value_of(a, at(a = 5)), 5));
         expect(eq(value_of(a, at(a = 5.0)), 5.0));
 
-        constexpr auto da_da = differentiate(a, wrt(a));
-        constexpr auto da_db = differentiate(a, wrt(b));
+        constexpr auto da_da = derivative_of(a, wrt(a));
+        constexpr auto da_db = derivative_of(a, wrt(b));
         static_assert(value_of(da_da, at(a=2.0)) == 1);
         static_assert(value_of(da_db, at(a=2.0)) == 0);
         expect(eq(value_of(da_da, at(a=2.0)), 1));

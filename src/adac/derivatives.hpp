@@ -10,6 +10,7 @@
 #include <type_traits>
 
 #include "utils.hpp"
+#include "bindings.hpp"
 
 
 namespace adac {
@@ -51,10 +52,30 @@ template<typename... D>
 struct derivatives : private indexed<typename D::variable...> {
     constexpr derivatives(const D&...) noexcept {}
 
+    //! Return the derivative w.r.t. the given variable
     template<typename V>
         requires(is_any_of_v<V, typename D::variable...>)
     constexpr auto wrt(const V& var) const noexcept {
         return indexed<D...>{}.get(this->index_of(var)).get();
+    }
+
+    //! Evaluate the derivatives at the given values
+    template<concepts::binder... V>
+    constexpr auto at(V&&... values) const noexcept {
+        return at(bindings{std::forward<V>(values)...});
+    }
+
+    //! Evaluate the derivatives at the given value bindings
+    template<typename... V>
+    constexpr auto at(const bindings<V...>& values) const noexcept {
+        return bindings{_binder_for(D{}, values)...};
+    }
+
+ private:
+    template<typename E, typename V, typename... Vs>
+        requires(concepts::evaluatable_with<E, Vs...>)
+    constexpr auto _binder_for(const derivative<E, V>&, const bindings<Vs...>& values) const noexcept {
+        return value_binder{V{}, traits::value_of<E>::from(values)};
     }
 };
 

@@ -52,7 +52,7 @@ struct expression_evaluator {
     constexpr expression_evaluator(const E&) noexcept {}
 
     //! Evaluate the expression at the given values
-    template<typename... V>
+    template<concepts::binder... V>
     constexpr auto at(V&&... values) const noexcept {
         return at(bindings{std::forward<V>(values)...});
     }
@@ -62,6 +62,30 @@ struct expression_evaluator {
         requires(concepts::evaluatable_with<E, V...>)
     constexpr auto at(const bindings<V...>& values) const noexcept {
         return traits::value_of<E>::from(values);
+    }
+};
+
+//! Exposes an interface for the differentiation of an expression
+template<concepts::expression E>
+struct expression_differentiator {
+    constexpr expression_differentiator(const E&) noexcept {}
+
+    //! Return the expression of the derivative w.r.t. to itself
+    template<typename V> requires(std::is_same_v<E, V>)
+    constexpr auto wrt(const V&) const noexcept {
+        return val<1>;
+    }
+
+    //! Return the expression of the derivative w.r.t. the given variable
+    template<typename V> requires(!std::is_same_v<E, V> and concepts::differentiable_wrt<E, V>)
+    constexpr auto wrt(const V&) const noexcept {
+        return traits::derivative_of<E>::wrt(type_list<V>{});
+    }
+
+    //! Evaluate the expressions of the derivatives w.r.t. the given variables
+    template<typename... V> requires(sizeof...(V) > 1)
+    constexpr auto wrt_n(V&&... vars) const noexcept {
+        return derivatives{derivative{wrt(V{}), V{}}...};
     }
 };
 
@@ -79,36 +103,34 @@ inline constexpr auto value_of(const E& expr, const bindings<V...>& values) noex
     return value_of(expr).at(values);
 }
 
-//! Return the derivative expression of the given expression w.r.t. the given variable
-template<typename E, typename V>
-    requires(concepts::differentiable_wrt<E, V>)
-inline constexpr auto differentiate(const E&, const type_list<V>& var) noexcept {
-    if constexpr (std::is_same_v<E, V>)
-        return val<1>;
-    else
-        return traits::derivative_of<E>::wrt(var);
+//! Return a differentiator for the given expression
+template<typename E>
+inline constexpr auto derivatives_of(const E& expr) noexcept {
+    return expression_differentiator{expr};
 }
 
-//! Return the derivative expression of the given expression w.r.t. the given variables
-template<typename E, typename... V> requires(sizeof...(V) > 1)
-inline constexpr auto differentiate(const E& expression, const type_list<V...>& vars) noexcept {
-    return derivatives{
-        derivative{differentiate(expression, type_list<V>{}), V{}}...
-    };
+//! Return the expression of the derivative of the given expression w.r.t the given variable
+template<typename E, typename V>
+inline constexpr auto derivative_of(const E& expr, const type_list<V>&) noexcept {
+    return derivatives_of(expr).wrt(V{});
 }
 
 //! Return the derivative of the given expression w.r.t the given variable, evaluated at the given values
 template<typename E, typename V, typename... B>
-inline constexpr auto derivative_of(const E& expr, const type_list<V>& vars, const bindings<B...>& vals) noexcept {
-    return value_of(differentiate(expr, vars), vals);
+inline constexpr auto derivative_of(const E& expr, const type_list<V>& var, const bindings<B...>& vals) noexcept {
+    return value_of(derivative_of(expr, var), vals);
+}
+
+//! Return the derivatives of the given expression w.r.t the given variables
+template<typename E, typename... V>
+inline constexpr auto derivatives_of(const E& expr, const type_list<V...>&) noexcept {
+    return derivatives_of(expr).wrt_n(V{}...);
 }
 
 //! Return the derivatives of the given expression w.r.t the given variables, evaluated at the given values
 template<typename E, typename... V, typename... B>
-inline constexpr auto derivatives_of(const E& expr, const type_list<V...>&, const bindings<B...>& vals) noexcept {
-    return bindings{
-        value_binder{V{}, value_of(differentiate(expr, wrt(V{})), vals)}...
-    };
+inline constexpr auto derivatives_of(const E& expr, const type_list<V...>& vars, const bindings<B...>& vals) noexcept {
+    return derivatives_of(expr, vars).at(vals);
 }
 
 //! Write the given expression to the given stream with the given value bindings
