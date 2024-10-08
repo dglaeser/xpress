@@ -27,5 +27,9 @@ int main() {
     static_assert(traits::size_of_v<std::array<double, 3>> == 3);
     static_assert(traits::size_of_v<indexable> == 1);
 
+    static_assert(traits::shape_of_t<std::array<double, 2>>{} == shape<2>{});
+    static_assert(traits::shape_of_t<std::array<std::array<int, 3>, 2>>{} == shape<2, 3>{});
+    static_assert(traits::shape_of_t<std::array<indexable, 2>>{} == shape<2, 1>{});
+
     return 0;
 }
