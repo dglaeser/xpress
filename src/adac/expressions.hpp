@@ -83,7 +83,7 @@ struct expression_differentiator {
     }
 
     //! Evaluate the expressions of the derivatives w.r.t. the given variables
-    template<typename... V> requires(sizeof...(V) > 1)
+    template<typename... V>
     constexpr auto wrt_n(V&&... vars) const noexcept {
         return derivatives{derivative{wrt(V{}), V{}}...};
     }
