@@ -142,6 +142,18 @@ inline constexpr auto derivatives_of(const E& expr, const type_list<V...>& vars,
     return derivatives_of(expr, vars).at(vals);
 }
 
+//! Return the gradient of the given expression, i.e. the derivatives w.r.t. all of its variables
+template<typename E>
+inline constexpr auto gradient_of(const E& expr) noexcept {
+    return derivatives_of(expr, traits::variables_of_t<E>{});
+}
+
+//! Return the gradient of the given expression evaluated at the given values
+template<typename E, typename... B>
+inline constexpr auto gradient_of(const E& expr, const bindings<B...>& vals) noexcept {
+    return gradient_of(expr).at(vals);
+}
+
 //! Write the given expression to the given stream with the given value bindings
 template<typename E, typename... V>
     requires(concepts::streamable_with<E, V...>)

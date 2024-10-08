@@ -159,6 +159,30 @@ int main() {
         expect(eq(derivs[c], 1));
     };
 
+    "operation_gradient"_test = [] () {
+        static constexpr var a;
+        static constexpr var b;
+        constexpr auto sum = a + b*val<42>;
+        constexpr auto gradient = gradient_of(sum);
+
+        static_assert(value_of(gradient.wrt(a), at()) == 1);
+        static_assert(value_of(gradient.wrt(b), at()) == 42);
+        expect(eq(value_of(gradient.wrt(a), at()), 1));
+        expect(eq(value_of(gradient.wrt(b), at()), 42));
+
+        // direct evaluation on the return type
+        static_assert(gradient.at()[a] == 1);
+        static_assert(gradient.at()[b] == 42);
+        expect(eq(gradient.at()[a], 1));
+        expect(eq(gradient.at()[b], 42));
+
+        // direct evaluation via free function
+        static_assert(gradient_of(sum, at())[a] == 1);
+        static_assert(gradient_of(sum, at())[b] == 42);
+        expect(eq(gradient_of(sum, at())[a], 1));
+        expect(eq(gradient_of(sum, at())[b], 42));
+    };
+
     "operation_nodes_of"_test = [] () {
         using namespace adac::traits;
 
