@@ -83,30 +83,23 @@ struct bindings : private variadic_accessor<B...> {
 
     template<typename T, typename... Bs>
     struct binder_type_for;
-
+    template<typename T>
+    struct binder_type_for<T> : std::type_identity<void> {};
     template<typename T, typename B0, typename... Bs>
     struct binder_type_for<T, B0, Bs...> {
-        using type = std::conditional_t<
-            concepts::same_remove_cvref_t_as<T, symbol_type_of<B0>>,
-            B0,
-            typename binder_type_for<T, Bs...>::type
-        >;
+        static constexpr bool is_same_symbol = std::is_same_v<symbol_type_of<B0>, T>;
+        using type = std::conditional_t<is_same_symbol, B0, typename binder_type_for<T, Bs...>::type>;
     };
 
     template<typename T>
-    struct binder_type_for<T> {
-        using type = void;
-    };
+    static constexpr bool is_bound = is_any_of_v<std::remove_cvref_t<T>, symbol_type_of<B>...>;
 
-    template<typename T>
-    struct binds : std::disjunction<std::is_same<std::remove_cvref_t<T>, symbol_type_of<B>>...> {};
-
-    template<typename T> requires(sizeof...(B) > 0 and binds<T>::value)
-    using binder_type = binder_type_for<T, B...>::type;
+    template<typename T> requires(sizeof...(B) > 0 and is_bound<T>)
+    using binder_type = binder_type_for<std::remove_cvref_t<T>, B...>::type;
 
  public:
-    template<typename... T>
-    static constexpr bool has_bindings_for = std::conjunction_v<binds<T>...>;
+    template<typename T>
+    static constexpr bool has_bindings_for = is_bound<T>;
 
     using common_value_type = std::common_type_t<typename std::remove_cvref_t<B>::value_type...>;
 
