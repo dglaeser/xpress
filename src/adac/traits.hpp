@@ -79,6 +79,8 @@ inline constexpr bool is_bindable_v = is_bindable<T, Arg>::value;
 //! Trait to extract the data type used for representing instances of type T
 template<typename T>
 struct dtype_of;
+template<typename T> requires(requires { typename T::dtype; })
+struct dtype_of<T> : std::type_identity<typename T::dtype> {};
 template<typename T>
 using dtype_of_t = typename dtype_of<T>::type;
 

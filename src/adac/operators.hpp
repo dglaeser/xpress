@@ -135,9 +135,6 @@ inline constexpr auto operator/(const A&, const B&) noexcept {
 
 namespace traits {
 
-template<typename op, typename... Ts>
-struct dtype_of<operation<op, Ts...>> : std::type_identity<typename operation<op, Ts...>::dtype> {};
-
 template<typename op, typename T1, typename T2>
     requires(operators::is_commutative_v<op>)
 struct is_equal_node<operation<op, T1, T2>, operation<op, T2, T1>> : std::true_type {};

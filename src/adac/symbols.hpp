@@ -48,9 +48,6 @@ template<typename T, auto _> struct is_variable<var<T, _>> : std::true_type {};
 template<typename T, auto _> struct is_symbol<var<T, _>> : std::true_type {};
 template<typename T, auto _> struct is_symbol<let<T, _>> : std::true_type {};
 
-template<typename T, auto _> struct dtype_of<var<T, _>> : std::type_identity<T> {};
-template<typename T, auto _> struct dtype_of<let<T, _>> : std::type_identity<T> {};
-
 template<typename T, auto _> struct nodes_of<var<T, _>> : std::type_identity<type_list<var<T, _>>> {};
 template<typename T, auto _> struct nodes_of<let<T, _>> : std::type_identity<type_list<let<T, _>>> {};
 
