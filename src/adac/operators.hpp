@@ -23,24 +23,48 @@ namespace adac {
 
 namespace operators {
 
-struct add : std::plus<void> {};
-struct subtract : std::minus<void> {};
-struct multiply : std::multiplies<void> {};
-struct divide : std::divides<void> {};
-
-
 namespace traits {
 
 template<typename op> struct is_commutative : std::false_type {};
-template<> struct is_commutative<add> : std::true_type {};
-template<> struct is_commutative<multiply> : std::true_type {};
+template<typename A, typename B> struct addition_of;
+template<typename A, typename B> struct subtraction_of;
+template<typename A, typename B> struct multiplication_of;
+template<typename A, typename B> struct division_of;
 
 }  // namespace traits
-
 
 template<typename op>
 inline constexpr bool is_commutative_v = traits::is_commutative<op>::value;
 
+
+#ifndef DOXYGEN
+namespace detail {
+
+    template<template<typename...> typename trait, typename default_t>
+    struct binary_operator {
+        template<typename... T>
+        constexpr decltype(auto) operator()(T&&... t) const noexcept {
+            if constexpr (is_complete_v<trait<std::remove_cvref_t<T>...>>)
+                return trait<std::remove_cvref_t<T>...>{}(std::forward<T>(t)...);
+            else
+                return default_t{}(std::forward<T>(t)...);
+        }
+    };
+
+}  // namespace detail
+#endif  // DOXYGEN
+
+struct add : detail::binary_operator<traits::addition_of, std::plus<void>> {};
+struct subtract : detail::binary_operator<traits::subtraction_of, std::minus<void>> {};
+struct multiply : detail::binary_operator<traits::multiplication_of, std::multiplies<void>> {};
+struct divide : detail::binary_operator<traits::division_of, std::divides<void>> {};
+
+namespace traits {
+
+template<> struct is_commutative<add> : std::true_type {};
+template<> struct is_commutative<multiply> : std::true_type {};
+
+}  // namespace traits
 }  // namespace operators
 
 
