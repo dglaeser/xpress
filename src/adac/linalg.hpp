@@ -73,6 +73,14 @@ using shape_of_t = typename shape_of<T>::type;
 
 }  // namespace traits
 
+
+namespace concepts {
+
+template<typename T>
+concept tensor = is_complete_v<traits::shape_of<T>>;
+
+}  // namespace concepts
+
 //! \} group LinearAlgebra
 
 }  // namespace adac::linalg

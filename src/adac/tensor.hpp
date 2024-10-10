@@ -10,6 +10,7 @@
 #include <ostream>
 
 #include "utils.hpp"
+#include "traits.hpp"
 #include "expressions.hpp"
 #include "linalg.hpp"
 
@@ -21,7 +22,7 @@ namespace adac {
 
 
 template<typename T = dtype::any, auto _ = [] () {}, std::size_t... dims>
-struct tensor : bindable<T> {
+struct tensor : bindable<T>, negatable {
     using bindable<T>::operator=;
 
     constexpr tensor() = default;
@@ -44,6 +45,33 @@ struct stream<tensor<T, _, dims...>> {
     static constexpr void to(std::ostream& out, const bindings<V...>& values) {
         using self = tensor<T, _, dims...>;
         out << values[self{}];
+    }
+};
+
+template<typename T, auto _, std::size_t... dims>
+struct value_of<tensor<T, _, dims...>> {
+    template<typename... V>
+    static constexpr decltype(auto) from(const bindings<V...>& values) {
+        using self = tensor<T, _, dims...>;
+        using bound_type = std::remove_cvref_t<decltype(values[self{}])>;
+        static_assert(
+            linalg::concepts::tensor<bound_type>,
+            "Value type bound to tensor does not implement the concept 'linalg::concepts::tensor'"
+        );
+        return values[self{}];
+    }
+};
+
+template<typename T, auto _, std::size_t... dims>
+struct nodes_of<tensor<T, _, dims...>> {
+    using type = type_list<tensor<T, _, dims...>>;
+};
+
+template<typename T, auto _, std::size_t... dims>
+struct derivative_of<tensor<T, _, dims...>> {
+    template<typename V>
+    static constexpr decltype(auto) wrt(const type_list<V>&) {
+        static_assert(false, "derivative of tensors not implemented");
     }
 };
 
