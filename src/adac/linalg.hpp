@@ -33,6 +33,11 @@ namespace detail {
         { _invoke_with_constexpr_size<T{}.size()>() };
     };
 
+    template<typename T>
+    concept has_constexpr_size_constant = requires {
+        { T::size } -> std::convertible_to<std::size_t>;
+    };
+
 }  // namespace detail
 #endif  // DOXYGEN
 
@@ -40,6 +45,8 @@ template<typename T>
 struct size_of;
 template<detail::has_constexpr_size T>
 struct size_of<T> : std::integral_constant<std::size_t, T{}.size()> {};
+template<detail::has_constexpr_size_constant T>
+struct size_of<T> : std::integral_constant<std::size_t, T::size> {};
 template<typename T> requires(is_complete_v<size_of<T>>)
 inline constexpr std::size_t size_of_v = size_of<T>::value;
 
