@@ -11,6 +11,7 @@
 
 #include "utils.hpp"
 #include "expressions.hpp"
+#include "linalg.hpp"
 
 
 namespace adac {

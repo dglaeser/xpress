@@ -24,11 +24,19 @@ struct is_scalar : std::bool_constant<std::is_floating_point_v<T> || std::is_int
 template<typename T>
 inline constexpr bool is_scalar_v = is_scalar<T>::value;
 
+//! Trait to expose if a type implements operator[](std::size_t)
+template<typename T>
+struct is_indexable : std::bool_constant< requires(const T& t) { {t[std::size_t{}] }; } > {};
+template<typename T>
+inline constexpr bool is_indexable_v = is_indexable<T>::value;
+
 //! Trait to extract the value type (i.e. the scalar type) of e.g. a container
 template<typename T>
 struct value_type;
-template<typename T> requires(is_scalar<T>::value)
+template<typename T> requires(is_scalar_v<T>)
 struct value_type<T> : std::type_identity<T> {};
+template<typename T> requires(is_indexable_v<T>)
+struct value_type<T> : std::type_identity<std::remove_cvref_t<decltype(T{}[std::size_t{0}])>> {};
 template<typename T>
 using value_type_t = typename value_type<T>::type;
 
@@ -205,6 +213,6 @@ struct is_zero_value : std::false_type {};
 template<typename T>
 inline constexpr bool is_zero_value_v = is_zero_value<T>::value;
 
-//! \} group Expressions
+//! \} group Traits
 
 }  // namespace adac::traits
