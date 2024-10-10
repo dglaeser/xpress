@@ -51,10 +51,8 @@ namespace detail {
     struct shape_of_indexable;
     template<typename T, std::size_t... s> requires(!adac::traits::is_indexable_v<T>)
     struct shape_of_indexable<T, s...> : std::type_identity<md_shape<s...>> {};
-    template<typename T, std::size_t... s> requires(adac::traits::is_indexable_v<T> and is_complete_v<adac::traits::value_type_t<T>>)
-    struct shape_of_indexable<T, s...> : std::type_identity<
-        typename shape_of_indexable<adac::traits::value_type_t<T>, s..., size_of_v<T>>::type
-    > {};
+    template<typename T, std::size_t... s> requires(adac::traits::is_indexable_v<T>)
+    struct shape_of_indexable<T, s...> : shape_of_indexable<adac::traits::value_type_t<T>, s..., size_of_v<T>> {};
 
 }  // namespace detail
 #endif  // DOXYGEN

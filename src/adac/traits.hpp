@@ -30,19 +30,41 @@ struct is_indexable : std::bool_constant< requires(const T& t) { {t[std::size_t{
 template<typename T>
 inline constexpr bool is_indexable_v = is_indexable<T>::value;
 
-//! Trait to extract the value type (i.e. the scalar type) of e.g. a container
+//! Trait to expose the value_type of e.g. a container
 template<typename T>
 struct value_type;
-template<typename T> requires(is_scalar_v<T>)
-struct value_type<T> : std::type_identity<T> {};
 template<typename T> requires(is_indexable_v<T>)
 struct value_type<T> : std::type_identity<std::remove_cvref_t<decltype(T{}[std::size_t{0}])>> {};
 template<typename T>
 using value_type_t = typename value_type<T>::type;
 
+
+#ifndef DOXYGEN
+namespace detail {
+
+    template<typename T>
+    struct indexable_scalar_type;
+    template<typename T> requires(is_indexable_v<T>)
+    struct indexable_scalar_type<T> : indexable_scalar_type<value_type_t<T>> {};
+    template<typename T> requires(!is_indexable_v<T>)
+    struct indexable_scalar_type<T> : std::type_identity<T> {};
+
+}  // namespace detail
+#endif  // DOXYGEN
+
+//! Trait to extract the scalar type of a potentially multi-dimensional container
+template<typename T>
+struct scalar_type;
+template<typename T> requires(is_scalar_v<T>)
+struct scalar_type<T> : std::type_identity<T> {};
+template<typename T> requires(is_indexable_v<T>)
+struct scalar_type<T> : detail::indexable_scalar_type<T> {};
+template<typename T>
+using scalar_type_t = typename scalar_type<T>::type;
+
 //! Trait to register a type as a value, i.e. a value that can be bound to a symbol/expression
 template<typename T>
-struct is_value : is_complete<value_type<T>> {};
+struct is_value : is_complete<scalar_type<T>> {};
 template<typename T>
 inline constexpr bool is_value_v = is_value<T>::value;
 
