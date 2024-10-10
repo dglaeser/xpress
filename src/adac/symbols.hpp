@@ -59,7 +59,7 @@ template<typename T>
 struct _symbol_value {
     template<typename... V>
         requires(bindings<V...>::template has_bindings_for<T>)
-    static constexpr auto from(const bindings<V...>& bindings) noexcept {
+    static constexpr decltype(auto) from(const bindings<V...>& bindings) noexcept {
         return bindings[T{}];
     }
 };

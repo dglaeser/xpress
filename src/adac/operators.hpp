@@ -153,7 +153,7 @@ struct nodes_of<operation<op, T, Ts...>> {
 template<typename op, typename... Ts>
 struct value_of<operation<op, Ts...>> {
     template<typename... V>
-    static constexpr auto from(const bindings<V...>& binders) noexcept {
+    static constexpr decltype(auto) from(const bindings<V...>& binders) noexcept {
         using self = operation<op, Ts...>;
         if constexpr (bindings<V...>::template has_bindings_for<self>)
             return binders[self{}];

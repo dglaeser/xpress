@@ -1,3 +1,6 @@
+#include <type_traits>
+#include <memory>
+
 #include <adac/symbols.hpp>
 #include <adac/operators.hpp>
 
@@ -80,6 +83,28 @@ int main() {
         static_assert(value_of(d_db, at(a = 43, b = 1)) == 43);
         expect(eq(value_of(d_da, at(a = 1, b = 42)), 42));
         expect(eq(value_of(d_db, at(a = 43, b = 1)), 43));
+    };
+
+    "multiply_operator_derivative_from_value_reference"_test = [] () {
+        int b_value = 42;
+        let a;
+        var b;
+        constexpr auto multiplied = a*b;
+        constexpr auto d_da = derivative_of(multiplied, wrt(a));
+        expect(eq(value_of(d_da, at(b = b_value)), 42));
+
+        static_assert(std::is_same_v<decltype(value_of(d_da, at(b = b_value))), const int&>);
+        const int& b_value_ref = value_of(d_da, at(b = b_value));
+        expect(eq(std::addressof(b_value_ref), std::addressof(b_value)));
+    };
+
+    "multiply_operator_derivative_yields_rvalue"_test = [] () {
+        let a;
+        var b;
+        constexpr auto multiplied = a*b*val<2>;
+        constexpr auto d_da = derivative_of(multiplied, wrt(a));
+        expect(eq(value_of(d_da, at(b = 42)), 42*2));
+        static_assert(std::is_same_v<decltype(value_of(d_da, at(b = 42))), int>);
     };
 
     "division_operator_value"_test = [] () {
