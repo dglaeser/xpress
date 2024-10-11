@@ -46,8 +46,14 @@ namespace detail {
         constexpr decltype(auto) operator()(T&&... t) const noexcept {
             if constexpr (is_complete_v<trait<std::remove_cvref_t<T>...>>)
                 return trait<std::remove_cvref_t<T>...>{}(std::forward<T>(t)...);
-            else
+            else {
+                static_assert(
+                    requires(T&&... t) { { default_t{}(std::forward<T>(t)...) }; },
+                    "Default binary operator cannot be invoked with the given types. "
+                    "Please specialize the respective trait in adac::operators::traits."
+                );
                 return default_t{}(std::forward<T>(t)...);
+            }
         }
     };
 
