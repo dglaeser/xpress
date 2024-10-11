@@ -4,6 +4,7 @@
 #include <type_traits>
 
 #include <adac/operators.hpp>
+#include <adac/symbols.hpp>
 #include <adac/tensor.hpp>
 
 #include "testing.hpp"
@@ -130,6 +131,22 @@ int main() {
         expect(eq(d_dv1[1], data2[1]*42));
         expect(eq(d_dv2[0], data1[0]*42));
         expect(eq(d_dv2[1], data1[1]*42));
+    };
+
+    "tensor_expression_value"_test = [] () {
+        var a;
+        var b;
+        tensor_expression v{shape<2>, a, b};
+        static_assert(std::is_same_v<decltype(v[md_i_c<0>]), decltype(a)>);
+        static_assert(std::is_same_v<decltype(v[md_i_c<1>]), decltype(b)>);
+        static_assert(value_of(v, at(a = 42, b = 43))[md_i_c<0>] == 42);
+        static_assert(value_of(v, at(a = 42, b = 43))[md_i_c<1>] == 43);
+        expect(eq(value_of(v, at(a = 42, b = 43))[md_i_c<0>], 42));
+        expect(eq(value_of(v, at(a = 42, b = 43))[md_i_c<1>], 43));
+    };
+
+    "tensor_expression_derivative"_test = [] () {
+        expect(false);
     };
 
     return 0;

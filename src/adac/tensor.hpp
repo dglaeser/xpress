@@ -42,6 +42,17 @@ template<std::size_t dim, typename T = dtype::any, auto _ = [] () {}>
 using vector = tensor<T, _, dim>;
 
 
+template<typename shape, concepts::expression... E> requires(shape::count == sizeof...(E))
+struct tensor_expression : indexed<E...> {
+    constexpr tensor_expression(const shape&, const E&...) noexcept {}
+
+    template<std::size_t... i>
+    constexpr auto operator[](const md_index<i...>& idx) const noexcept {
+        return this->get(i_c<md_index<i...>::as_flat_index_in(shape{})>);
+    }
+};
+
+
 namespace traits {
 
 template<typename T, auto _, std::size_t... dims>
@@ -67,9 +78,22 @@ struct value_of<tensor<T, _, dims...>> {
     }
 };
 
+template<typename shape, typename... E>
+struct value_of<tensor_expression<shape, E...>> {
+    template<typename... V>
+    static constexpr decltype(auto) from(const bindings<V...>& values) {
+        return linalg::tensor{shape{}, adac::value_of(E{}, values)...};
+    }
+};
+
 template<typename T, auto _, std::size_t... dims>
 struct nodes_of<tensor<T, _, dims...>> {
     using type = type_list<tensor<T, _, dims...>>;
+};
+
+template<typename shape, typename... E>
+struct nodes_of<tensor_expression<shape, E...>> {
+    using type = merged_types_t<type_list<tensor_expression<shape, E...>>, merged_nodes_of_t<E...>>;
 };
 
 template<typename T, auto _, std::size_t... dims>
@@ -77,6 +101,17 @@ struct derivative_of<tensor<T, _, dims...>> {
     template<typename V>
     static constexpr decltype(auto) wrt(const type_list<V>&) {
         if constexpr (std::is_same_v<V, tensor<T, _, dims...>>)
+            return val<1>;
+        else
+            return val<0>;
+    }
+};
+
+template<typename shape, typename... E>
+struct derivative_of<tensor_expression<shape, E...>> {
+    template<typename V>
+    static constexpr decltype(auto) wrt(const type_list<V>&) {
+        if constexpr (std::is_same_v<V, tensor_expression<shape, E...>>)
             return val<1>;
         else
             return val<0>;
