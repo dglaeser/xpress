@@ -25,7 +25,7 @@ int main() {
     "value_list_stream"_test = [] () {
         std::ostringstream s;
         s << value_list<0, 1, 2>{};
-        expect(eq(s.str(), std::string{"[0, 1, 2]"}));
+        expect(eq(s.str(), std::string{"[0,1,2,]"}));
     };
 
     "value_list_reduce"_test = [] () {

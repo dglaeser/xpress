@@ -91,7 +91,7 @@ struct value_list : detail::values<std::make_index_sequence<sizeof...(v)>, v...>
     //! Write this list to the given output stream
     friend std::ostream& operator<<(std::ostream& s, const value_list&) {
         s << "[";
-        (s << ... << ((v == at(i_c<0>) ? "" : ", ") + std::to_string(v)));
+        (s << ... << (std::to_string(v) + ","));
         s << "]";
         return s;
     }
@@ -126,6 +126,13 @@ struct md_shape {
     template<std::size_t _i> requires(_i < size)
     static constexpr std::size_t at(const index_constant<_i>& idx) noexcept {
         return value_list<s...>::at(idx);
+    }
+
+    friend std::ostream& operator<<(std::ostream& out, const md_shape&) {
+        out << "[";
+        (out << ... << (std::to_string(s) + ","));
+        out << "]";
+        return out;
     }
 };
 
