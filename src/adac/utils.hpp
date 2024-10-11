@@ -53,6 +53,16 @@ namespace detail {
         using value_i<i, v>::at...;
     };
 
+    template<auto... v>
+    struct value_list_helper {};
+
+    template<std::size_t i, std::size_t n, auto... values>
+    struct drop_n;
+    template<std::size_t i, std::size_t n, auto v0, auto... v> requires(i < n)
+    struct drop_n<i, n, v0, v...> : drop_n<i+1, n, v...> {};
+    template<std::size_t i, std::size_t n, auto... v> requires(i == n)
+    struct drop_n<i, n, v...> : std::type_identity<value_list_helper<v...>> {};
+
 }  // namespace detail
 #endif  // DOXYGEN
 
@@ -60,6 +70,22 @@ namespace detail {
 template<auto... v>
 struct value_list : detail::values<std::make_index_sequence<sizeof...(v)>, v...> {
     static constexpr std::size_t size = sizeof...(v);
+
+    //! Return a new list with the values from this list, dropping the first n values
+    template<std::size_t n> requires(n < sizeof...(v))
+    static constexpr auto drop() noexcept {
+        return [] <auto... _v> (const detail::value_list_helper<_v...>&) constexpr {
+            return value_list<_v...>{};
+        }(typename detail::drop_n<0, n, v...>::type{});
+    }
+
+    //! Return a new list with the values from this list, dropping the last n values
+    template<std::size_t n> requires(n < sizeof...(v))
+    static constexpr auto crop() noexcept {
+        return [] <std::size_t... i> (const std::index_sequence<i...>&) constexpr {
+            return value_list<at(index_constant<i>{})...>{};
+        }(std::make_index_sequence<sizeof...(v) - n>{});
+    }
 
     //! Return the first value in the list
     static constexpr auto first() noexcept {

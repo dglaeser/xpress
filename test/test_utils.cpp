@@ -21,6 +21,22 @@ int main() {
         static_assert(values.last() == 2);
     };
 
+    "value_list_drop_n"_test = [] () {
+        constexpr value_list<0, 1, 2> values;
+        constexpr auto dropped = values.template drop<1>();
+        static_assert(dropped.size == 2);
+        static_assert(dropped.at(i_c<0>) == 1);
+        static_assert(dropped.at(i_c<1>) == 2);
+    };
+
+    "value_list_crop_n"_test = [] () {
+        constexpr value_list<0, 1, 2> values;
+        constexpr auto cropped = values.template crop<1>();
+        static_assert(cropped.size == 2);
+        static_assert(cropped.at(i_c<0>) == 0);
+        static_assert(cropped.at(i_c<1>) == 1);
+    };
+
     "value_list_equality"_test = [] () {
         constexpr value_list<0, 1, 2> values;
         static_assert(values == value_list<0, 1, 2>{});
