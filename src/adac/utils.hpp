@@ -201,11 +201,11 @@ struct md_index_iterator<md_shape<s...>, md_index<i...>> {
     constexpr md_index_iterator(const md_shape<s...>&) noexcept {}
     constexpr md_index_iterator(const md_shape<s...>&, const md_index<i...>&) noexcept {}
 
-    constexpr bool is_incrementable() const noexcept {
+    static constexpr bool is_incrementable() noexcept {
         return md_index<i...>::as_flat_index_in(md_shape<s...>{}).value < md_shape<s...>::count - 1;
     }
 
-    constexpr auto incremented() const noexcept {
+    static constexpr auto incremented() noexcept {
         static_assert(
             md_index<i...>::as_flat_index_in(md_shape<s...>{}).value < md_shape<s...>::count - 1,
             "End of the range has already been reached"
@@ -219,7 +219,7 @@ struct md_index_iterator<md_shape<s...>, md_index<i...>> {
 
  private:
     template<std::size_t _i, bool was_incremented, std::size_t... c>
-    constexpr auto _incremented(md_index<c...> intermediate_result) const noexcept {
+    static constexpr auto _incremented(md_index<c...> intermediate_result) noexcept {
         constexpr std::size_t at_i = md_index<i...>::at(i_c<_i>).value;
         constexpr bool do_increment = !was_incremented && at_i < md_shape<s...>::at(i_c<_i>) - 1;
         constexpr bool do_zero = !was_incremented && at_i >= md_shape<s...>::at(i_c<_i>) - 1;
