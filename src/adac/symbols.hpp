@@ -57,6 +57,9 @@ struct _symbol_value {
     template<typename... V>
         requires(bindings<V...>::template has_bindings_for<T>)
     static constexpr decltype(auto) from(const bindings<V...>& bindings) noexcept {
+        // TODO: necessary?
+        using bound_type = std::remove_cvref_t<decltype(bindings[T{}])>;
+        static_assert(traits::is_scalar_v<bound_type>, "Symbol values have to be scalars");
         return bindings[T{}];
     }
 };
