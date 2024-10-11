@@ -100,6 +100,16 @@ int main() {
         static_assert(index.at(i_c<1>) == i_c<3>);
     };
 
+    "md_index_prepended"_test = [] () {
+        constexpr md_index<2, 3> index;
+        static_assert(index.with_prepended(i_c<0>) == md_index<0, 2, 3>{});
+    };
+
+    "md_index_appended"_test = [] () {
+        constexpr md_index<2, 3> index;
+        static_assert(index.with_appended(i_c<0>) == md_index<2, 3, 0>{});
+    };
+
     "md_index_as_flat_index"_test = [] () {
         static_assert(md_i_c<0, 0>.as_flat_index_in(md_shape<3, 3>{}) == i_c<0>);
         static_assert(md_i_c<0, 1>.as_flat_index_in(md_shape<3, 3>{}) == i_c<1>);

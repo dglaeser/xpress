@@ -189,6 +189,16 @@ struct md_index {
         return index_constant<value_list<i...>::at(index_constant<_i>{})>{};
     }
 
+    template<std::size_t _i>
+    static constexpr auto with_prepended(const index_constant<_i>&) noexcept {
+        return md_index<_i, i...>{};
+    }
+
+    template<std::size_t _i>
+    static constexpr auto with_appended(const index_constant<_i>&) noexcept {
+        return md_index<i..., _i>{};
+    }
+
     template<std::size_t s0, std::size_t... s> requires(sizeof...(s) == size - 1)
     static constexpr auto as_flat_index_in(const md_shape<s0, s...>&) noexcept {
         return i_c<_sum_up_flat_index<0>(md_shape<s...>{}, 0)>;
