@@ -245,6 +245,17 @@ md_index_iterator(const shape&) -> md_index_iterator<shape, typename detail::fir
 template<typename shape, typename index>
 md_index_iterator(const shape&, const index&) -> md_index_iterator<shape, index>;
 
+//! Visit all multi-dimensional indices in the given shape
+template<typename visitor, std::size_t... s>
+    requires(std::invocable<visitor, md_index<(s*0)...>>)
+inline constexpr void visit_indices_in(const md_shape<s...>& shape, visitor&& v) noexcept {
+    const auto index_visit = [&] <typename... T> (this auto self, const md_index_iterator<T...>& it) constexpr {
+        v(*it);
+        if constexpr (md_index_iterator<T...>::is_incrementable())
+            self(it.incremented());
+    };
+    index_visit(md_index_iterator{shape});
+}
 
 namespace concepts {
 

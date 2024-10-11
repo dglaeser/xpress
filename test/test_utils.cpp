@@ -1,5 +1,6 @@
 #include <functional>
 #include <type_traits>
+#include <algorithm>
 #include <sstream>
 
 #include <adac/utils.hpp>
@@ -111,6 +112,23 @@ int main() {
         auto inc5 = inc4.incremented();
         static_assert(*inc5 == md_index<1, 2>{});
         static_assert(!inc5.is_incrementable());
+    };
+
+    "md_shape_visit"_test = [] () {
+        std::array<std::array<int, 2>, 3> values{{{42, 42}, {42, 42}, {42, 42}}};
+        const auto check_equal = [] (const auto& data, const auto& value) constexpr {
+            return std::ranges::all_of(data, [&] (auto& row) {
+                return std::ranges::all_of(row, [&] (auto& v) { return v == value; });
+            });
+        };
+        expect(check_equal(values, 42));
+        const auto duplicated = [&] (auto data) constexpr {
+            visit_indices_in(shape<3, 2>, [&] (const auto& idx) constexpr noexcept {
+                data[idx.at(i_c<0>)][idx.at(i_c<1>)] *= 2;
+            });
+            return data;
+        };
+        expect(check_equal(duplicated(values), 84));
     };
 
     return 0;
