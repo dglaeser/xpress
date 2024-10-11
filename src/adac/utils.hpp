@@ -61,16 +61,21 @@ template<auto... v>
 struct value_list : detail::values<std::make_index_sequence<sizeof...(v)>, v...> {
     static constexpr std::size_t size = sizeof...(v);
 
+    //! Return the last value in the list
+    static constexpr auto last() noexcept {
+        return at(index_constant<size-1>{});
+    }
+
     //! Return the value at the given index in the list
     template<std::size_t i> requires(i < size)
-    static constexpr auto at(index_constant<i> idx) {
+    static constexpr auto at(index_constant<i> idx) noexcept {
         using base = detail::values<std::make_index_sequence<size>, v...>;
         return base::at(idx);
     }
 
     //! Perform a reduction operation on this list
     template<typename op, typename T>
-    static constexpr auto reduce_with(op&& action, T&& initial) {
+    static constexpr auto reduce_with(op&& action, T&& initial) noexcept {
         return _reduce_with(std::forward<op>(action), std::forward<T>(initial), v...);
     }
 
