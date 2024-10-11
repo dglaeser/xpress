@@ -128,5 +128,12 @@ struct multiplication_of<T, S> {
         return result;
     }
 };
+template<typename S, linalg::concepts::tensor T> requires(adac::traits::is_scalar_v<S>)
+struct multiplication_of<S, T> {
+    template<concepts::same_remove_cvref_t_as<S> _S, concepts::same_remove_cvref_t_as<T> _T>
+    constexpr T operator()(_S&& scalar, _T&& tensor) const noexcept {
+        return multiplication_of<T, S>{}(std::forward<_T>(tensor), std::forward<_S>(scalar));
+    }
+};
 
 }  // namespace adac::operators::traits

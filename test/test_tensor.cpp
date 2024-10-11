@@ -72,9 +72,8 @@ int main() {
         m[1][0] = 3; m[1][1] = 4;
 
         tensor t{shape<2, 2>};
-        auto expression = t*val<2>;
-        auto v = value_of(expression, at(t = m));
-        expect(v == m*2);
+        expect(value_of(t*val<2>, at(t = m)) == m*2);
+        expect(value_of(val<2>*t, at(t = m)) == m*2);
     };
 
     "tensor_stream"_test = [] () {
