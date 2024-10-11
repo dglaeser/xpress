@@ -16,6 +16,8 @@ int main() {
         static_assert(values.at(i_c<0>) == 0);
         static_assert(values.at(i_c<1>) == 1);
         static_assert(values.at(i_c<2>) == 2);
+
+        static_assert(values.first() == 0);
         static_assert(values.last() == 2);
     };
 

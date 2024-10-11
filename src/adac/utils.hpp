@@ -61,6 +61,11 @@ template<auto... v>
 struct value_list : detail::values<std::make_index_sequence<sizeof...(v)>, v...> {
     static constexpr std::size_t size = sizeof...(v);
 
+    //! Return the first value in the list
+    static constexpr auto first() noexcept {
+        return at(index_constant<0>{});
+    }
+
     //! Return the last value in the list
     static constexpr auto last() noexcept {
         return at(index_constant<size-1>{});
