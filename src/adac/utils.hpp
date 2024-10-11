@@ -72,7 +72,7 @@ struct value_list : detail::values<std::make_index_sequence<sizeof...(v)>, v...>
     static constexpr std::size_t size = sizeof...(v);
 
     //! Return a new list with the values from this list, dropping the first n values
-    template<std::size_t n> requires(n < sizeof...(v))
+    template<std::size_t n> requires(n <= sizeof...(v))
     static constexpr auto drop() noexcept {
         return [] <auto... _v> (const detail::value_list_helper<_v...>&) constexpr {
             return value_list<_v...>{};
@@ -80,7 +80,7 @@ struct value_list : detail::values<std::make_index_sequence<sizeof...(v)>, v...>
     }
 
     //! Return a new list with the values from this list, dropping the last n values
-    template<std::size_t n> requires(n < sizeof...(v))
+    template<std::size_t n> requires(n <= sizeof...(v))
     static constexpr auto crop() noexcept {
         return [] <std::size_t... i> (const std::index_sequence<i...>&) constexpr {
             return value_list<at(index_constant<i>{})...>{};

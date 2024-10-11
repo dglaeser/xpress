@@ -27,6 +27,9 @@ int main() {
         static_assert(dropped.size == 2);
         static_assert(dropped.at(i_c<0>) == 1);
         static_assert(dropped.at(i_c<1>) == 2);
+
+        constexpr auto empty = values.template drop<3>();
+        static_assert(empty.size == 0);
     };
 
     "value_list_crop_n"_test = [] () {
@@ -35,6 +38,9 @@ int main() {
         static_assert(cropped.size == 2);
         static_assert(cropped.at(i_c<0>) == 0);
         static_assert(cropped.at(i_c<1>) == 1);
+
+        constexpr auto empty = values.template crop<3>();
+        static_assert(empty.size == 0);
     };
 
     "value_list_equality"_test = [] () {
