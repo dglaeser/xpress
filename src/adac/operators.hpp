@@ -147,10 +147,7 @@ struct is_equal_node<operation<op, T1, T2>, operation<op, T2, T1>> : std::true_t
 
 template<typename op, typename T, typename... Ts>
 struct nodes_of<operation<op, T, Ts...>> {
-    using type = merged_types_t<
-        merged_types_t<type_list<operation<op, T, Ts...>>, typename nodes_of<T>::type>,
-        typename nodes_of<Ts>::type...
-    >;
+    using type = merged_types_t<type_list<operation<op, T, Ts...>>, merged_nodes_of_t<T, Ts...>>;
 };
 
 template<typename op, typename... Ts>

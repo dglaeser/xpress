@@ -168,6 +168,18 @@ using composite_nodes_of_t = typename composite_nodes_of<T>::type;
 #ifndef DOXYGEN
 namespace detail {
 
+    template<typename merged, typename... Es>
+    struct merged_nodes_of;
+    template<typename... R>
+    struct merged_nodes_of<type_list<R...>> : std::type_identity<type_list<R...>> {};
+    template<typename... R, typename E0, typename... Es>
+    struct merged_nodes_of<type_list<R...>, E0, Es...> {
+        using type = typename merged_nodes_of<
+            merged_types_t<type_list<R...>, typename nodes_of<E0>::type>,
+            Es...
+        >::type;
+    };
+
     template<typename T>
     struct unique_nodes_of;
 
@@ -194,6 +206,12 @@ namespace detail {
 
 }  // namespace detail
 #endif  // DOXYGEN
+
+//! Trait to get the merged list of nodes of all given expressions
+template<typename... T> requires(std::conjunction_v<is_complete<nodes_of<T>>...>)
+struct merged_nodes_of : detail::merged_nodes_of<type_list<>, T...> {};
+template<typename... T>
+using merged_nodes_of_t = typename merged_nodes_of<T...>::type;
 
 //! All unique nodes in the given expression
 template<typename T>
