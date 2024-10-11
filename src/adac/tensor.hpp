@@ -13,6 +13,7 @@
 #include "traits.hpp"
 #include "expressions.hpp"
 #include "linalg.hpp"
+#include "values.hpp"
 
 
 namespace adac {
@@ -75,7 +76,10 @@ template<typename T, auto _, std::size_t... dims>
 struct derivative_of<tensor<T, _, dims...>> {
     template<typename V>
     static constexpr decltype(auto) wrt(const type_list<V>&) {
-        static_assert(false, "derivative of tensors not implemented");
+        if constexpr (std::is_same_v<V, tensor<T, _, dims...>>)
+            return val<1>;
+        else
+            return val<0>;
     }
 };
 

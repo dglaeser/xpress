@@ -101,5 +101,36 @@ int main() {
         expect(eq(value_of(v1*v2, at(v1 = data, v2 = data)), 5));
     };
 
+    "tensor_scalar_product_derivative"_test = [] () {
+        matrix<int, 2, 2> m1;
+        matrix<int, 2, 2> m2;
+        m1[0][0] = 1; m1[0][1] = 2; m1[1][0] = 3; m1[1][1] = 4;
+        m2[0][0] = 10; m2[0][1] = 11; m2[1][0] = 12; m2[1][1] = 13;
+        static constexpr tensor t1{shape<2, 2>};
+        static constexpr tensor t2{shape<2, 2>};
+        static constexpr auto expr = val<42>*(t1*t2);
+        const auto d_dv1 = value_of(derivative_of(expr, wrt(t1)), at(t1 = m1, t2 = m2));
+        const auto d_dv2 = value_of(derivative_of(expr, wrt(t2)), at(t1 = m1, t2 = m2));
+        expect(eq(d_dv1[0][0], m2[0][0]*42)); expect(eq(d_dv1[0][1], m2[0][1]*42));
+        expect(eq(d_dv1[1][0], m2[1][0]*42)); expect(eq(d_dv1[1][1], m2[1][1]*42));
+
+        expect(eq(d_dv2[0][0], m1[0][0]*42)); expect(eq(d_dv2[0][1], m1[0][1]*42));
+        expect(eq(d_dv2[1][0], m1[1][0]*42)); expect(eq(d_dv2[1][1], m1[1][1]*42));
+    };
+
+    "vector_scalar_product_derivative"_test = [] () {
+        constexpr std::array<int, 2> data1{1, 2};
+        constexpr std::array<int, 2> data2{42, 43};
+        static constexpr vector<2> v1{};
+        static constexpr vector<2> v2{};
+        static constexpr auto expr = val<42>*(v1*v2);
+        const auto d_dv1 = value_of(derivative_of(expr, wrt(v1)), at(v1 = data1, v2 = data2));
+        const auto d_dv2 = value_of(derivative_of(expr, wrt(v2)), at(v1 = data1, v2 = data2));
+        expect(eq(d_dv1[0], data2[0]*42));
+        expect(eq(d_dv1[1], data2[1]*42));
+        expect(eq(d_dv2[0], data1[0]*42));
+        expect(eq(d_dv2[1], data1[1]*42));
+    };
+
     return 0;
 }
