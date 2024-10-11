@@ -12,6 +12,7 @@
 
 #include "utils.hpp"
 #include "traits.hpp"
+#include "operators.hpp"
 
 
 namespace adac::linalg {
@@ -71,16 +72,61 @@ struct shape_of<T> : detail::shape_of_indexable<T> {};
 template<typename T>
 using shape_of_t = typename shape_of<T>::type;
 
+template<typename T>
+struct access;
+template<typename T> requires(adac::traits::is_indexable_v<T> and is_complete_v<shape_of<T>>)
+struct access<T> {
+    template<concepts::same_remove_cvref_t_as<T> _T, std::size_t... i> requires(sizeof...(i) == shape_of_t<T>::size)
+    static constexpr decltype(auto) at(const md_index<i...>&, _T&& tensor) noexcept {
+        return _at<i...>(std::forward<_T>(tensor));
+    }
+
+ private:
+    template<std::size_t i, std::size_t... is>
+    static constexpr decltype(auto) _at(auto&& t) noexcept {
+        if constexpr (sizeof...(is) == 0)
+            return t[i];
+        else
+            return _at<is...>(t[i]);
+    }
+};
+
+
 }  // namespace traits
 
 
 namespace concepts {
 
 template<typename T>
-concept tensor = is_complete_v<traits::shape_of<T>>;
+concept tensor
+= std::is_default_constructible_v<T>  // TODO: can we relax this?
+and is_complete_v<traits::shape_of<T>>
+and is_complete_v<adac::traits::scalar_type<T>>
+and is_complete_v<traits::access<T>>
+and requires(const T& t) {
+    { traits::access<T>::at( *(md_index_iterator{traits::shape_of_t<T>{}}), t ) };
+};
 
 }  // namespace concepts
 
 //! \} group LinearAlgebra
 
 }  // namespace adac::linalg
+
+
+namespace adac::operators::traits {
+
+template<linalg::concepts::tensor T, typename S> requires(adac::traits::is_scalar_v<S>)
+struct multiplication_of<T, S> {
+    template<concepts::same_remove_cvref_t_as<T> _T, concepts::same_remove_cvref_t_as<S> _S>
+    constexpr T operator()(_T&& tensor, _S&& scalar) const noexcept {
+        T result;
+        visit_indices_in(linalg::traits::shape_of_t<T>{}, [&] (const auto& idx) {
+            adac::traits::scalar_type_t<T>& value_at_idx = adac::linalg::traits::access<T>::at(idx, result);
+            value_at_idx = adac::linalg::traits::access<T>::at(idx, tensor)*scalar;
+        });
+        return result;
+    }
+};
+
+}  // namespace adac::operators::traits
