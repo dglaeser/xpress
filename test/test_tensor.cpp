@@ -83,5 +83,23 @@ int main() {
         expect(eq(s.str(), std::string{"T<2, 3>"}));
     };
 
+    "tensor_scalar_product"_test = [] () {
+        matrix<int, 2, 2> m;
+        m[0][0] = 1; m[0][1] = 2;
+        m[1][0] = 3; m[1][1] = 4;
+
+        const tensor t1{shape<2, 2>};
+        const tensor t2{shape<2, 2>};
+        expect(eq(value_of(t1*t2, at(t1 = m, t2 = m)), 1+4+9+16));
+    };
+
+    "vector_scalar_product"_test = [] () {
+        constexpr std::array<int, 2> data{1, 2};
+        static constexpr vector<2> v1{};
+        static constexpr vector<2> v2{};
+        static constexpr auto expr = v1*v2;
+        expect(eq(value_of(v1*v2, at(v1 = data, v2 = data)), 5));
+    };
+
     return 0;
 }

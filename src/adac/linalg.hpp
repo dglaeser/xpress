@@ -136,4 +136,18 @@ struct multiplication_of<S, T> {
     }
 };
 
+template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
+    requires(linalg::traits::shape_of_t<T1>{} == linalg::traits::shape_of_t<T2>{})
+struct multiplication_of<T1, T2> {
+    template<concepts::same_remove_cvref_t_as<T1> _T1, concepts::same_remove_cvref_t_as<T2> _T2>
+    constexpr auto operator()(_T1&& A, _T2&& B) const noexcept {
+        adac::traits::scalar_type_t<T1> result{0};
+        visit_indices_in(linalg::traits::shape_of_t<T1>{}, [&] (const auto& idx) {
+            result += adac::linalg::traits::access<T1>::at(idx, A)
+                        *adac::linalg::traits::access<T2>::at(idx, B);
+        });
+        return result;
+    }
+};
+
 }  // namespace adac::operators::traits

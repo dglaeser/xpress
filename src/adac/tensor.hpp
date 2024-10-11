@@ -37,6 +37,10 @@ template<auto _ = [] () {}, std::size_t... dims>
 tensor(const md_shape<dims...>&) -> tensor<dtype::any, _, dims...>;
 
 
+template<std::size_t dim, typename T = dtype::any, auto _ = [] () {}>
+using vector = tensor<T, _, dim>;
+
+
 namespace traits {
 
 template<typename T, auto _, std::size_t... dims>

@@ -155,6 +155,9 @@ struct md_shape {
     static constexpr std::size_t size = sizeof...(s);
     static constexpr std::size_t count = value_list<s...>{}.reduce_with(std::multiplies{}, std::size_t{1});
 
+    constexpr md_shape() = default;
+    constexpr md_shape(const value_list<s...>) noexcept {}
+
     template<std::size_t... v> requires(size > 0)
     constexpr bool operator==(const md_shape<v...>&) const noexcept { return false; }
     constexpr bool operator==(const md_shape&) const noexcept { return true; }
