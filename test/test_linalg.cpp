@@ -16,5 +16,21 @@ int main() {
         static_assert(linalg::traits::shape_of_t<std::array<std::array<int, 3>, 2>>{} == shape<2, 3>);
     };
 
+    "tensor_from_array"_test = [] () {
+        static constexpr linalg::tensor t{shape<2, 2>, std::array{1, 2, 3, 4}};
+        static_assert(t[md_i_c<0, 0>] == 1);
+        static_assert(t[md_i_c<0, 1>] == 2);
+        static_assert(t[md_i_c<1, 0>] == 3);
+        static_assert(t[md_i_c<1, 1>] == 4);
+    };
+
+    "tensor_from_values"_test = [] () {
+        static constexpr linalg::tensor t{shape<2, 2>, 1, 2, 3, 4};
+        static_assert(t[md_i_c<0, 0>] == 1);
+        static_assert(t[md_i_c<0, 1>] == 2);
+        static_assert(t[md_i_c<1, 0>] == 3);
+        static_assert(t[md_i_c<1, 1>] == 4);
+    };
+
     return 0;
 }

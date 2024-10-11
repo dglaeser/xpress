@@ -20,6 +20,31 @@ namespace adac::linalg {
 //! \addtogroup LinearAlgebra
 //! \{
 
+template<typename T, typename shape> requires(adac::traits::is_scalar_v<T>)
+struct tensor {
+ public:
+    template<std::convertible_to<T>... _T>
+    constexpr tensor(const shape&, _T&&... values) noexcept
+    : _values{static_cast<T>(std::forward<_T>(values))...}
+    {}
+
+    constexpr tensor(const shape&, std::array<T, shape::count>&& values) noexcept
+    : _values{std::move(values)}
+    {}
+
+    template<typename S, std::size_t... i>
+    constexpr decltype(auto) operator[](this S&& self, const md_index<i...>& idx) noexcept {
+        static_assert(md_index<i...>::as_flat_index_in(shape{}) < shape::count);
+        return self._values[md_index<i...>::as_flat_index_in(shape{})];
+    }
+
+ private:
+    std::array<T, shape::count> _values;
+};
+
+template<typename shape, typename... Ts>
+tensor(const shape&, Ts&&...) -> tensor<std::common_type_t<Ts...>, shape>;
+
 namespace traits {
 
 #ifndef DOXYGEN
