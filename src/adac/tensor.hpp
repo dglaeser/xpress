@@ -175,6 +175,14 @@ struct stream<tensor<T, _, dims...>> {
     }
 };
 
+template<typename tensor, std::size_t... i>
+struct stream<tensor_var<tensor, i...>> {
+    template<typename... V>
+    static constexpr void to(std::ostream& out, const bindings<V...>& values) {
+        out << values[tensor{}] << "[" << value_list<i...>{} << "]";
+    }
+};
+
 template<typename shape, typename... E>
 struct stream<tensor_expression<shape, E...>> {
     template<typename... V>
@@ -210,6 +218,18 @@ struct value_of<tensor<T, _, dims...>> {
     }
 };
 
+template<typename tensor, std::size_t... i>
+struct value_of<tensor_var<tensor, i...>> {
+    template<typename... V>
+    static constexpr decltype(auto) from(const bindings<V...>& values) {
+        using bound_tensor_type = std::remove_cvref_t<decltype(values[tensor{}])>;
+        static_assert(
+            linalg::concepts::tensor<bound_tensor_type>,
+            "Value type bound to tensor does not implement the concept 'linalg::concepts::tensor'"
+        );
+        return linalg::traits::access<bound_tensor_type>::at(md_index<i...>{}, values[tensor{}]);
+    }
+};
 
 template<typename T, auto _, std::size_t d0, std::size_t... dims>
 struct value_of<operation<operators::determinant, tensor<T, _, d0, dims...>>> {
@@ -251,6 +271,11 @@ struct nodes_of<tensor<T, _, dims...>> {
     using type = type_list<tensor<T, _, dims...>>;
 };
 
+template<typename tensor, std::size_t... i>
+struct nodes_of<tensor_var<tensor, i...>> {
+    using type = type_list<tensor_var<tensor, i...>>;
+};
+
 template<typename T, auto _, std::size_t... dims>
 struct nodes_of<operation<operators::determinant, tensor<T, _, dims...>>> {
     using type = type_list<tensor<T, _, dims...>>;
@@ -277,6 +302,18 @@ struct derivative_of<operation<operators::determinant, tensor<T, _, dims...>>> {
     template<typename V>
     static constexpr decltype(auto) wrt(const type_list<V>&) {
         static_assert(false, "not implemented");
+    }
+};
+
+template<typename tensor, std::size_t... i>
+struct derivative_of<tensor_var<tensor, i...>> {
+    template<typename V>
+    static constexpr decltype(auto) wrt(const type_list<V>&) {
+        static_assert(!std::is_same_v<V, tensor>, "Cannot derive a tensor element wrt the tensor it is contained in.");
+        if constexpr (std::is_same_v<V, tensor_var<tensor, i...>>)
+            return val<1>;
+        else
+            return val<0>;
     }
 };
 

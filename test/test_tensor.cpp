@@ -123,6 +123,28 @@ int main() {
         static_assert(std::is_same_v<std::remove_cvref_t<decltype(T11)>, tensor_var<T, 1, 1>>);
     };
 
+    "tensor_variable_value"_test = [] () {
+        constexpr tensor t{shape<2, 2>};
+        constexpr linalg::tensor t_value{shape<2, 2>, 1, 2, 3, 4};
+        static_assert(value_of(t[at<0, 0>()], at(t = t_value)) == 1);
+        static_assert(value_of(t[at<0, 1>()], at(t = t_value)) == 2);
+        static_assert(value_of(t[at<1, 0>()], at(t = t_value)) == 3);
+        static_assert(value_of(t[at<1, 1>()], at(t = t_value)) == 4);
+    };
+
+    "tensor_variable_stream"_test = [] () {
+        constexpr tensor t{shape<2, 2>};
+        constexpr auto T00 = t[at<0, 0>()];
+        constexpr auto T01 = t[at<0, 1>()];
+        constexpr auto T10 = t[at<1, 0>()];
+        constexpr auto T11 = t[at<1, 1>()];
+
+        { std::ostringstream s; write_to(s, T00, at(t = "M")); expect(eq(s.str(), std::string{"M[0, 0]"})); }
+        { std::ostringstream s; write_to(s, T01, at(t = "M")); expect(eq(s.str(), std::string{"M[0, 1]"})); }
+        { std::ostringstream s; write_to(s, T10, at(t = "M")); expect(eq(s.str(), std::string{"M[1, 0]"})); }
+        { std::ostringstream s; write_to(s, T11, at(t = "M")); expect(eq(s.str(), std::string{"M[1, 1]"})); }
+    };
+
     "vector_scalar_product"_test = [] () {
         constexpr std::array<int, 2> data{1, 2};
         static constexpr vector<2> v1{};
