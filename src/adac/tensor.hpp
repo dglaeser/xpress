@@ -63,9 +63,10 @@ struct determinant {};
 
 }  // namespace operators
 
-template<typename T, auto _, std::size_t... dims>
-inline constexpr auto det(const tensor<T, _, dims...>& m) noexcept {
-    return operation<operators::determinant, tensor<T, _, dims...>>{};
+template<typename T, auto _, std::size_t d0, std::size_t... dims>
+inline constexpr auto det(const tensor<T, _, d0, dims...>& m) noexcept {
+    static_assert(tensor<T, _, d0, dims...>::is_square, "Determinant can only be taken on square matrices.");
+    return operation<operators::determinant, tensor<T, _, d0, dims...>>{};
 }
 
 template<typename shape, concepts::expression... E>
@@ -233,22 +234,24 @@ struct value_of<tensor_var<tensor, i...>> {
     }
 };
 
-template<typename T, auto _, std::size_t d0, std::size_t... dims>
-struct value_of<operation<operators::determinant, tensor<T, _, d0, dims...>>> {
-    static_assert(tensor<T, _, d0, dims...>::is_square, "Determinant can only be taken on square matrices.");
-    static_assert(d0 == 2 || d0 == 3, "Determinant is only implemented for 2d & 3d matrices.");
+
+template<typename T, auto _, std::size_t rows, std::size_t cols>
+struct value_of<operation<operators::determinant, tensor<T, _, rows, cols>>> {
+    static_assert(rows == 2 || rows == 3, "Determinant is only implemented for 2d & 3d matrices.");
+    static_assert(cols == 2 || cols == 3, "Determinant is only implemented for 2d & 3d matrices.");
+    static_assert(rows == cols, "Determinant can only be computed for square matrices.");
 
     template<typename... V>
     static constexpr decltype(auto) from(const bindings<V...>& values) {
-        using bound_type = std::remove_cvref_t<decltype(adac::value_of(tensor<T, _, d0, dims...>{}, values))>;
+        using bound_type = std::remove_cvref_t<decltype(adac::value_of(tensor<T, _, rows, cols>{}, values))>;
         static_assert(linalg::concepts::tensor<bound_type>, "Expected a tensor to be bound to a tensorial symbol.");
 
-        const auto& t = adac::value_of(tensor<T, _, d0, dims...>{}, values);
+        const auto& t = adac::value_of(tensor<T, _, rows, cols>{}, values);
         const auto _get = [&] <std::size_t... i> (const md_index<i...>& idx) constexpr noexcept {
             return linalg::traits::access<bound_type>::at(idx, t);
         };
 
-        if constexpr (d0 == 2)
+        if constexpr (rows == 2)
             return _get(at<0, 0>())*_get(at<1, 1>()) - _get(at<1, 0>())*_get(at<0, 1>());
         else
             return _get(at<0, 0>())*_get(at<1, 1>())*_get(at<2, 2>())
@@ -299,11 +302,33 @@ struct derivative_of<tensor<T, _, dims...>> {
     }
 };
 
-template<typename T, auto _, std::size_t... dims>
-struct derivative_of<operation<operators::determinant, tensor<T, _, dims...>>> {
+template<typename T, auto _, std::size_t rows, std::size_t cols>
+struct derivative_of<operation<operators::determinant, tensor<T, _, rows, cols>>> {
+    static_assert(rows == 2 || rows == 3, "Determinant derivative is only implemented for 2d & 3d matrices.");
+    static_assert(cols == 2 || cols == 3, "Determinant derivative is only implemented for 2d & 3d matrices.");
+    static_assert(rows == cols, "Determinant derivative can only be computed for square matrices.");
+
     template<typename V>
     static constexpr decltype(auto) wrt(const type_list<V>&) {
-        static_assert(false, "not implemented");
+        using self = tensor<T, _, rows, cols>;
+        if constexpr (std::is_same_v<V, self>) {
+            if constexpr (rows == 2) {
+                constexpr auto a = self{}[at<0, 0>()]; constexpr auto b = self{}[at<0, 1>()];
+                constexpr auto c = self{}[at<1, 0>()]; constexpr auto d = self{}[at<1, 1>()];
+                return tensor_expression{shape<2, 2>, d, -c, -b, a};
+            } else {
+                constexpr auto a = self{}[at<0, 0>()]; constexpr auto b = self{}[at<0, 1>()]; constexpr auto c = self{}[at<0, 2>()];
+                constexpr auto d = self{}[at<1, 0>()]; constexpr auto e = self{}[at<1, 1>()]; constexpr auto f = self{}[at<1, 2>()];
+                constexpr auto g = self{}[at<2, 0>()]; constexpr auto h = self{}[at<2, 1>()]; constexpr auto i = self{}[at<2, 2>()];
+                return tensor_expression{shape<3, 3>,
+                    e*i - f*h, f*g - d*i, d*h - e*g,
+                    c*h - b*i, a*i - c*g, b*g - a*h,
+                    b*f - c*e, c*d - a*f, a*e - b*d
+                };
+            }
+        } else {
+            return val<0>;
+        }
     }
 };
 

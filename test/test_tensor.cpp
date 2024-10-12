@@ -145,6 +145,54 @@ int main() {
         { std::ostringstream s; write_to(s, T11, at(t = "M")); expect(eq(s.str(), std::string{"M[1, 1]"})); }
     };
 
+    "tensor_2x2_determinant_derivative"_test = [] () {
+        const linalg::tensor value{shape<2, 2>, 1.0, 2.0, 3.0, 4.0};
+        const auto determinant = -2.0;
+        const linalg::tensor inverse = linalg::tensor{shape<2, 2>, 4.0, -2.0, -3.0, 1.0}*(1.0/determinant);
+        const linalg::tensor inverse_transposed = linalg::tensor{shape<2, 2>,
+            inverse[at<0, 0>()], inverse[at<1, 0>()],
+            inverse[at<0, 1>()], inverse[at<1, 1>()]
+        };
+        // see https://en.wikipedia.org/wiki/Tensor_derivative_(continuum_mechanics)#Derivative_of_the_determinant_of_a_second-order_tensor
+        const linalg::tensor expected = inverse_transposed*determinant;
+
+        const tensor T{shape<2, 2>};
+        const auto ddetT_dT = derivative_of(det(T), wrt(T), at(T = value));
+        expect(fuzzy_eq(ddetT_dT[at<0, 0>()], expected[at<0, 0>()]));
+        expect(fuzzy_eq(ddetT_dT[at<0, 1>()], expected[at<0, 1>()]));
+        expect(fuzzy_eq(ddetT_dT[at<1, 0>()], expected[at<1, 0>()]));
+        expect(fuzzy_eq(ddetT_dT[at<1, 1>()], expected[at<1, 1>()]));
+    };
+
+    "tensor_3x3_determinant_derivative"_test = [] () {
+        const linalg::tensor value{shape<3, 3>,
+            1.0, 2.0, 3.0,
+            3.0, 2.0, 1.0,
+            2.0, 1.0, 3.0
+        };
+        // computed with wolfram alpha
+        const auto determinant = -12.0;
+        const linalg::tensor inverse_transposed = linalg::tensor{shape<3, 3>,
+            -5.0, 7.0, 1.0,
+            3.0, 3.0, -3.0,
+            4.0, -8.0, 4.0
+        }*(1.0/12.0);
+        // see https://en.wikipedia.org/wiki/Tensor_derivative_(continuum_mechanics)#Derivative_of_the_determinant_of_a_second-order_tensor
+        const linalg::tensor expected = inverse_transposed*determinant;
+
+        const tensor T{shape<3, 3>};
+        const auto ddetT_dT = derivative_of(det(T), wrt(T), at(T = value));
+        expect(fuzzy_eq(ddetT_dT[at<0, 0>()], expected[at<0, 0>()]));
+        expect(fuzzy_eq(ddetT_dT[at<0, 1>()], expected[at<0, 1>()]));
+        expect(fuzzy_eq(ddetT_dT[at<0, 2>()], expected[at<0, 2>()]));
+        expect(fuzzy_eq(ddetT_dT[at<1, 0>()], expected[at<1, 0>()]));
+        expect(fuzzy_eq(ddetT_dT[at<1, 1>()], expected[at<1, 1>()]));
+        expect(fuzzy_eq(ddetT_dT[at<1, 2>()], expected[at<1, 2>()]));
+        expect(fuzzy_eq(ddetT_dT[at<2, 0>()], expected[at<2, 0>()]));
+        expect(fuzzy_eq(ddetT_dT[at<2, 1>()], expected[at<2, 1>()]));
+        expect(fuzzy_eq(ddetT_dT[at<2, 2>()], expected[at<2, 2>()]));
+    };
+
     "vector_scalar_product"_test = [] () {
         constexpr std::array<int, 2> data{1, 2};
         static constexpr vector<2> v1{};
