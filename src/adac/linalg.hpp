@@ -9,6 +9,7 @@
 
 #include <concepts>
 #include <type_traits>
+#include <algorithm>
 
 #include "utils.hpp"
 #include "traits.hpp"
@@ -23,7 +24,10 @@ namespace adac::linalg {
 template<typename T, typename shape> requires(adac::traits::is_scalar_v<T>)
 struct tensor {
  public:
-    template<std::convertible_to<T>... _T>
+    constexpr tensor() = default;
+    constexpr tensor(T value) noexcept { std::ranges::fill(_values, value); }
+
+    template<std::convertible_to<T>... _T> requires(sizeof...(_T) == shape::count)
     constexpr tensor(const shape&, _T&&... values) noexcept
     : _values{static_cast<T>(std::forward<_T>(values))...}
     {}
