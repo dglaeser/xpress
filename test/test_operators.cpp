@@ -127,6 +127,30 @@ int main() {
         expect(eq(value_of(d_db, at(a = 2., b = 42.)), 0.0 - 1.0*2.0/(42.0*42.0)));
     };
 
+    "pow_operator"_test = [] () {
+        var a;
+        let b;
+        expect(eq(value_of(pow(a, val<2>), at(a = 2)), 4));
+        expect(eq(value_of(pow(a, b), at(a = 2, b = 3)), 8));
+    };
+
+    "pow_operator_derivative"_test = [] () {
+        var a;
+        let b;
+        expect(eq(derivative_of(pow(a, b), wrt(a), at(a = 2, b = 3)), 3*2*2));
+        expect(eq(derivative_of(pow(a, b), wrt(b), at(a = 2, b = 3)), 2*2*2*std::log(3)));
+    };
+
+    "log_operator"_test = [] () {
+        var a;
+        expect(eq(value_of(log(a), at(a = 2)), std::log(2)));
+    };
+
+    "log_operator_derivative"_test = [] () {
+        var a;
+        expect(eq(derivative_of(log(a*a), wrt(a), at(a = 2)), 2*2/(2*2)));
+    };
+
     "operation_derivative_wrt_expression"_test = [] () {
         static constexpr let a;
         static constexpr var b;
