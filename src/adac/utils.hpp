@@ -179,6 +179,16 @@ struct md_shape {
     constexpr bool operator==(const md_shape<v...>&) const noexcept { return false; }
     constexpr bool operator==(const md_shape&) const noexcept { return true; }
 
+    //! Return the first dimension of this shape
+    static constexpr auto first() noexcept {
+        return at(index_constant<0>{});
+    }
+
+    //! Return the last diension of this shape
+    static constexpr auto last() noexcept {
+        return at(index_constant<size-1>{});
+    }
+
     template<std::size_t _i> requires(_i < size)
     static constexpr std::size_t at(const index_constant<_i>& idx) noexcept {
         return value_list<s...>::at(idx);
