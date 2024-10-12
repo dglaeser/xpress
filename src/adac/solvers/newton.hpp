@@ -76,11 +76,35 @@ struct newton {
     }
 
     template<typename... S, typename R, typename G, typename V>
+        requires(traits::is_scalar_v<R>)
     constexpr void _update(bindings<S...>& solution,
                            const R& residual,
                            const G& gradient,
                            const type_list<V>&) const noexcept {
         solution[V{}] -= residual/gradient[V{}];
+    }
+
+    template<typename... S, typename R, typename G, typename V1, typename V2>
+        requires(linalg::concepts::tensor<R>)
+    constexpr void _update(bindings<S...>& solution,
+                           const R& residual,
+                           const G& gradient,
+                           const type_list<V1, V2>&) const noexcept {
+        static_assert(
+            linalg::traits::shape_of_t<R>{}.first() == 2,
+            "Newton update currently only implemented for scalar equations or 2d equation systems."
+        );
+        const linalg::tensor jacobian{shape<2, 2>,
+            gradient[V1{}][at<0>()], gradient[V2{}][at<0>()],
+            gradient[V1{}][at<1>()], gradient[V2{}][at<1>()]
+        };
+        const auto jacobian_inverse = linalg::tensor{shape<2, 2>,
+            jacobian[at<1, 1>()], -jacobian[at<0, 1>()],
+            -jacobian[at<1, 0>()], jacobian[at<0, 0>()]
+        }*(1.0/linalg::determinant_of(jacobian));
+        const auto update = mat_mul(jacobian_inverse, residual);
+        solution[V1{}] -= update[at<0>()];
+        solution[V2{}] -= update[at<1>()];
     }
 
     template<typename R> requires(traits::is_scalar_v<R>)
