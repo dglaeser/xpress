@@ -47,6 +47,11 @@ struct tensor {
         return self[md_i_c<i>];
     }
 
+    template<typename V> requires(traits::is_scalar_v<V>)
+    constexpr auto operator*(const V& value) const noexcept {
+        return operators::traits::multiplication_of<tensor, V>{}(*this, value);
+    }
+
  private:
     std::array<T, shape::count> _values;
 };
