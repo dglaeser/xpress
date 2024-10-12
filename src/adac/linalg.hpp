@@ -38,6 +38,11 @@ struct tensor {
         return self._values[md_index<i...>::as_flat_index_in(shape{})];
     }
 
+    template<typename S, std::size_t i> requires(shape::size == 1)
+    constexpr decltype(auto) operator[](this S&& self, const index_constant<i>& idx) noexcept {
+        return self[md_i_c<i>];
+    }
+
  private:
     std::array<T, shape::count> _values;
 };

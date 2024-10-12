@@ -42,13 +42,27 @@ template<std::size_t dim, typename T = dtype::any, auto _ = [] () {}>
 using vector = tensor<T, _, dim>;
 
 
-template<typename shape, concepts::expression... E> requires(shape::count == sizeof...(E))
+template<typename shape, concepts::expression... E>
+    requires(shape::count == sizeof...(E) and shape::count > 0)
 struct tensor_expression : indexed<E...> {
+    constexpr tensor_expression() = default;
     constexpr tensor_expression(const shape&, const E&...) noexcept {}
 
     template<std::size_t... i>
     constexpr auto operator[](const md_index<i...>& idx) const noexcept {
         return this->get(i_c<md_index<i...>::as_flat_index_in(shape{})>);
+    }
+
+    template<std::size_t i> requires(shape::size == 1)
+    constexpr auto operator[](const index_constant<i>& idx) const noexcept {
+        return (*this)[md_i_c<i>];
+    }
+};
+
+struct vector_expression {
+    template<concepts::expression... E>
+    static constexpr auto from(const E&... expressions) noexcept {
+        return tensor_expression{shape<sizeof...(E)>, expressions...};
     }
 };
 
