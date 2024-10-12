@@ -95,6 +95,13 @@ int main() {
         expect(eq(value_of(t1*t2, at(t1 = m, t2 = m)), 1+4+9+16));
     };
 
+    "tensor_is_square"_test = [] () {
+        static_assert(tensor{shape<2, 2>}.is_square);
+        static_assert(tensor{shape<3, 3>}.is_square);
+        static_assert(!tensor{shape<2, 2, 2>}.is_square);
+        static_assert(!tensor{shape<2, 3>}.is_square);
+    };
+
     "vector_scalar_product"_test = [] () {
         constexpr std::array<int, 2> data{1, 2};
         static constexpr vector<2> v1{};

@@ -24,8 +24,10 @@ namespace adac {
 //! \{
 
 
-template<typename T = dtype::any, auto _ = [] () {}, std::size_t... dims>
+template<typename T = dtype::any, auto _ = [] () {}, std::size_t... dims> requires(sizeof...(dims) > 0)
 struct tensor : bindable<T>, negatable {
+    static constexpr bool is_square = sizeof...(dims) == 2 && std::conjunction_v<traits::is_equal<dims, value_list<dims...>::first()>...>;
+
     using bindable<T>::operator=;
 
     constexpr tensor() = default;
