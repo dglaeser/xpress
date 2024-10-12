@@ -241,6 +241,11 @@ struct md_index {
 template<std::size_t... i>
 inline constexpr md_index<i...> md_i_c{};
 
+template<std::size_t... i> requires(sizeof...(i) > 0)
+inline constexpr auto at() noexcept {
+    return md_index<i...>{};
+}
+
 
 #ifndef DOXYGEN
 namespace detail {
