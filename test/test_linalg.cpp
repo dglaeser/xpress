@@ -40,5 +40,9 @@ int main() {
         static_assert(t[md_i_c<1, 1>] == 42);
     };
 
+    "tensor_concept"_test = [] () {
+        static_assert(linalg::concepts::tensor<linalg::tensor<int, md_shape<2, 2>>>);
+    };
+
     return 0;
 }

@@ -103,11 +103,20 @@ template<typename T>
 struct shape_of;
 template<typename T> requires(adac::traits::is_indexable_v<T>)
 struct shape_of<T> : detail::shape_of_indexable<T> {};
+template<typename T, typename shape>
+struct shape_of<tensor<T, shape>> : std::type_identity<shape> {};
 template<typename T>
 using shape_of_t = typename shape_of<T>::type;
 
 template<typename T>
 struct access;
+template<typename T, typename shape>
+struct access<tensor<T, shape>> {
+    template<concepts::same_remove_cvref_t_as<tensor<T, shape>> _T, std::size_t... i>
+    static constexpr decltype(auto) at(const md_index<i...>& idx, _T&& tensor) noexcept {
+        return tensor[idx];
+    }
+};
 template<typename T> requires(adac::traits::is_indexable_v<T> and is_complete_v<shape_of<T>>)
 struct access<T> {
     template<concepts::same_remove_cvref_t_as<T> _T, std::size_t... i> requires(sizeof...(i) == shape_of_t<T>::size)
@@ -185,3 +194,11 @@ struct multiplication_of<T1, T2> {
 };
 
 }  // namespace adac::operators::traits
+
+
+namespace adac::traits {
+
+template<typename T, typename shape>
+struct scalar_type<linalg::tensor<T, shape>> : std::type_identity<T> {};
+
+}  // namespace adac::traits
