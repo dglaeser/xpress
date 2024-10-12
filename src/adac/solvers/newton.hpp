@@ -7,12 +7,16 @@
  */
 #pragma once
 
+#include <optional>
 #include <type_traits>
+#include <iostream>
+#include <string>
 
 #include <adac/concepts.hpp>
 #include <adac/bindings.hpp>
 #include <adac/expressions.hpp>
 #include <adac/traits.hpp>
+#include <adac/linalg.hpp>
 
 #include "common.hpp"
 
@@ -29,35 +33,64 @@ struct newton {
     : _opts{std::move(opts)}
     {}
 
-    template<concepts::expression E, typename I>
-    constexpr auto find_root_of(const E& equation, bindings<I>&& initial_guess) const noexcept {
+    template<concepts::expression E, typename... I>
+    constexpr auto find_root_of(const E& equation, bindings<I...>&& initial_guess) const noexcept {
         static_assert(
-            !std::conjunction_v<std::is_const<std::remove_reference_t<decltype(initial_guess[typename I::symbol_type{}])>>>,
+            !std::conjunction_v<std::is_const<std::remove_reference_t<
+                decltype(initial_guess[typename I::symbol_type{}])
+            >>...>,
             "Bindings to const refs are not supported as initial guess is updated with the solution."
         );
 
+        using result_t = std::optional<bindings<I...>>;
         using variables = traits::variables_of_t<E>;
         const auto gradient = derivatives_of(equation, variables{});
         auto residual = value_of(equation, initial_guess);
 
-        std::size_t iteration = 0;
         const auto threshold_squared = _opts.threshold*_opts.threshold;
-        while (residual*residual > threshold_squared && iteration < _opts.max_iterations) {
+        std::size_t iteration = 0;
+        auto residual_norm_squared = _squared_norm_of(residual);
+        while (residual_norm_squared > threshold_squared) {
+            if (iteration >= _opts.max_iterations) {
+                if (!std::is_constant_evaluated())
+                    _logger(1) << " -- Newton solver did not converge after " << iteration << " iterations.\n";
+                return result_t{};
+            }
+
             residual = value_of(equation, initial_guess);
+            residual_norm_squared = _squared_norm_of(residual);
             _update(initial_guess, residual, gradient.at(initial_guess), variables{});
-            iteration++;
+            ++iteration;
+            if (!std::is_constant_evaluated())
+                _logger(1) << " -- finished iteration " << iteration << "; residual = " << residual_norm_squared << "\n";
         }
 
-        return initial_guess;
+        return result_t{std::move(initial_guess)};
     }
 
  private:
+    constexpr progress_logger _logger(unsigned int verbosity_level) const noexcept {
+        return verbosity_level <= _opts.verbosity_level
+            ? progress_logger::active(std::cout)
+            : progress_logger::suppressed(std::cout);
+    }
+
     template<typename... S, typename R, typename G, typename V>
     constexpr void _update(bindings<S...>& solution,
                            const R& residual,
                            const G& gradient,
                            const type_list<V>&) const noexcept {
         solution[V{}] -= residual/gradient[V{}];
+    }
+
+    template<typename R> requires(traits::is_scalar_v<R>)
+    constexpr auto _squared_norm_of(const R& residual) const noexcept {
+        return residual*residual;
+    }
+
+    template<typename R> requires(linalg::concepts::tensor<R>)
+    constexpr auto _squared_norm_of(const R& residual) const noexcept {
+        return operators::traits::multiplication_of<R, R>{}(residual, residual);
     }
 
     solver_options<T> _opts;
