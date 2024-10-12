@@ -51,8 +51,9 @@ struct tensor {
     std::array<T, shape::count> _values;
 };
 
-template<typename shape, typename... Ts>
-tensor(const shape&, Ts&&...) -> tensor<std::common_type_t<Ts...>, shape>;
+template<std::size_t... s, typename... Ts> requires(std::conjunction_v<traits::is_scalar<std::remove_cvref_t<Ts>>...>)
+tensor(const md_shape<s...>&, Ts&&...) -> tensor<std::common_type_t<Ts...>, md_shape<s...>>;
+
 
 namespace traits {
 
