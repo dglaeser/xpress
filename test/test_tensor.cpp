@@ -158,6 +158,17 @@ int main() {
         expect(eq(value_of(v, at(a = 42, b = 43))[md_i_c<1>], 43));
     };
 
+    "tensor_expression_value_with_constants"_test = [] () {
+        var a;
+        tensor_expression v{shape<2>, a, val<43>};
+        static_assert(std::is_same_v<decltype(v[md_i_c<0>]), decltype(a)>);
+        static_assert(std::is_same_v<decltype(v[md_i_c<1>]), value<43>>);
+        static_assert(value_of(v, at(a = 42))[md_i_c<0>] == 42);
+        static_assert(value_of(v, at(a = 42))[md_i_c<1>] == 43);
+        expect(eq(value_of(v, at(a = 42))[md_i_c<0>], 42));
+        expect(eq(value_of(v, at(a = 42))[md_i_c<1>], 43));
+    };
+
     "vector_expression_builder"_test = [] () {
         var a; var b;
         constexpr auto vector = vector_expression_builder<2>{}
