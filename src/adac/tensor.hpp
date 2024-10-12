@@ -243,9 +243,14 @@ struct value_of<operation<operators::determinant, tensor<T, _, rows, cols>>> {
 
     template<typename... V>
     static constexpr decltype(auto) from(const bindings<V...>& values) {
-        using bound_type = std::remove_cvref_t<decltype(adac::value_of(tensor<T, _, rows, cols>{}, values))>;
-        static_assert(linalg::concepts::tensor<bound_type>, "Expected a tensor to be bound to a tensorial symbol.");
-        return linalg::determinant_of(adac::value_of(tensor<T, _, rows, cols>{}, values));
+        using self = operation<operators::determinant, tensor<T, _, rows, cols>>;
+        if constexpr (bindings<V...>::template has_bindings_for<self>) {
+            return values[self{}];
+        } else {
+            using bound_type = std::remove_cvref_t<decltype(adac::value_of(tensor<T, _, rows, cols>{}, values))>;
+            static_assert(linalg::concepts::tensor<bound_type>, "Expected a tensor to be bound to a tensorial symbol.");
+            return linalg::determinant_of(adac::value_of(tensor<T, _, rows, cols>{}, values));
+        }
     }
 };
 

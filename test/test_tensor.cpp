@@ -140,6 +140,13 @@ int main() {
         expect(eq(value_of(det(T33), at(T33 = linalg::tensor{shape<3, 3>, 6, 1, 1, 4, -2, 5, 2, 8, 7})), -306));
     };
 
+    "tensor_bound_determinant"_test = [] () {
+        const tensor T{shape<2, 2>};
+        const auto detT = value_of(det(T), at(T = linalg::tensor{shape<2, 2>, 3, 8, 4, 6}));
+        expect(eq(detT, -14));
+        expect(eq(value_of(det(T), at(det(T) = detT)), -14));
+    };
+
     "tensor_variable_access"_test = [] () {
         constexpr tensor t{shape<2, 2>};
         constexpr auto T00 = t[at<0, 0>()];
