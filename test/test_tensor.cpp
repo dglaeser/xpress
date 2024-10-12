@@ -68,6 +68,24 @@ int main() {
         static_assert(std::is_same_v<decltype(value_of(t, at(t = m))), const matrix<int, 2, 2>&>);
     };
 
+    "tensor_addition"_test = [] () {
+        tensor t1{shape<2, 2>};
+        tensor t2{shape<2, 2>};
+        expect(value_of(t1 + t2, at(
+            t1 = linalg::tensor{shape<2, 2>, 1, 2, 3, 4},
+            t2 = linalg::tensor{shape<2, 2>, 2, 3, 4, 5}
+        )) == linalg::tensor{shape<2, 2>, 3, 5, 7, 9});
+    };
+
+    "tensor_subtraction"_test = [] () {
+        tensor t1{shape<2, 2>};
+        tensor t2{shape<2, 2>};
+        expect(value_of(t1 - t2, at(
+            t1 = linalg::tensor{shape<2, 2>, 1, 2, 3, 4},
+            t2 = linalg::tensor{shape<2, 2>, 2, 3, 4, 5}
+        )) == linalg::tensor{shape<2, 2>, -1, -1, -1, -1});
+    };
+
     "tensor_times_scalar"_test = [] () {
         matrix<int, 2, 2> m;
         m[0][0] = 1; m[0][1] = 2;

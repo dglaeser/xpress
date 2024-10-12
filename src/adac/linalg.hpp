@@ -213,6 +213,36 @@ struct multiplication_of<T1, T2> {
     }
 };
 
+template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
+    requires(linalg::traits::shape_of_t<T1>{} == linalg::traits::shape_of_t<T2>{})
+struct addition_of<T1, T2> {
+    template<concepts::same_remove_cvref_t_as<T1> _T1, concepts::same_remove_cvref_t_as<T2> _T2>
+    constexpr auto operator()(_T1&& A, _T2&& B) const noexcept {
+        using scalar = std::common_type_t<adac::traits::scalar_type_t<T1>, adac::traits::scalar_type_t<T2>>;
+        using shape = linalg::traits::shape_of_t<T1>;
+        linalg::tensor<scalar, shape> result{};
+        visit_indices_in(shape{}, [&] (const auto& idx) {
+            result[idx] = adac::linalg::traits::access<T1>::at(idx, A) + adac::linalg::traits::access<T2>::at(idx, B);
+        });
+        return result;
+    }
+};
+
+template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
+    requires(linalg::traits::shape_of_t<T1>{} == linalg::traits::shape_of_t<T2>{})
+struct subtraction_of<T1, T2> {
+    template<concepts::same_remove_cvref_t_as<T1> _T1, concepts::same_remove_cvref_t_as<T2> _T2>
+    constexpr auto operator()(_T1&& A, _T2&& B) const noexcept {
+        using scalar = std::common_type_t<adac::traits::scalar_type_t<T1>, adac::traits::scalar_type_t<T2>>;
+        using shape = linalg::traits::shape_of_t<T1>;
+        linalg::tensor<scalar, shape> result{};
+        visit_indices_in(shape{}, [&] (const auto& idx) {
+            result[idx] = adac::linalg::traits::access<T1>::at(idx, A) - adac::linalg::traits::access<T2>::at(idx, B);
+        });
+        return result;
+    }
+};
+
 }  // namespace adac::operators::traits
 
 
