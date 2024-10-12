@@ -245,21 +245,7 @@ struct value_of<operation<operators::determinant, tensor<T, _, rows, cols>>> {
     static constexpr decltype(auto) from(const bindings<V...>& values) {
         using bound_type = std::remove_cvref_t<decltype(adac::value_of(tensor<T, _, rows, cols>{}, values))>;
         static_assert(linalg::concepts::tensor<bound_type>, "Expected a tensor to be bound to a tensorial symbol.");
-
-        const auto& t = adac::value_of(tensor<T, _, rows, cols>{}, values);
-        const auto _get = [&] <std::size_t... i> (const md_index<i...>& idx) constexpr noexcept {
-            return linalg::traits::access<bound_type>::at(idx, t);
-        };
-
-        if constexpr (rows == 2)
-            return _get(at<0, 0>())*_get(at<1, 1>()) - _get(at<1, 0>())*_get(at<0, 1>());
-        else
-            return _get(at<0, 0>())*_get(at<1, 1>())*_get(at<2, 2>())
-                + _get(at<0, 1>())*_get(at<1, 2>())*_get(at<2, 0>())
-                + _get(at<0, 2>())*_get(at<1, 0>())*_get(at<2, 1>())
-                - _get(at<0, 2>())*_get(at<1, 1>())*_get(at<2, 0>())
-                - _get(at<0, 1>())*_get(at<1, 0>())*_get(at<2, 2>())
-                - _get(at<0, 0>())*_get(at<1, 2>())*_get(at<2, 1>());
+        return linalg::determinant_of(adac::value_of(tensor<T, _, rows, cols>{}, values));
     }
 };
 

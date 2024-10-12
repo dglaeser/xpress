@@ -200,6 +200,30 @@ inline constexpr auto mat_mul(const T1& t1, const T2& t2) noexcept {
     return result;
 }
 
+//! Return the determinant of the given tensor
+template<concepts::tensor T>
+    requires(traits::shape_of_t<T>{}.size == 2)
+inline constexpr auto determinant_of(const T& tensor) noexcept {
+    static constexpr auto rows = traits::shape_of_t<T>{}.at(i_c<0>);
+    static constexpr auto cols = traits::shape_of_t<T>{}.at(i_c<1>);
+    static_assert(rows == cols, "Determinant can only be computed for square matrices.");
+    static_assert(rows == 2 || rows == 3, "Determinant is only implemented for 2d & 3d matrices.");
+
+    const auto _get = [&] <std::size_t... i> (const md_index<i...>& idx) constexpr noexcept {
+        return linalg::traits::access<T>::at(idx, tensor);
+    };
+
+    if constexpr (rows == 2)
+        return _get(at<0, 0>())*_get(at<1, 1>()) - _get(at<1, 0>())*_get(at<0, 1>());
+    else
+        return _get(at<0, 0>())*_get(at<1, 1>())*_get(at<2, 2>())
+            + _get(at<0, 1>())*_get(at<1, 2>())*_get(at<2, 0>())
+            + _get(at<0, 2>())*_get(at<1, 0>())*_get(at<2, 1>())
+            - _get(at<0, 2>())*_get(at<1, 1>())*_get(at<2, 0>())
+            - _get(at<0, 1>())*_get(at<1, 0>())*_get(at<2, 2>())
+            - _get(at<0, 0>())*_get(at<1, 2>())*_get(at<2, 1>());
+}
+
 //! \} group LinearAlgebra
 
 }  // namespace adac::linalg
