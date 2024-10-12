@@ -134,6 +134,9 @@ struct tensor_expression_builder {
 template<typename shape>
 tensor_expression_builder(const shape&) -> tensor_expression_builder<shape>;
 
+template<std::size_t n>
+using vector_expression_builder = tensor_expression_builder<md_shape<n>>;
+
 
 namespace traits {
 
