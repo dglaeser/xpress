@@ -164,8 +164,8 @@ struct stream<tensor_expression<shape, E...>> {
  private:
     template<typename... V, typename L0, typename... L>
     static constexpr void _write_args_to(std::ostream& out, const bindings<V...>& values, const type_list<L0, L...>& leafs) {
-        out << values[L0{}];
-        (..., (out << ", " << values[L{}]));
+        stream<L0>::to(out, values);
+        (..., (out << ", ", stream<L>::to(out, values)));
     }
 
     template<typename... V>
