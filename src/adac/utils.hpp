@@ -28,6 +28,9 @@ using namespace cpputils;
 template<std::size_t i>
 inline constexpr index_constant<i> i_c{};
 
+//! Null type
+struct none {};
+
 
 namespace traits {
 
