@@ -210,6 +210,9 @@ template<std::size_t... i>
 struct md_index {
     static constexpr std::size_t size = sizeof...(i);
 
+    constexpr md_index() = default;
+    constexpr md_index(const value_list<i...>) noexcept {}
+
     template<std::size_t... v> requires(size > 0)
     constexpr bool operator==(const md_index<v...>&) const noexcept { return false; }
     constexpr bool operator==(const md_index&) const noexcept { return true; }
