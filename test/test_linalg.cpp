@@ -40,6 +40,12 @@ int main() {
         static_assert(t[md_i_c<1, 1>] == 42);
     };
 
+    "tensor_mat_mul"_test = [] () {
+        constexpr linalg::tensor A{shape<2, 3>, 1, 2, 3, 3, 2, 1};
+        constexpr linalg::tensor B{shape<3, 2>, 4, 5, 6, 5, 4, 6};
+        expect(linalg::mat_mul(A, B) == linalg::tensor{shape<2, 2>, 28, 33, 28, 31});
+    };
+
     "tensor_concept"_test = [] () {
         static_assert(linalg::concepts::tensor<linalg::tensor<int, md_shape<2, 2>>>);
     };

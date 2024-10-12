@@ -172,6 +172,34 @@ and requires(const T& t) {
 
 }  // namespace concepts
 
+//! Compute the matrix product of two tensors
+template<concepts::tensor T1, concepts::tensor T2>
+inline constexpr auto mat_mul(const T1& t1, const T2& t2) noexcept {
+    using shape1 = traits::shape_of_t<T1>;
+    using shape2 = traits::shape_of_t<T2>;
+    static_assert(shape1::size > 1, "First argument must be a tensor with 2 or more dimensions.");
+    static_assert(shape1{}.last() == shape2{}.first(), "Tensor dimensions do not match.");
+
+    using scalar = std::common_type_t<
+        adac::traits::scalar_type_t<T1>,
+        adac::traits::scalar_type_t<T2>
+    >;
+    constexpr md_shape new_shape{
+        typename shape1::as_value_list_t{}.template crop<1>()
+        + typename shape2::as_value_list_t{}.template drop<1>()
+    };
+
+    linalg::tensor<scalar, decltype(new_shape)> result{scalar{0}};
+    visit_indices_in(new_shape, [&] <std::size_t... i> (const md_index<i...>& idx) constexpr {
+        visit_indices_in(shape<shape1{}.last()>, [&] <std::size_t j> (const md_index<j>&) constexpr {
+            const auto t1_idx = md_index{value_list<i...>::template take<shape1::size-1>() + value_list<j>{}};
+            const auto t2_idx = md_index{value_list<j>{} + value_list<i...>::template drop<shape1::size-1>()};
+            result[idx] += t1[t1_idx]*t2[t2_idx];
+        });
+    });
+    return result;
+}
+
 //! \} group LinearAlgebra
 
 }  // namespace adac::linalg
