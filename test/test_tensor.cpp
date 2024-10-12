@@ -157,6 +157,21 @@ int main() {
         expect(eq(value_of(v, at(a = 42, b = 43))[md_i_c<1>], 43));
     };
 
+    "tensor_expression_builder"_test = [] () {
+        var a; var b; var c; var d;
+        constexpr auto tensor = tensor_expression_builder{shape<2, 2>}
+                                    .with(a, at<0, 0>())
+                                    .with(b, at<0, 1>())
+                                    .with(c, at<1, 0>())
+                                    .with(d, at<1, 1>())
+                                    .build();
+        constexpr auto value = value_of(tensor, at(a = 1, b = 2, c = 3, d = 4));
+        static_assert(value[at<0, 0>()] == 1);
+        static_assert(value[at<0, 1>()] == 2);
+        static_assert(value[at<1, 0>()] == 3);
+        static_assert(value[at<1, 1>()] == 4);
+    };
+
     "tensor_expression_derivative"_test = [] () {
         expect(false);
     };

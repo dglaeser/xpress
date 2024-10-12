@@ -66,6 +66,74 @@ struct vector_expression {
     }
 };
 
+template<typename shape, typename... T>
+    requires(shape::count > 0 and (sizeof...(T) == 0 or sizeof...(T) == shape::count))
+struct tensor_expression_builder {
+    constexpr tensor_expression_builder() = default;
+    constexpr tensor_expression_builder(const shape&) noexcept {};
+
+    constexpr auto build() const noexcept {
+        static_assert(sizeof...(T) > 0, "No entries of the tensor have been set yet.");
+        static_assert(
+            std::conjunction_v<is_expression<T>...>,
+            "All entries of the tensor have to be set to expressions before it can be built."
+        );
+        return tensor_expression<shape, T...>{};
+    }
+
+    template<concepts::expression E, std::size_t... i>
+    constexpr auto with(const E& expression, const md_index<i...>& idx) const noexcept {
+        if constexpr (sizeof...(T) == 0)
+            return _with(expression, idx, _make_none_list<shape::count>(type_list<>{}));
+        else
+            return _with(expression, idx, type_list<T...>{});
+    }
+
+ private:
+    template<std::size_t i, typename... n> requires(std::conjunction_v<std::is_same<T, none>...>)
+    constexpr auto _make_none_list(const type_list<n...>& nones) const noexcept {
+        if constexpr (sizeof...(n) == i)
+            return nones;
+        else
+            return _make_none_list<i>(type_list<n..., none>{});
+    }
+
+    template<typename E, std::size_t... i, typename... Ts> requires(sizeof...(Ts) == shape::count)
+    constexpr auto _with(const E&, const md_index<i...>& idx, const type_list<Ts...>&) const noexcept {
+        static_assert(md_index<i...>{}.is_contained_in(shape{}), "Given index is not contained in the specified shape.");
+        static constexpr auto flat_idx = md_index<i...>::as_flat_index_in(shape{}).value;
+        using replaced_types = replaced_type_at<flat_idx, E, type_list<>, type_list<Ts...>>::type;
+
+        static_assert(is_any_of_v<E, replaced_types>, "Adding the expression unexpectedly failed. Please file a bug report.");
+        return _make_from(replaced_types{});
+    }
+
+    template<typename... Ts>
+    constexpr auto _make_from(const type_list<Ts...>&) const noexcept {
+        return tensor_expression_builder<shape, Ts...>{};
+    }
+
+    template<std::size_t i, typename E, typename before, typename after>
+    struct replaced_type_at;
+    template<std::size_t i, typename E, typename... before, typename after0, typename... after>
+    struct replaced_type_at<i, E, type_list<before...>, type_list<after0, after...>>
+     : replaced_type_at<
+        i,
+        E,
+        std::conditional_t<
+            sizeof...(before) == i,
+            type_list<before..., E>,
+            type_list<before..., after0>
+        >,
+        type_list<after...>
+    > {};
+    template<std::size_t i, typename E, typename... replaced>
+    struct replaced_type_at<i, E, type_list<replaced...>, type_list<>> : std::type_identity<type_list<replaced...>> {};
+};
+
+template<typename shape>
+tensor_expression_builder(const shape&) -> tensor_expression_builder<shape>;
+
 
 namespace traits {
 
