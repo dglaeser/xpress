@@ -216,8 +216,16 @@ int main() {
         expect(s.str() == "T<2>(a, b)" or s.str() == "T<2>(b, a)");
     };
 
-    "tensor_expression_derivative"_test = [] () {
-        expect(false);
+    "gradient_of_scalar_expression_from_vectors"_test = [] () {
+        static constexpr var a;
+        static constexpr var b;
+        static constexpr auto v1 = vector_expression_builder<2>{}.with(a, at<0>()).with(a, at<1>()).build();
+        static constexpr auto v2 = vector_expression_builder<2>{}.with(b, at<0>()).with(b, at<1>()).build();
+        static constexpr auto scalar_product = v1*v2;
+        const auto grad = gradient_of(scalar_product, at(a = 1, b = 2));
+        expect(eq(value_of(scalar_product, at(a = 1, b = 2)), 4));
+        expect(eq(grad[a], 4));
+        expect(eq(grad[b], 2));
     };
 
     return 0;

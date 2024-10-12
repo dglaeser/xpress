@@ -220,11 +220,8 @@ struct derivative_of<tensor<T, _, dims...>> {
 template<typename shape, typename... E>
 struct derivative_of<tensor_expression<shape, E...>> {
     template<typename V>
-    static constexpr decltype(auto) wrt(const type_list<V>&) {
-        if constexpr (std::is_same_v<V, tensor_expression<shape, E...>>)
-            return val<1>;
-        else
-            return val<0>;
+    static constexpr decltype(auto) wrt(const type_list<V>& var) {
+        return tensor_expression{shape{}, adac::derivative_of(E{}, var)...};
     }
 };
 
