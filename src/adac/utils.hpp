@@ -169,6 +169,8 @@ struct value_list : detail::values<std::make_index_sequence<sizeof...(v)>, v...>
 //! Type to represent a multi-dimensional shape
 template<std::size_t... s>
 struct md_shape {
+    using as_value_list_t = value_list<s...>;
+
     static constexpr std::size_t size = sizeof...(s);
     static constexpr std::size_t count = value_list<s...>{}.reduce_with(std::multiplies{}, std::size_t{1});
 
