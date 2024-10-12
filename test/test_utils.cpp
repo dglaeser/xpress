@@ -123,6 +123,15 @@ int main() {
         static_assert(md_i_c<>.as_flat_index_in(md_shape<>{}) == i_c<0>);
     };
 
+    "md_index_contained_in"_test = [] () {
+        static_assert(md_i_c<0, 0>.is_contained_in(shape<2, 2>));
+        static_assert(md_i_c<0, 1>.is_contained_in(shape<2, 2>));
+        static_assert(md_i_c<1, 0>.is_contained_in(shape<2, 2>));
+        static_assert(md_i_c<1, 1>.is_contained_in(shape<2, 2>));
+        static_assert(!md_i_c<1, 2>.is_contained_in(shape<2, 2>));
+        static_assert(!md_i_c<2, 1>.is_contained_in(shape<2, 2>));
+    };
+
     "md_index_iterator"_test = [] () {
         auto it = md_index_iterator{shape<2, 3>};
         static_assert(*it == md_index<0, 0>{});

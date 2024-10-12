@@ -32,6 +32,7 @@ inline constexpr index_constant<i> i_c{};
 namespace traits {
 
 template<auto a, auto b> struct is_equal : std::bool_constant<(a == b)> {};
+template<auto a, auto b> struct is_less : std::bool_constant<(a < b)> {};
 
 }  // namespace traits
 
@@ -209,6 +210,14 @@ struct md_index {
 
     static constexpr auto as_flat_index_in(const md_shape<>&) noexcept requires(size == 0) {
         return i_c<0>;
+    }
+
+    template<std::size_t... s>
+    static constexpr bool is_contained_in(const md_shape<s...>&) noexcept {
+        if constexpr (sizeof...(s) != sizeof...(i))
+            return false;
+        else
+            return std::conjunction_v<traits::is_less<i, s>...>;
     }
 
  private:
