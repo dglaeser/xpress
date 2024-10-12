@@ -25,7 +25,9 @@ namespace adac {
 //! \{
 
 template<typename tensor, std::size_t... indices>
-struct tensor_var {};
+struct tensor_var : negatable {
+    using dtype = typename tensor::dtype;
+};
 
 
 template<typename T = dtype::any, auto _ = [] () {}, std::size_t... dims> requires(sizeof...(dims) > 0)
