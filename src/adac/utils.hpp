@@ -130,13 +130,18 @@ struct value_list : detail::values<std::make_index_sequence<sizeof...(v)>, v...>
 
     //! Write this list to the given output stream
     friend std::ostream& operator<<(std::ostream& s, const value_list&) {
-        s << "[";
-        (s << ... << (std::to_string(v) + ","));
-        s << "]";
+        if constexpr (size > 0)
+            _write_to<v...>(s);
         return s;
     }
 
  private:
+    template<auto v0, auto... vs>
+    static void _write_to(std::ostream& s) {
+        s << std::to_string(v0);
+        (..., (s << ", " << std::to_string(vs)));
+    }
+
     template<typename op, typename T>
     static constexpr auto _reduce_with(op&&, T&& initial) noexcept {
         return std::forward<T>(initial);
@@ -172,9 +177,9 @@ struct md_shape {
     }
 
     friend std::ostream& operator<<(std::ostream& out, const md_shape&) {
-        out << "[";
-        (out << ... << (std::to_string(s) + ","));
-        out << "]";
+        out << "<";
+        out << value_list<s...>{};
+        out << ">";
         return out;
     }
 };

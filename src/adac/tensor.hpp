@@ -9,6 +9,7 @@
 
 #include <ostream>
 
+#include "dtype.hpp"
 #include "utils.hpp"
 #include "traits.hpp"
 #include "expressions.hpp"
@@ -45,6 +46,8 @@ using vector = tensor<T, _, dim>;
 template<typename shape, concepts::expression... E>
     requires(shape::count == sizeof...(E) and shape::count > 0)
 struct tensor_expression : indexed<E...> {
+    using dtype = traits::common_dtype_t<traits::dtype_of_t<E>...>;
+
     constexpr tensor_expression() = default;
     constexpr tensor_expression(const shape&, const E&...) noexcept {}
 
@@ -146,6 +149,27 @@ struct stream<tensor<T, _, dims...>> {
     static constexpr void to(std::ostream& out, const bindings<V...>& values) {
         using self = tensor<T, _, dims...>;
         out << values[self{}];
+    }
+};
+
+template<typename shape, typename... E>
+struct stream<tensor_expression<shape, E...>> {
+    template<typename... V>
+    static constexpr void to(std::ostream& out, const bindings<V...>& values) {
+        out << "T" << shape{} << "(";
+        _write_args_to(out, values, unique_leaf_nodes_of_t<tensor_expression<shape, E...>>{});
+        out << ")";
+    }
+
+ private:
+    template<typename... V, typename L0, typename... L>
+    static constexpr void _write_args_to(std::ostream& out, const bindings<V...>& values, const type_list<L0, L...>& leafs) {
+        out << values[L0{}];
+        (..., (out << ", " << values[L{}]));
+    }
+
+    template<typename... V>
+    static constexpr void _write_args_to(std::ostream& out, const bindings<V...>& values, const type_list<>&) {
     }
 };
 

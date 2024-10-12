@@ -2,6 +2,7 @@
 #include <utility>
 #include <algorithm>
 #include <type_traits>
+#include <sstream>
 
 #include <adac/operators.hpp>
 #include <adac/symbols.hpp>
@@ -181,6 +182,27 @@ int main() {
         static_assert(value[at<0, 1>()] == 2);
         static_assert(value[at<1, 0>()] == 3);
         static_assert(value[at<1, 1>()] == 4);
+    };
+
+    "tensor_expression_stream"_test = [] () {
+        var a; var b; var c; var d;
+        auto T = tensor_expression_builder{shape<2, 2>}
+                    .with(a, at<0, 0>())
+                    .with(b, at<0, 1>())
+                    .with(c, at<1, 0>())
+                    .with(d, at<1, 1>())
+                    .build();
+        std::ostringstream s;
+        write_to(s, T, at(a = "a", b = "b", c = "c", d = "d"));
+        expect(s.str().starts_with("T<2, 2>("));
+    };
+
+    "vector_expression_stream"_test = [] () {
+        var a; var b;
+        auto v = vector_expression_builder<2>{}.with(a, at<0>()).with(b, at<1>()).build();
+        std::ostringstream s;
+        write_to(s, v, at(a = "a", b = "b"));
+        expect(s.str() == "T<2>(a, b)" or s.str() == "T<2>(b, a)");
     };
 
     "tensor_expression_derivative"_test = [] () {
