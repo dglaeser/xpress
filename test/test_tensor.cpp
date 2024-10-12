@@ -109,6 +109,20 @@ int main() {
         expect(eq(value_of(det(T33), at(T33 = linalg::tensor{shape<3, 3>, 6, 1, 1, 4, -2, 5, 2, 8, 7})), -306));
     };
 
+    "tensor_variable_access"_test = [] () {
+        constexpr tensor t{shape<2, 2>};
+        constexpr auto T00 = t[at<0, 0>()];
+        constexpr auto T01 = t[at<0, 1>()];
+        constexpr auto T10 = t[at<1, 0>()];
+        constexpr auto T11 = t[at<1, 1>()];
+
+        using T = std::remove_cvref_t<decltype(t)>;
+        static_assert(std::is_same_v<std::remove_cvref_t<decltype(T00)>, tensor_var<T, 0, 0>>);
+        static_assert(std::is_same_v<std::remove_cvref_t<decltype(T01)>, tensor_var<T, 0, 1>>);
+        static_assert(std::is_same_v<std::remove_cvref_t<decltype(T10)>, tensor_var<T, 1, 0>>);
+        static_assert(std::is_same_v<std::remove_cvref_t<decltype(T11)>, tensor_var<T, 1, 1>>);
+    };
+
     "vector_scalar_product"_test = [] () {
         constexpr std::array<int, 2> data{1, 2};
         static constexpr vector<2> v1{};

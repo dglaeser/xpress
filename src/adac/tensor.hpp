@@ -24,6 +24,9 @@ namespace adac {
 //! \addtogroup Symbols
 //! \{
 
+template<typename tensor, std::size_t... indices>
+struct tensor_var {};
+
 
 template<typename T = dtype::any, auto _ = [] () {}, std::size_t... dims> requires(sizeof...(dims) > 0)
 struct tensor : bindable<T>, negatable {
@@ -33,6 +36,12 @@ struct tensor : bindable<T>, negatable {
 
     constexpr tensor() = default;
     constexpr tensor(md_shape<dims...>) noexcept {}
+
+    template<std::size_t... i>
+    constexpr auto operator[](const md_index<i...>& idx) const noexcept {
+        static_assert(md_index<i...>{}.is_contained_in(shape<dims...>), "Given index is not contained in this tensor's shape.");
+        return tensor_var<tensor<T, _, dims...>, i...>{};
+    }
 
     // for better compiler error messages about symbols being unique (not copyable)
     template<typename _T, auto __>
