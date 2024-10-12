@@ -199,6 +199,19 @@ struct multiplication_of<S, T> {
     }
 };
 
+template<linalg::concepts::tensor T, typename S> requires(adac::traits::is_scalar_v<S>)
+struct division_of<T, S> {
+    template<concepts::same_remove_cvref_t_as<T> _T, concepts::same_remove_cvref_t_as<S> _S>
+    constexpr T operator()(_T&& tensor, _S&& scalar) const noexcept {
+        T result;
+        visit_indices_in(linalg::traits::shape_of_t<T>{}, [&] (const auto& idx) {
+            adac::traits::scalar_type_t<T>& value_at_idx = adac::linalg::traits::access<T>::at(idx, result);
+            value_at_idx = adac::linalg::traits::access<T>::at(idx, tensor)/scalar;
+        });
+        return result;
+    }
+};
+
 template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
     requires(linalg::traits::shape_of_t<T1>{} == linalg::traits::shape_of_t<T2>{})
 struct multiplication_of<T1, T2> {

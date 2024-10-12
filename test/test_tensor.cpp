@@ -96,6 +96,19 @@ int main() {
         expect(value_of(val<2>*t, at(t = m)) == m*2);
     };
 
+    "tensor_divided_by_scalar"_test = [] () {
+        matrix<int, 2, 2> m;
+        m[0][0] = 2; m[0][1] = 4;
+        m[1][0] = 6; m[1][1] = 8;
+
+        matrix<int, 2, 2> expected;
+        expected[0][0] = 1; expected[0][1] = 2;
+        expected[1][0] = 3; expected[1][1] = 4;
+
+        tensor t{shape<2, 2>};
+        expect(value_of(t/val<2>, at(t = m)) == expected);
+    };
+
     "tensor_stream"_test = [] () {
         tensor T{shape<2, 3>};
         std::ostringstream s;
