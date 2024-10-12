@@ -43,6 +43,14 @@ int main() {
         static_assert(empty.size == 0);
     };
 
+    "value_list_take_n"_test = [] () {
+        constexpr value_list<0, 1, 2> values;
+        constexpr auto firsts = values.template take<2>();
+        static_assert(firsts.size == 2);
+        static_assert(firsts.at(i_c<0>) == 0);
+        static_assert(firsts.at(i_c<1>) == 1);
+    };
+
     "value_list_equality"_test = [] () {
         constexpr value_list<0, 1, 2> values;
         static_assert(values == value_list<0, 1, 2>{});

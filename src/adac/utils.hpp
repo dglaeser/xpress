@@ -91,6 +91,14 @@ struct value_list : detail::values<std::make_index_sequence<sizeof...(v)>, v...>
         }(std::make_index_sequence<sizeof...(v) - n>{});
     }
 
+    //! Return a new list with the first n values from this list
+    template<std::size_t n> requires(n <= sizeof...(v))
+    static constexpr auto take() noexcept {
+        return [] <std::size_t... i> (const std::index_sequence<i...>&) constexpr {
+            return value_list<at(index_constant<i>{})...>{};
+        }(std::make_index_sequence<n>{});
+    }
+
     //! Return the first value in the list
     static constexpr auto first() noexcept {
         return at(index_constant<0>{});
