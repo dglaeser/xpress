@@ -102,6 +102,13 @@ int main() {
         static_assert(!tensor{shape<2, 3>}.is_square);
     };
 
+    "tensor_determinant"_test = [] () {
+        const tensor T22{shape<2, 2>};
+        const tensor T33{shape<3, 3>};
+        expect(eq(value_of(det(T22), at(T22 = linalg::tensor{shape<2, 2>, 3, 8, 4, 6})), -14));
+        expect(eq(value_of(det(T33), at(T33 = linalg::tensor{shape<3, 3>, 6, 1, 1, 4, -2, 5, 2, 8, 7})), -306));
+    };
+
     "vector_scalar_product"_test = [] () {
         constexpr std::array<int, 2> data{1, 2};
         static constexpr vector<2> v1{};

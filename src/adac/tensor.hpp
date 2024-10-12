@@ -14,6 +14,7 @@
 #include "utils.hpp"
 #include "traits.hpp"
 #include "expressions.hpp"
+#include "operators.hpp"
 #include "linalg.hpp"
 #include "values.hpp"
 
@@ -41,10 +42,20 @@ struct tensor : bindable<T>, negatable {
 template<auto _ = [] () {}, std::size_t... dims>
 tensor(const md_shape<dims...>&) -> tensor<dtype::any, _, dims...>;
 
-
 template<std::size_t dim, typename T = dtype::any, auto _ = [] () {}>
 using vector = tensor<T, _, dim>;
 
+
+namespace operators {
+
+struct determinant {};
+
+}  // namespace operators
+
+template<typename T, auto _, std::size_t... dims>
+inline constexpr auto det(const tensor<T, _, dims...>& m) noexcept {
+    return operation<operators::determinant, tensor<T, _, dims...>>{};
+}
 
 template<typename shape, concepts::expression... E>
     requires(shape::count == sizeof...(E) and shape::count > 0)
@@ -190,6 +201,34 @@ struct value_of<tensor<T, _, dims...>> {
     }
 };
 
+
+template<typename T, auto _, std::size_t d0, std::size_t... dims>
+struct value_of<operation<operators::determinant, tensor<T, _, d0, dims...>>> {
+    static_assert(tensor<T, _, d0, dims...>::is_square, "Determinant can only be taken on square matrices.");
+    static_assert(d0 == 2 || d0 == 3, "Determinant is only implemented for 2d & 3d matrices.");
+
+    template<typename... V>
+    static constexpr decltype(auto) from(const bindings<V...>& values) {
+        using bound_type = std::remove_cvref_t<decltype(adac::value_of(tensor<T, _, d0, dims...>{}, values))>;
+        static_assert(linalg::concepts::tensor<bound_type>, "Expected a tensor to be bound to a tensorial symbol.");
+
+        const auto& t = adac::value_of(tensor<T, _, d0, dims...>{}, values);
+        const auto _get = [&] <std::size_t... i> (const md_index<i...>& idx) constexpr noexcept {
+            return linalg::traits::access<bound_type>::at(idx, t);
+        };
+
+        if constexpr (d0 == 2)
+            return _get(at<0, 0>())*_get(at<1, 1>()) - _get(at<1, 0>())*_get(at<0, 1>());
+        else
+            return _get(at<0, 0>())*_get(at<1, 1>())*_get(at<2, 2>())
+                + _get(at<0, 1>())*_get(at<1, 2>())*_get(at<2, 0>())
+                + _get(at<0, 2>())*_get(at<1, 0>())*_get(at<2, 1>())
+                - _get(at<0, 2>())*_get(at<1, 1>())*_get(at<2, 0>())
+                - _get(at<0, 1>())*_get(at<1, 0>())*_get(at<2, 2>())
+                - _get(at<0, 0>())*_get(at<1, 2>())*_get(at<2, 1>());
+    }
+};
+
 template<typename shape, typename... E>
 struct value_of<tensor_expression<shape, E...>> {
     template<typename... V>
@@ -200,6 +239,11 @@ struct value_of<tensor_expression<shape, E...>> {
 
 template<typename T, auto _, std::size_t... dims>
 struct nodes_of<tensor<T, _, dims...>> {
+    using type = type_list<tensor<T, _, dims...>>;
+};
+
+template<typename T, auto _, std::size_t... dims>
+struct nodes_of<operation<operators::determinant, tensor<T, _, dims...>>> {
     using type = type_list<tensor<T, _, dims...>>;
 };
 
@@ -216,6 +260,14 @@ struct derivative_of<tensor<T, _, dims...>> {
             return val<1>;
         else
             return val<0>;
+    }
+};
+
+template<typename T, auto _, std::size_t... dims>
+struct derivative_of<operation<operators::determinant, tensor<T, _, dims...>>> {
+    template<typename V>
+    static constexpr decltype(auto) wrt(const type_list<V>&) {
+        static_assert(false, "not implemented");
     }
 };
 
