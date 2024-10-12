@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <tuple>
 #include <ostream>
 
 #include "dtype.hpp"
@@ -45,7 +46,7 @@ using vector = tensor<T, _, dim>;
 
 template<typename shape, concepts::expression... E>
     requires(shape::count == sizeof...(E) and shape::count > 0)
-struct tensor_expression : indexed<E...> {
+struct tensor_expression {
     using dtype = traits::common_dtype_t<traits::dtype_of_t<E>...>;
 
     constexpr tensor_expression() = default;
@@ -53,7 +54,7 @@ struct tensor_expression : indexed<E...> {
 
     template<std::size_t... i>
     constexpr auto operator[](const md_index<i...>& idx) const noexcept {
-        return this->get(i_c<md_index<i...>::as_flat_index_in(shape{})>);
+        return std::get<md_index<i...>::as_flat_index_in(shape{})>(std::tuple<E...>{});
     }
 
     template<std::size_t i> requires(shape::size == 1)
