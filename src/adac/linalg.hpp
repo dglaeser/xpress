@@ -52,6 +52,20 @@ struct tensor {
         return operators::traits::multiplication_of<tensor, V>{}(*this, value);
     }
 
+    template<typename T2, typename shape2>
+    constexpr bool operator==(const tensor<T2, shape2>& other) const noexcept {
+        if constexpr (shape2{} != shape{}) {
+            return false;
+        } else {
+            bool all_equal = true;
+            visit_indices_in(shape{}, [&] (const auto& idx) constexpr {
+                if ((*this)[idx] != other[idx])
+                    all_equal = false;
+            });
+            return all_equal;
+        }
+    }
+
  private:
     std::array<T, shape::count> _values;
 };
