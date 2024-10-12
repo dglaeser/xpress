@@ -107,16 +107,10 @@ struct bindings : private variadic_accessor<B...> {
     : base(std::forward<B>(binders)...)
     {}
 
-    //! Return the value bound to the symbol of type T
-    template<typename T> requires(has_bindings_for<T>)
-    constexpr decltype(auto) get() const noexcept {
-        return base::get(this->template index_of<binder_type<T>>()).get();
-    }
-
     //! Return the value bound to the given symbol
-    template<typename T> requires(has_bindings_for<T>)
-    constexpr decltype(auto) operator[](const T&) const noexcept {
-        return this->template get<T>();
+    template<typename S, typename T> requires(has_bindings_for<T>)
+    constexpr decltype(auto) operator[](this S&& self, const T&) noexcept {
+        return self.get(self.template index_of<binder_type<T>>()).get();
     }
 };
 
