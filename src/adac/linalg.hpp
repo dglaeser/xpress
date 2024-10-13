@@ -18,6 +18,10 @@
 
 namespace adac::linalg {
 
+// forward declaration
+namespace traits { template<typename T> struct access; }
+
+
 //! \addtogroup LinearAlgebra
 //! \{
 
@@ -47,7 +51,7 @@ struct tensor {
         return self[md_i_c<i>];
     }
 
-    template<typename V> requires(traits::is_scalar_v<V>)
+    template<typename V> requires(adac::traits::is_scalar_v<V>)
     constexpr auto operator*(const V& value) const noexcept {
         return operators::traits::multiplication_of<tensor, V>{}(*this, value);
     }
@@ -66,11 +70,18 @@ struct tensor {
         }
     }
 
+    template<typename _T> requires(!std::is_const_v<T> and is_complete_v<traits::access<_T>>)
+    constexpr void export_to(_T& out) const noexcept {
+        visit_indices_in(shape{}, [&] (const auto& idx) constexpr {
+            traits::access<_T>::at(idx, out) = (*this)[idx];
+        });
+    }
+
  private:
     std::array<T, shape::count> _values;
 };
 
-template<std::size_t... s, typename... Ts> requires(std::conjunction_v<traits::is_scalar<std::remove_cvref_t<Ts>>...>)
+template<std::size_t... s, typename... Ts> requires(std::conjunction_v<adac::traits::is_scalar<std::remove_cvref_t<Ts>>...>)
 tensor(const md_shape<s...>&, Ts&&...) -> tensor<std::common_type_t<Ts...>, md_shape<s...>>;
 
 

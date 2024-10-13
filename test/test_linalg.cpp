@@ -1,3 +1,6 @@
+#include <array>
+#include <algorithm>
+
 #include <adac/linalg.hpp>
 
 #include "testing.hpp"
@@ -44,6 +47,13 @@ int main() {
         constexpr linalg::tensor A{shape<2, 3>, 1, 2, 3, 3, 2, 1};
         constexpr linalg::tensor B{shape<3, 2>, 4, 5, 6, 5, 4, 6};
         expect(linalg::mat_mul(A, B) == linalg::tensor{shape<2, 2>, 28, 33, 28, 31});
+    };
+
+    "tensor_export"_test = [] () {
+        linalg::tensor A{shape<1, 3>, 1, 2, 3};
+        std::array<std::array<int, 3>, 1> copied;
+        A.export_to(copied);
+        expect(std::ranges::equal(copied[0], std::array{1, 2, 3}));
     };
 
     "tensor_concept"_test = [] () {
