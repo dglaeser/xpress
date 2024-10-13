@@ -48,9 +48,6 @@ template<typename T, auto _> struct is_variable<var<T, _>> : std::true_type {};
 template<typename T, auto _> struct is_symbol<var<T, _>> : std::true_type {};
 template<typename T, auto _> struct is_symbol<let<T, _>> : std::true_type {};
 
-template<typename T, auto _> struct dtype_of<var<T, _>> : std::type_identity<T> {};
-template<typename T, auto _> struct dtype_of<let<T, _>> : std::type_identity<T> {};
-
 template<typename T, auto _> struct nodes_of<var<T, _>> : std::type_identity<type_list<var<T, _>>> {};
 template<typename T, auto _> struct nodes_of<let<T, _>> : std::type_identity<type_list<let<T, _>>> {};
 
@@ -59,7 +56,10 @@ template<typename T>
 struct _symbol_value {
     template<typename... V>
         requires(bindings<V...>::template has_bindings_for<T>)
-    static constexpr auto from(const bindings<V...>& bindings) noexcept {
+    static constexpr decltype(auto) from(const bindings<V...>& bindings) noexcept {
+        // TODO: necessary?
+        using bound_type = std::remove_cvref_t<decltype(bindings[T{}])>;
+        static_assert(traits::is_scalar_v<bound_type>, "Symbol values have to be scalars");
         return bindings[T{}];
     }
 };

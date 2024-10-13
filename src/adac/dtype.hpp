@@ -42,7 +42,7 @@ struct is_bindable<dtype::real, Arg> : public std::bool_constant<
 namespace detail {
 
     template<typename T> requires(is_value_v<T>)
-    using dtype_for = std::conditional_t<std::floating_point<value_type_t<T>>, dtype::real, dtype::integral>;
+    using dtype_for = std::conditional_t<std::floating_point<scalar_type_t<T>>, dtype::real, dtype::integral>;
 
 }  // namespace detail
 #endif  // DOXYGEN

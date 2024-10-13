@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <type_traits>
 #include <concepts>
 #include <ostream>
 
@@ -15,8 +16,17 @@
 #include "bindings.hpp"
 
 
-namespace adac::concepts {
+namespace adac {
 
+template<typename T>
+struct is_expression : std::bool_constant<
+    is_complete_v<traits::value_of<T>> && is_complete_v<traits::derivative_of<T>> && is_complete_v<traits::nodes_of<T>>
+> {};
+template<typename T>
+inline constexpr bool is_expression_v = is_expression<T>::value;
+
+
+namespace concepts {
 //! \addtogroup Concepts
 //! \{
 
@@ -45,9 +55,10 @@ template<typename T>
 concept variable = traits::is_variable_v<T>;
 
 template<typename T>
-concept expression = is_complete_v<traits::value_of<T>> and is_complete_v<traits::derivative_of<T>> and is_complete_v<traits::nodes_of<T>>;
+concept expression = is_expression_v<T>;
 
 
 //! \} group Concepts
 
-}  // namespace adac::concepts
+}  // namespace concepts
+}  // namespace adac

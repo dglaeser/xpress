@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <cmath>
 #include <type_traits>
 #include <functional>
 
@@ -23,24 +24,89 @@ namespace adac {
 
 namespace operators {
 
-struct add : std::plus<void> {};
-struct subtract : std::minus<void> {};
-struct multiply : std::multiplies<void> {};
-struct divide : std::divides<void> {};
-
-
 namespace traits {
 
 template<typename op> struct is_commutative : std::false_type {};
-template<> struct is_commutative<add> : std::true_type {};
-template<> struct is_commutative<multiply> : std::true_type {};
+template<typename A, typename B> struct addition_of;
+template<typename A, typename B> struct subtraction_of;
+template<typename A, typename B> struct multiplication_of;
+template<typename A, typename B> struct division_of;
+template<typename A, typename B> struct power_of;
+template<typename A> struct log_of;
 
 }  // namespace traits
-
 
 template<typename op>
 inline constexpr bool is_commutative_v = traits::is_commutative<op>::value;
 
+
+#ifndef DOXYGEN
+namespace detail {
+
+    struct default_pow_operator {
+        template<typename A, typename B>
+        constexpr auto operator()(A&& a, B&& b) const noexcept {
+            return std::pow(std::forward<A>(a), std::forward<B>(b));
+        }
+    };
+
+    struct default_log_operator {
+        template<typename A>
+        constexpr auto operator()(A&& a) const noexcept {
+            return std::log(std::forward<A>(a));
+        }
+    };
+
+    template<template<typename> typename trait, typename default_t>
+    struct unary_operator {
+        template<typename T>
+        constexpr decltype(auto) operator()(T&& t) const noexcept {
+            if constexpr (is_complete_v<trait<std::remove_cvref_t<T>>>)
+                return trait<std::remove_cvref_t<T>>{}(std::forward<T>(t));
+            else {
+                static_assert(
+                    requires(T&& t) { { default_t{}(std::forward<T>(t)) }; },
+                    "Default unary operator cannot be invoked with the given type. "
+                    "Please specialize the respective trait in adac::operators::traits."
+                );
+                return default_t{}(std::forward<T>(t));
+            }
+        }
+    };
+
+    template<template<typename...> typename trait, typename default_t>
+    struct binary_operator {
+        template<typename... T>
+        constexpr decltype(auto) operator()(T&&... t) const noexcept {
+            if constexpr (is_complete_v<trait<std::remove_cvref_t<T>...>>)
+                return trait<std::remove_cvref_t<T>...>{}(std::forward<T>(t)...);
+            else {
+                static_assert(
+                    requires(T&&... t) { { default_t{}(std::forward<T>(t)...) }; },
+                    "Default binary operator cannot be invoked with the given types. "
+                    "Please specialize the respective trait in adac::operators::traits."
+                );
+                return default_t{}(std::forward<T>(t)...);
+            }
+        }
+    };
+
+}  // namespace detail
+#endif  // DOXYGEN
+
+struct add : detail::binary_operator<traits::addition_of, std::plus<void>> {};
+struct subtract : detail::binary_operator<traits::subtraction_of, std::minus<void>> {};
+struct multiply : detail::binary_operator<traits::multiplication_of, std::multiplies<void>> {};
+struct divide : detail::binary_operator<traits::division_of, std::divides<void>> {};
+struct pow : detail::binary_operator<traits::power_of, detail::default_pow_operator> {};
+struct log : detail::unary_operator<traits::log_of, detail::default_log_operator> {};
+
+namespace traits {
+
+template<> struct is_commutative<add> : std::true_type {};
+template<> struct is_commutative<multiply> : std::true_type {};
+
+}  // namespace traits
 }  // namespace operators
 
 
@@ -108,11 +174,30 @@ inline constexpr auto operator/(const A&, const B&) noexcept {
         return operation<operators::divide, A, B>{};
 }
 
+//! Take the natural logarithm of the given value
+template<concepts::expression A>
+inline constexpr auto log(const A&) noexcept {
+    static_assert(!traits::is_zero_value_v<A>, "Logarithm of zero is not defined.");
+    if constexpr (traits::is_unit_value_v<A>)
+        return val<1>;
+    else
+        return operation<operators::log, A>{};
+}
+
+//! Take the power of the given value to the given exponent
+template<concepts::expression A, concepts::expression B>
+inline constexpr auto pow(const A&, const B&) noexcept {
+    if constexpr (traits::is_zero_value_v<A>)
+        return val<0>;
+    else if constexpr (traits::is_unit_value_v<A> || traits::is_unit_value_v<B>)
+        return A{};
+    else if constexpr (traits::is_zero_value_v<B>)
+        return val<1>;
+    else
+        return operation<operators::pow, A, B>{};
+}
 
 namespace traits {
-
-template<typename op, typename... Ts>
-struct dtype_of<operation<op, Ts...>> : std::type_identity<typename operation<op, Ts...>::dtype> {};
 
 template<typename op, typename T1, typename T2>
     requires(operators::is_commutative_v<op>)
@@ -120,16 +205,13 @@ struct is_equal_node<operation<op, T1, T2>, operation<op, T2, T1>> : std::true_t
 
 template<typename op, typename T, typename... Ts>
 struct nodes_of<operation<op, T, Ts...>> {
-    using type = merged_types_t<
-        merged_types_t<type_list<operation<op, T, Ts...>>, typename nodes_of<T>::type>,
-        typename nodes_of<Ts>::type...
-    >;
+    using type = merged_types_t<type_list<operation<op, T, Ts...>>, merged_nodes_of_t<T, Ts...>>;
 };
 
 template<typename op, typename... Ts>
 struct value_of<operation<op, Ts...>> {
     template<typename... V>
-    static constexpr auto from(const bindings<V...>& binders) noexcept {
+    static constexpr decltype(auto) from(const bindings<V...>& binders) noexcept {
         using self = operation<op, Ts...>;
         if constexpr (bindings<V...>::template has_bindings_for<self>)
             return binders[self{}];
@@ -231,6 +313,48 @@ struct stream<operation<operators::divide, T1, T2>> {
         if constexpr (has_subterms_2) out << "(";
         write_to(out, T2{}, values);
         if constexpr (has_subterms_2) out << ")";
+    }
+};
+
+// traits for log operator
+template<typename T>
+struct derivative_of<operation<operators::log, T>> {
+    template<typename V>
+    static constexpr auto wrt(const type_list<V>& var) noexcept {
+        return adac::detail::differentiate<T>(var)/T{};
+    }
+};
+
+template<typename T>
+struct stream<operation<operators::log, T>> {
+    template<typename... V>
+    static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
+        out << "log(";
+        write_to(out, T{}, values);
+        out << ")";
+    }
+};
+
+// traits for power operator
+template<typename T1, typename T2>
+struct derivative_of<operation<operators::pow, T1, T2>> {
+    template<typename V>
+    static constexpr auto wrt(const type_list<V>& var) noexcept {
+        return T2{}*pow(T1{}, T2{} - val<1>)*adac::detail::differentiate<T1>(var)
+            + pow(T1{}, T2{})*log(T2{})*adac::detail::differentiate<T2>(var);
+    }
+};
+
+template<typename T1, typename T2>
+struct stream<operation<operators::pow, T1, T2>> {
+    template<typename... V>
+    static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
+        write_to(out, T1{}, values);
+        out << "^";
+        static constexpr bool exponent_has_subterms = type_list_size_v<nodes_of_t<T2>> > 1;
+        if constexpr (exponent_has_subterms) out << "(";
+        write_to(out, T2{}, values);
+        if constexpr (exponent_has_subterms) out << ")";
     }
 };
 

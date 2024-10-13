@@ -5,7 +5,6 @@
 int main() {
     using namespace adac::testing;
     using namespace adac;
-    using namespace adac::dtype;
 
     "unit_value"_test = [] () {
         static_assert(traits::is_unit_value_v<value<1>>);

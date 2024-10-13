@@ -1,3 +1,6 @@
+#include <type_traits>
+#include <memory>
+
 #include <adac/symbols.hpp>
 #include <adac/operators.hpp>
 
@@ -82,6 +85,27 @@ int main() {
         expect(eq(value_of(d_db, at(a = 43, b = 1)), 43));
     };
 
+    "multiply_operator_derivative_from_value_reference"_test = [] () {
+        int b_value = 42;
+        let a;
+        var b;
+        constexpr auto multiplied = a*b;
+        constexpr auto d_da = derivative_of(multiplied, wrt(a));
+        expect(eq(value_of(d_da, at(b = b_value)), 42));
+
+        static_assert(std::is_same_v<decltype(value_of(d_da, at(b = b_value))), const int&>);
+        expect(eq(std::addressof(value_of(d_da, at(b = b_value))), std::addressof(b_value)));
+    };
+
+    "multiply_operator_derivative_yields_rvalue"_test = [] () {
+        let a;
+        var b;
+        constexpr auto multiplied = a*b*val<2>;
+        constexpr auto d_da = derivative_of(multiplied, wrt(a));
+        expect(eq(value_of(d_da, at(b = 42)), 42*2));
+        static_assert(std::is_same_v<decltype(value_of(d_da, at(b = 42))), int>);
+    };
+
     "division_operator_value"_test = [] () {
         static constexpr let a;
         static constexpr var b;
@@ -100,6 +124,30 @@ int main() {
         static_assert(value_of(d_db, at(a = 2., b = 42.)) == 0.0 - 1.0*2.0/(42.0*42.0));
         expect(eq(value_of(d_da, at(a = 1., b = 42.)), 1.0/42.0));
         expect(eq(value_of(d_db, at(a = 2., b = 42.)), 0.0 - 1.0*2.0/(42.0*42.0)));
+    };
+
+    "pow_operator"_test = [] () {
+        var a;
+        let b;
+        expect(eq(value_of(pow(a, val<2>), at(a = 2)), 4));
+        expect(eq(value_of(pow(a, b), at(a = 2, b = 3)), 8));
+    };
+
+    "pow_operator_derivative"_test = [] () {
+        var a;
+        let b;
+        expect(eq(derivative_of(pow(a, b), wrt(a), at(a = 2, b = 3)), 3*2*2));
+        expect(eq(derivative_of(pow(a, b), wrt(b), at(a = 2, b = 3)), 2*2*2*std::log(3)));
+    };
+
+    "log_operator"_test = [] () {
+        var a;
+        expect(eq(value_of(log(a), at(a = 2)), std::log(2)));
+    };
+
+    "log_operator_derivative"_test = [] () {
+        var a;
+        expect(eq(derivative_of(log(a*a), wrt(a), at(a = 2)), 2*2/(2*2)));
     };
 
     "operation_derivative_wrt_expression"_test = [] () {
@@ -257,8 +305,8 @@ int main() {
 
         using unique_composites = unique_composite_nodes_of_t<decltype(expr)>;
         static_assert(type_list_size_v<unique_leafs> == 2);
-        static_assert(is_any_of_v<decltype(sum_1), made_unique> || is_any_of_v<decltype(sum_2), made_unique>);
-        static_assert(is_any_of_v<decltype(expr), made_unique>);
+        static_assert(is_any_of_v<decltype(sum_1), unique_composites> || is_any_of_v<decltype(sum_2), unique_composites>);
+        static_assert(is_any_of_v<decltype(expr), unique_composites>);
     };
 
     "operation_symbols_variables_of"_test = [] () {

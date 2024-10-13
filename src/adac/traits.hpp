@@ -24,17 +24,47 @@ struct is_scalar : std::bool_constant<std::is_floating_point_v<T> || std::is_int
 template<typename T>
 inline constexpr bool is_scalar_v = is_scalar<T>::value;
 
-//! Trait to extract the value type (i.e. the scalar type) of e.g. a container
+//! Trait to expose if a type implements operator[](std::size_t)
+template<typename T>
+struct is_indexable : std::bool_constant< requires(const T& t) { {t[std::size_t{}] }; } > {};
+template<typename T>
+inline constexpr bool is_indexable_v = is_indexable<T>::value;
+
+//! Trait to expose the value_type of e.g. a container
 template<typename T>
 struct value_type;
-template<typename T> requires(is_scalar<T>::value)
-struct value_type<T> : std::type_identity<T> {};
+template<typename T> requires(is_indexable_v<T>)
+struct value_type<T> : std::type_identity<std::remove_cvref_t<decltype(T{}[std::size_t{0}])>> {};
 template<typename T>
 using value_type_t = typename value_type<T>::type;
 
+
+#ifndef DOXYGEN
+namespace detail {
+
+    template<typename T>
+    struct indexable_scalar_type;
+    template<typename T> requires(is_indexable_v<T>)
+    struct indexable_scalar_type<T> : indexable_scalar_type<value_type_t<T>> {};
+    template<typename T> requires(!is_indexable_v<T>)
+    struct indexable_scalar_type<T> : std::type_identity<T> {};
+
+}  // namespace detail
+#endif  // DOXYGEN
+
+//! Trait to extract the scalar type of a potentially multi-dimensional container
+template<typename T>
+struct scalar_type;
+template<typename T> requires(is_scalar_v<T>)
+struct scalar_type<T> : std::type_identity<T> {};
+template<typename T> requires(is_indexable_v<T>)
+struct scalar_type<T> : detail::indexable_scalar_type<T> {};
+template<typename T>
+using scalar_type_t = typename scalar_type<T>::type;
+
 //! Trait to register a type as a value, i.e. a value that can be bound to a symbol/expression
 template<typename T>
-struct is_value : is_complete<value_type<T>> {};
+struct is_value : is_complete<scalar_type<T>> {};
 template<typename T>
 inline constexpr bool is_value_v = is_value<T>::value;
 
@@ -49,6 +79,8 @@ inline constexpr bool is_bindable_v = is_bindable<T, Arg>::value;
 //! Trait to extract the data type used for representing instances of type T
 template<typename T>
 struct dtype_of;
+template<typename T> requires(requires { typename T::dtype; })
+struct dtype_of<T> : std::type_identity<typename T::dtype> {};
 template<typename T>
 using dtype_of_t = typename dtype_of<T>::type;
 
@@ -136,6 +168,18 @@ using composite_nodes_of_t = typename composite_nodes_of<T>::type;
 #ifndef DOXYGEN
 namespace detail {
 
+    template<typename merged, typename... Es>
+    struct merged_nodes_of;
+    template<typename... R>
+    struct merged_nodes_of<type_list<R...>> : std::type_identity<type_list<R...>> {};
+    template<typename... R, typename E0, typename... Es>
+    struct merged_nodes_of<type_list<R...>, E0, Es...> {
+        using type = typename merged_nodes_of<
+            merged_types_t<type_list<R...>, typename nodes_of<E0>::type>,
+            Es...
+        >::type;
+    };
+
     template<typename T>
     struct unique_nodes_of;
 
@@ -162,6 +206,12 @@ namespace detail {
 
 }  // namespace detail
 #endif  // DOXYGEN
+
+//! Trait to get the merged list of nodes of all given expressions
+template<typename... T> requires(std::conjunction_v<is_complete<nodes_of<T>>...>)
+struct merged_nodes_of : detail::merged_nodes_of<type_list<>, T...> {};
+template<typename... T>
+using merged_nodes_of_t = typename merged_nodes_of<T...>::type;
 
 //! All unique nodes in the given expression
 template<typename T>
@@ -205,6 +255,6 @@ struct is_zero_value : std::false_type {};
 template<typename T>
 inline constexpr bool is_zero_value_v = is_zero_value<T>::value;
 
-//! \} group Expressions
+//! \} group Traits
 
 }  // namespace adac::traits
