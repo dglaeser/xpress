@@ -41,13 +41,13 @@ struct tensor {
     {}
 
     template<typename S, std::size_t... i>
-    constexpr decltype(auto) operator[](this S&& self, const md_index<i...>& idx) noexcept {
+    constexpr decltype(auto) operator[](this S&& self, const md_index<i...>&) noexcept {
         static_assert(md_index<i...>::as_flat_index_in(shape{}) < shape::count);
         return self._values[md_index<i...>::as_flat_index_in(shape{})];
     }
 
     template<typename S, std::size_t i> requires(shape::size == 1)
-    constexpr decltype(auto) operator[](this S&& self, const index_constant<i>& idx) noexcept {
+    constexpr decltype(auto) operator[](this S&& self, const index_constant<i>&) noexcept {
         return self[md_i_c<i>];
     }
 

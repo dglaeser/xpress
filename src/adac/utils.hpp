@@ -253,7 +253,7 @@ struct md_index {
 
  private:
     template<std::size_t _i, std::size_t s0, std::size_t... s>
-    static constexpr std::size_t _sum_up_flat_index(const md_shape<s0, s...>& sub_shape, std::size_t current) noexcept {
+    static constexpr std::size_t _sum_up_flat_index(const md_shape<s0, s...>&, std::size_t current) noexcept {
         return _sum_up_flat_index<_i + 1>(
             md_shape<s...>{},
             current + at(i_c<_i>).value*value_list<s0, s...>{}.reduce_with(std::multiplies{}, std::size_t{1})
@@ -313,7 +313,7 @@ struct md_index_iterator<md_shape<s...>, md_index<i...>> {
 
  private:
     template<std::size_t _i, bool was_incremented, std::size_t... c>
-    static constexpr auto _incremented(md_index<c...> intermediate_result) noexcept {
+    static constexpr auto _incremented(md_index<c...>) noexcept {
         constexpr std::size_t at_i = md_index<i...>::at(i_c<_i>).value;
         constexpr bool do_increment = !was_incremented && at_i < md_shape<s...>::at(i_c<_i>) - 1;
         constexpr bool do_zero = !was_incremented && at_i >= md_shape<s...>::at(i_c<_i>) - 1;

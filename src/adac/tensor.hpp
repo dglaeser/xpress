@@ -40,7 +40,7 @@ struct tensor : bindable<T>, negatable {
     constexpr tensor(md_shape<dims...>) noexcept {}
 
     template<std::size_t... i>
-    constexpr auto operator[](const md_index<i...>& idx) const noexcept {
+    constexpr auto operator[](const md_index<i...>&) const noexcept {
         static_assert(md_index<i...>{}.is_contained_in(shape<dims...>), "Given index is not contained in this tensor's shape.");
         return tensor_var<tensor<T, _, dims...>, i...>{};
     }
@@ -84,7 +84,7 @@ struct determinant : detail::unary_operator<traits::determinant_of, detail::defa
 }  // namespace operators
 
 template<typename T, auto _, std::size_t d0, std::size_t... dims>
-inline constexpr auto det(const tensor<T, _, d0, dims...>& m) noexcept {
+inline constexpr auto det(const tensor<T, _, d0, dims...>&) noexcept {
     static_assert(tensor<T, _, d0, dims...>::is_square, "Determinant can only be taken on square matrices.");
     return operation<operators::determinant, tensor<T, _, d0, dims...>>{};
 }
@@ -98,12 +98,12 @@ struct tensor_expression {
     constexpr tensor_expression(const shape&, const E&...) noexcept {}
 
     template<std::size_t... i>
-    constexpr auto operator[](const md_index<i...>& idx) const noexcept {
+    constexpr auto operator[](const md_index<i...>&) const noexcept {
         return std::get<md_index<i...>::as_flat_index_in(shape{})>(std::tuple<E...>{});
     }
 
     template<std::size_t i> requires(shape::size == 1)
-    constexpr auto operator[](const index_constant<i>& idx) const noexcept {
+    constexpr auto operator[](const index_constant<i>&) const noexcept {
         return (*this)[md_i_c<i>];
     }
 };
@@ -148,7 +148,7 @@ struct tensor_expression_builder {
     }
 
     template<typename E, std::size_t... i, typename... Ts> requires(sizeof...(Ts) == shape::count)
-    constexpr auto _with(const E&, const md_index<i...>& idx, const type_list<Ts...>&) const noexcept {
+    constexpr auto _with(const E&, const md_index<i...>&, const type_list<Ts...>&) const noexcept {
         static_assert(md_index<i...>{}.is_contained_in(shape{}), "Given index is not contained in the specified shape.");
         static constexpr auto flat_idx = md_index<i...>::as_flat_index_in(shape{}).value;
         using replaced_types = replaced_type_at<flat_idx, E, type_list<>, type_list<Ts...>>::type;
@@ -217,14 +217,13 @@ struct stream<tensor_expression<shape, E...>> {
 
  private:
     template<typename... V, typename L0, typename... L>
-    static constexpr void _write_args_to(std::ostream& out, const bindings<V...>& values, const type_list<L0, L...>& leafs) {
+    static constexpr void _write_args_to(std::ostream& out, const bindings<V...>& values, const type_list<L0, L...>&) {
         stream<L0>::to(out, values);
         (..., (out << ", ", stream<L>::to(out, values)));
     }
 
     template<typename... V>
-    static constexpr void _write_args_to(std::ostream& out, const bindings<V...>& values, const type_list<>&) {
-    }
+    static constexpr void _write_args_to(std::ostream& out, const bindings<V...>& values, const type_list<>&) {}
 };
 
 template<typename T, auto _, std::size_t... dims>

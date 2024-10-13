@@ -94,8 +94,7 @@ int main() {
         expect(eq(value_of(d_da, at(b = b_value)), 42));
 
         static_assert(std::is_same_v<decltype(value_of(d_da, at(b = b_value))), const int&>);
-        const int& b_value_ref = value_of(d_da, at(b = b_value));
-        expect(eq(std::addressof(b_value_ref), std::addressof(b_value)));
+        expect(eq(std::addressof(value_of(d_da, at(b = b_value))), std::addressof(b_value)));
     };
 
     "multiply_operator_derivative_yields_rvalue"_test = [] () {
@@ -306,8 +305,8 @@ int main() {
 
         using unique_composites = unique_composite_nodes_of_t<decltype(expr)>;
         static_assert(type_list_size_v<unique_leafs> == 2);
-        static_assert(is_any_of_v<decltype(sum_1), made_unique> || is_any_of_v<decltype(sum_2), made_unique>);
-        static_assert(is_any_of_v<decltype(expr), made_unique>);
+        static_assert(is_any_of_v<decltype(sum_1), unique_composites> || is_any_of_v<decltype(sum_2), unique_composites>);
+        static_assert(is_any_of_v<decltype(expr), unique_composites>);
     };
 
     "operation_symbols_variables_of"_test = [] () {

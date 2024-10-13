@@ -23,11 +23,11 @@ namespace adac {
 //! symbol that represents a constant value
 template<auto v>
 struct value {
-    template<typename Self> constexpr auto operator-(this Self&& self) { return value<-v>{}; }
-    template<typename Self, auto k> constexpr auto operator+(this Self&& self, value<k>) { return value<v+k>{}; }
-    template<typename Self, auto k> constexpr auto operator-(this Self&& self, value<k>) { return value<v-k>{}; }
-    template<typename Self, auto k> constexpr auto operator*(this Self&& self, value<k>) { return value<v*k>{}; }
-    template<typename Self, auto k> constexpr auto operator/(this Self&& self, value<k>) { return value<v/k>{}; }
+    template<typename Self> constexpr auto operator-(this Self&&) { return value<-v>{}; }
+    template<typename Self, auto k> constexpr auto operator+(this Self&&, value<k>) { return value<v+k>{}; }
+    template<typename Self, auto k> constexpr auto operator-(this Self&&, value<k>) { return value<v-k>{}; }
+    template<typename Self, auto k> constexpr auto operator*(this Self&&, value<k>) { return value<v*k>{}; }
+    template<typename Self, auto k> constexpr auto operator/(this Self&&, value<k>) { return value<v/k>{}; }
 };
 
 //! instance of a constant value

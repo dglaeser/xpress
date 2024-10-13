@@ -235,7 +235,6 @@ int main() {
         constexpr std::array<int, 2> data{1, 2};
         static constexpr vector<2> v1{};
         static constexpr vector<2> v2{};
-        static constexpr auto expr = v1*v2;
         expect(eq(value_of(v1*v2, at(v1 = data, v2 = data)), 5));
     };
 
