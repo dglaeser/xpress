@@ -59,7 +59,27 @@ using vector = tensor<T, _, dim>;
 
 namespace operators {
 
-struct determinant {};
+namespace traits {
+
+template<typename T> struct determinant_of;
+
+}  // namespace traits
+
+
+#ifndef DOXYGEN
+namespace detail {
+
+    struct default_determinant_operator {
+        template<linalg::concepts::tensor T>
+        constexpr auto operator()(T&& t) const noexcept {
+            return linalg::determinant_of(std::forward<T>(t));
+        }
+    };
+
+}  // namespace detail
+#endif  // DOXYGEN
+
+struct determinant : detail::unary_operator<traits::determinant_of, detail::default_determinant_operator> {};
 
 }  // namespace operators
 
@@ -231,26 +251,6 @@ struct value_of<tensor_var<tensor, i...>> {
             "Value type bound to tensor does not implement the concept 'linalg::concepts::tensor'"
         );
         return linalg::traits::access<bound_tensor_type>::at(md_index<i...>{}, values[tensor{}]);
-    }
-};
-
-
-template<typename T, auto _, std::size_t rows, std::size_t cols>
-struct value_of<operation<operators::determinant, tensor<T, _, rows, cols>>> {
-    static_assert(rows == 2 || rows == 3, "Determinant is only implemented for 2d & 3d matrices.");
-    static_assert(cols == 2 || cols == 3, "Determinant is only implemented for 2d & 3d matrices.");
-    static_assert(rows == cols, "Determinant can only be computed for square matrices.");
-
-    template<typename... V>
-    static constexpr decltype(auto) from(const bindings<V...>& values) {
-        using self = operation<operators::determinant, tensor<T, _, rows, cols>>;
-        if constexpr (bindings<V...>::template has_bindings_for<self>) {
-            return values[self{}];
-        } else {
-            using bound_type = std::remove_cvref_t<decltype(adac::value_of(tensor<T, _, rows, cols>{}, values))>;
-            static_assert(linalg::concepts::tensor<bound_type>, "Expected a tensor to be bound to a tensorial symbol.");
-            return linalg::determinant_of(adac::value_of(tensor<T, _, rows, cols>{}, values));
-        }
     }
 };
 
