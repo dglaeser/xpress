@@ -162,12 +162,12 @@ namespace concepts {
 
 template<typename T>
 concept tensor
-= std::is_default_constructible_v<T>  // TODO: can we relax this?
-and is_complete_v<traits::shape_of<T>>
-and is_complete_v<adac::traits::scalar_type<T>>
-and is_complete_v<traits::access<T>>
+= std::is_default_constructible_v<std::remove_cvref_t<T>>  // TODO: can we relax this?
+and is_complete_v<traits::shape_of<std::remove_cvref_t<T>>>
+and is_complete_v<adac::traits::scalar_type<std::remove_cvref_t<T>>>
+and is_complete_v<traits::access<std::remove_cvref_t<T>>>
 and requires(const T& t) {
-    { traits::access<T>::at( *(md_index_iterator{traits::shape_of_t<T>{}}), t ) };
+    { traits::access<std::remove_cvref_t<T>>::at( *(md_index_iterator{traits::shape_of_t<std::remove_cvref_t<T>>{}}), t ) };
 };
 
 }  // namespace concepts
