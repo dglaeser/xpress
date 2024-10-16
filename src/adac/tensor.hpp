@@ -32,6 +32,7 @@ struct tensor_var : negatable {
 
 template<typename T = dtype::any, auto _ = [] () {}, std::size_t... dims> requires(sizeof...(dims) > 0)
 struct tensor : bindable<T>, negatable {
+    static constexpr md_shape<dims...> shape{};
     static constexpr bool is_square = sizeof...(dims) == 2 && std::conjunction_v<traits::is_equal<dims, value_list<dims...>::first()>...>;
 
     using bindable<T>::operator=;
@@ -41,7 +42,7 @@ struct tensor : bindable<T>, negatable {
 
     template<std::size_t... i>
     constexpr auto operator[](const md_index<i...>&) const noexcept {
-        static_assert(md_index<i...>{}.is_contained_in(shape<dims...>), "Given index is not contained in this tensor's shape.");
+        static_assert(md_index<i...>{}.is_contained_in(shape), "Given index is not contained in this tensor's shape.");
         return tensor_var<tensor<T, _, dims...>, i...>{};
     }
 
@@ -331,9 +332,10 @@ template<typename tensor, std::size_t... i>
 struct derivative_of<tensor_var<tensor, i...>> {
     template<typename V>
     static constexpr decltype(auto) wrt(const type_list<V>&) {
-        static_assert(!std::is_same_v<V, tensor>, "Cannot derive a tensor element wrt the tensor it is contained in.");
         if constexpr (std::is_same_v<V, tensor_var<tensor, i...>>)
             return val<1>;
+        else if constexpr (std::is_same_v<V, tensor>)
+            return tensor_expression_builder{tensor::shape}.filled_with(val<0>).with(val<1>, at<i...>()).build();
         else
             return val<0>;
     }

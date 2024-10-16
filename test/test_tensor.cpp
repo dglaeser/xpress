@@ -293,6 +293,25 @@ int main() {
         expect(eq(value_of(v, at(a = 42, b = 43))[md_i_c<1>], 43));
     };
 
+    "tensor_entry_expression_derivative_wrt_tensor"_test = [] () {
+        {
+            static constexpr tensor T{shape<2, 2>};
+            static constexpr auto expr = T[at<0, 0>()]*val<12>;
+            static constexpr auto deriv = derivative_of(expr, wrt(T));
+            const auto expected = linalg::tensor{shape<2, 2>, 12, 0, 0, 0};
+            expect(expected == value_of(deriv, at(T = linalg::tensor{shape<2, 2>, 42, 43, 44, 45})));
+            expect(expected == value_of(deriv, at(T = linalg::tensor{shape<2, 2>, 48, 49, 50, 51})));
+        }
+        {
+            static constexpr tensor T{shape<2, 2>};
+            static constexpr auto expr = T[at<1, 1>()]*val<13>;
+            static constexpr auto deriv = derivative_of(expr, wrt(T));
+            const auto expected = linalg::tensor{shape<2, 2>, 0, 0, 0, 13};
+            expect(expected == value_of(deriv, at(T = linalg::tensor{shape<2, 2>, 42, 43, 44, 45})));
+            expect(expected == value_of(deriv, at(T = linalg::tensor{shape<2, 2>, 48, 49, 50, 51})));
+        }
+    };
+
     "tensor_expression_value_with_constants"_test = [] () {
         var a;
         tensor_expression v{shape<2>, a, val<43>};
