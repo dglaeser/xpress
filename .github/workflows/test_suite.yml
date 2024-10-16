@@ -19,6 +19,11 @@ jobs:
     strategy:
       matrix:
           compiler: [gcc-14, clang-19-git]
+          include:
+            - benchmark: OFF
+              compiler: gcc-14
+            - benchmark: ON
+              compiler: clang-19-git
     steps:
       - name: checkout-repository
         uses: actions/checkout@v2
@@ -33,7 +38,7 @@ jobs:
           echo "Using C++ compiler ${CXX_COMPILER}"
           cmake -DCMAKE_C_COMPILER=${C_COMPILER} \
                 -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
-                -DADAC_BUILD_BENCHMARK=ON \
+                -DADAC_BUILD_BENCHMARK=${{ matrix.benchmark }} \
                 -B build
           cmake --build build
 
