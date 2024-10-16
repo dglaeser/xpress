@@ -312,6 +312,21 @@ int main() {
         }
     };
 
+    "vector_expression_derivative_wrt_tensor"_test = [] () {
+        static constexpr tensor T{shape<2, 2>};
+        static constexpr auto T00 = T[at<0, 0>()]; static constexpr auto T01 = T[at<0, 1>()];
+        static constexpr auto T10 = T[at<1, 0>()]; static constexpr auto T11 = T[at<1, 1>()];
+        static constexpr auto T_value = linalg::tensor{shape<2, 2>, 1, 2, 3, 4};
+        static constexpr auto v = vector_expression_builder<2>{}
+                                    .with(T00*T01, at<0>())
+                                    .with(T10*T11, at<1>())
+                                    .build();
+        static constexpr auto deriv = derivative_of(v, wrt(T));
+        const auto dv_dT = value_of(deriv, at(T = T_value));
+        expect(dv_dT[at<0>()] == linalg::tensor{shape<2, 2>, T_value[at<0, 1>()], T_value[at<0, 0>()], 0, 0});
+        expect(dv_dT[at<1>()] == linalg::tensor{shape<2, 2>, 0, 0, T_value[at<1, 1>()], T_value[at<1, 0>()]});
+    };
+
     "tensor_expression_value_with_constants"_test = [] () {
         var a;
         tensor_expression v{shape<2>, a, val<43>};
