@@ -39,3 +39,50 @@ jobs:
 
       - name: run-tests
         run: cd build && ctest --output-on-failure
+
+  test-installed-package:
+    runs-on: ubuntu-22.04
+    container: dglaeser/compiler-images:gcc-14
+    steps:
+      - name: checkout-repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      # install of make can be omitted once the container provides it per default
+      - name: install-library
+        run: |
+          apt update && apt install make
+          echo "Using C compiler ${C_COMPILER}"
+          echo "Using C++ compiler ${CXX_COMPILER}"
+          cmake -DCMAKE_C_COMPILER=${C_COMPILER} \
+                -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+                -DCMAKE_INSTALL_PREFIX=$(pwd)/install \
+                -DADAC_BUILD_TESTS=OFF \
+                -B build
+          cmake --build build
+          cmake --install build
+
+      - name: make-test-project
+        run: |
+          mkdir test_project
+          cp -r test test_project/
+          cd test_project
+          echo "cmake_minimum_required(VERSION 3.18)" > CMakeLists.txt
+          echo "project(adac_test_suite)" >> CMakeLists.txt
+          echo "find_package(adac REQUIRED)" >> CMakeLists.txt
+          echo "add_subdirectory(test)" >> CMakeLists.txt
+          cd ..
+
+      - name: build-test-project
+        run: |
+          cd test_project
+          cmake -DCMAKE_C_COMPILER=${C_COMPILER} \
+                -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+                -Dadac_ROOT=$(pwd)/../install \
+                -B build
+          cmake --build build
+          cd ..
+
+      - name: run-tests
+        run: cd test_project/build && ctest --output-on-failure
