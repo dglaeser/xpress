@@ -130,6 +130,11 @@ struct tensor_expression_builder {
         return tensor_expression<shape, T...>{};
     }
 
+    template<concepts::expression E>
+    constexpr auto filled_with(const E&) const noexcept {
+        return _make_from(_repeat_n<shape::count, E>(type_list<>{}));
+    }
+
     template<concepts::expression E, std::size_t... i>
     constexpr auto with(const E& expression, const md_index<i...>& idx) const noexcept {
         if constexpr (sizeof...(T) == 0)

@@ -330,6 +330,15 @@ int main() {
         static_assert(value[at<1, 1>()] == 4);
     };
 
+    "tensor_expression_builder_filled_with"_test = [] () {
+        var a;
+        constexpr auto tensor = tensor_expression_builder{shape<2, 2>}.filled_with(a).build();
+        const auto check = [&] <typename shape, typename... T> (const tensor_expression<shape, T...>&) constexpr {
+            static_assert(std::conjunction_v<std::is_same<T, decltype(a)>...>);
+        };
+        check(tensor);
+    };
+
     "tensor_expression_stream"_test = [] () {
         var a; var b; var c; var d;
         auto T = tensor_expression_builder{shape<2, 2>}
