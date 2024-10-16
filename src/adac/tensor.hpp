@@ -32,6 +32,7 @@ struct tensor_var : negatable {
 
 template<typename T = dtype::any, auto _ = [] () {}, std::size_t... dims> requires(sizeof...(dims) > 0)
 struct tensor : bindable<T>, negatable {
+    static constexpr md_shape<dims...> shape{};
     static constexpr bool is_square = sizeof...(dims) == 2 && std::conjunction_v<traits::is_equal<dims, value_list<dims...>::first()>...>;
 
     using bindable<T>::operator=;
@@ -41,7 +42,7 @@ struct tensor : bindable<T>, negatable {
 
     template<std::size_t... i>
     constexpr auto operator[](const md_index<i...>&) const noexcept {
-        static_assert(md_index<i...>{}.is_contained_in(shape<dims...>), "Given index is not contained in this tensor's shape.");
+        static_assert(md_index<i...>{}.is_contained_in(shape), "Given index is not contained in this tensor's shape.");
         return tensor_var<tensor<T, _, dims...>, i...>{};
     }
 
@@ -130,21 +131,26 @@ struct tensor_expression_builder {
         return tensor_expression<shape, T...>{};
     }
 
+    template<concepts::expression E>
+    constexpr auto filled_with(const E&) const noexcept {
+        return _make_from(_repeat_n<shape::count, E>(type_list<>{}));
+    }
+
     template<concepts::expression E, std::size_t... i>
     constexpr auto with(const E& expression, const md_index<i...>& idx) const noexcept {
         if constexpr (sizeof...(T) == 0)
-            return _with(expression, idx, _make_none_list<shape::count>(type_list<>{}));
+            return _with(expression, idx, _repeat_n<shape::count, none>(type_list<>{}));
         else
             return _with(expression, idx, type_list<T...>{});
     }
 
  private:
-    template<std::size_t i, typename... n> requires(std::conjunction_v<std::is_same<T, none>...>)
-    constexpr auto _make_none_list(const type_list<n...>& nones) const noexcept {
-        if constexpr (sizeof...(n) == i)
-            return nones;
+    template<std::size_t i, typename E, typename... C> requires(std::conjunction_v<std::is_same<T, E>...>)
+    constexpr auto _repeat_n(const type_list<C...>& current) const noexcept {
+        if constexpr (sizeof...(C) == i)
+            return current;
         else
-            return _make_none_list<i>(type_list<n..., none>{});
+            return _repeat_n<i, E>(type_list<C..., E>{});
     }
 
     template<typename E, std::size_t... i, typename... Ts> requires(sizeof...(Ts) == shape::count)
@@ -326,9 +332,10 @@ template<typename tensor, std::size_t... i>
 struct derivative_of<tensor_var<tensor, i...>> {
     template<typename V>
     static constexpr decltype(auto) wrt(const type_list<V>&) {
-        static_assert(!std::is_same_v<V, tensor>, "Cannot derive a tensor element wrt the tensor it is contained in.");
         if constexpr (std::is_same_v<V, tensor_var<tensor, i...>>)
             return val<1>;
+        else if constexpr (std::is_same_v<V, tensor>)
+            return tensor_expression_builder{tensor::shape}.filled_with(val<0>).with(val<1>, at<i...>()).build();
         else
             return val<0>;
     }
