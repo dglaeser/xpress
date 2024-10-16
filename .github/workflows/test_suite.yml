@@ -28,11 +28,12 @@ jobs:
       # install of make can be omitted once the container provides it per default
       - name: build-tests
         run: |
-          apt update && apt install make
+          apt update && apt install -y make libeigen3-dev
           echo "Using C compiler ${C_COMPILER}"
           echo "Using C++ compiler ${CXX_COMPILER}"
           cmake -DCMAKE_C_COMPILER=${C_COMPILER} \
                 -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+                -DADAC_BUILD_BENCHMARK=ON \
                 -B build
           cmake --build build
 
