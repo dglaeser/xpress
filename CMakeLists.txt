@@ -20,6 +20,7 @@ target_include_directories(${PROJECT_NAME}
     INTERFACE $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/src>
               $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/deps/cpputils/src>
               $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+              $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/adac/deps/>
 )
 
 # Alias to be used in test suite or when included as sub-project
@@ -29,8 +30,12 @@ if (NOT ADAC_SUBPROJECT)
     include(GNUInstallDirs)
     set(ADAC_INSTALL_CMAKE_DATA_DIR "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake")
     install(
-        DIRECTORY ${PROJECT_NAME}
+        DIRECTORY src/${PROJECT_NAME}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
+    install(
+        DIRECTORY deps/cpputils/src/cpputils
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/deps
     )
     install(
         TARGETS ${PROJECT_NAME}
