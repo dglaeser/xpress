@@ -133,18 +133,18 @@ struct tensor_expression_builder {
     template<concepts::expression E, std::size_t... i>
     constexpr auto with(const E& expression, const md_index<i...>& idx) const noexcept {
         if constexpr (sizeof...(T) == 0)
-            return _with(expression, idx, _make_none_list<shape::count>(type_list<>{}));
+            return _with(expression, idx, _repeat_n<shape::count, none>(type_list<>{}));
         else
             return _with(expression, idx, type_list<T...>{});
     }
 
  private:
-    template<std::size_t i, typename... n> requires(std::conjunction_v<std::is_same<T, none>...>)
-    constexpr auto _make_none_list(const type_list<n...>& nones) const noexcept {
-        if constexpr (sizeof...(n) == i)
-            return nones;
+    template<std::size_t i, typename E, typename... C> requires(std::conjunction_v<std::is_same<T, E>...>)
+    constexpr auto _repeat_n(const type_list<C...>& current) const noexcept {
+        if constexpr (sizeof...(C) == i)
+            return current;
         else
-            return _make_none_list<i>(type_list<n..., none>{});
+            return _repeat_n<i, E>(type_list<C..., E>{});
     }
 
     template<typename E, std::size_t... i, typename... Ts> requires(sizeof...(Ts) == shape::count)
