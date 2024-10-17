@@ -33,7 +33,6 @@ struct tensor_var : negatable {
 template<typename T = dtype::any, auto _ = [] () {}, std::size_t... dims> requires(sizeof...(dims) > 0)
 struct tensor : bindable<T>, negatable {
     static constexpr md_shape<dims...> shape{};
-    static constexpr bool is_square = sizeof...(dims) == 2 && std::conjunction_v<traits::is_equal<dims, value_list<dims...>::first()>...>;
 
     using bindable<T>::operator=;
 
@@ -56,6 +55,28 @@ tensor(const md_shape<dims...>&) -> tensor<dtype::any, _, dims...>;
 
 template<std::size_t dim, typename T = dtype::any, auto _ = [] () {}>
 using vector = tensor<T, _, dim>;
+
+
+namespace traits {
+
+template<typename T>
+struct shape_of;
+
+template<typename T, auto _, std::size_t... d>
+struct shape_of<tensor<T, _, d...>> : std::remove_cvref<decltype(tensor<T, _, d...>::shape)> {};
+
+template<typename T>
+using shape_of_t = typename shape_of<T>::type;
+
+}  // namespace traits
+
+
+namespace concepts {
+
+template<typename T>
+concept tensor_expression = expression<T> and is_complete_v<traits::shape_of<T>>;
+
+}  // namespace concepts
 
 
 namespace operators {
@@ -93,15 +114,15 @@ struct mat_mul : detail::binary_operator<traits::mat_mul_of, detail::default_mat
 
 }  // namespace operators
 
-template<typename T, auto _, std::size_t d0, std::size_t... dims>
-inline constexpr auto det(const tensor<T, _, d0, dims...>&) noexcept {
-    static_assert(tensor<T, _, d0, dims...>::is_square, "Determinant can only be taken on square matrices.");
-    return operation<operators::determinant, tensor<T, _, d0, dims...>>{};
+template<concepts::tensor_expression T>
+inline constexpr auto det(const T&) noexcept {
+    static_assert(traits::shape_of_t<T>{}.is_square, "Determinant can only be taken on square matrices.");
+    return operation<operators::determinant, T>{};
 }
 
-template<typename T1, auto _1, std::size_t... d1, typename T2, auto _2, std::size_t... d2>
-inline constexpr auto mat_mul(const tensor<T1, _1, d1...>&, const tensor<T2, _2, d2...>&) noexcept {
-    return operation<operators::mat_mul, tensor<T1, _1, d1...>, tensor<T2, _2, d2...>>{};
+template<concepts::tensor_expression T1, concepts::tensor_expression T2>
+inline constexpr auto mat_mul(const T1&, const T2&) noexcept {
+    return operation<operators::mat_mul, T1, T2>{};
 }
 
 template<typename shape, concepts::expression... E>
@@ -122,6 +143,14 @@ struct tensor_expression {
         return (*this)[md_i_c<i>];
     }
 };
+
+namespace traits {
+
+template<typename shape, typename... E>
+struct shape_of<tensor_expression<shape, E...>> : std::type_identity<shape> {};
+
+}  // namespace traits
+
 
 struct vector_expression {
     template<concepts::expression... E>

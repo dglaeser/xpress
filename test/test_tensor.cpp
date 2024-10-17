@@ -132,13 +132,6 @@ int main() {
         );
     };
 
-    "tensor_is_square"_test = [] () {
-        static_assert(tensor{shape<2, 2>}.is_square);
-        static_assert(tensor{shape<3, 3>}.is_square);
-        static_assert(!tensor{shape<2, 2, 2>}.is_square);
-        static_assert(!tensor{shape<2, 3>}.is_square);
-    };
-
     "tensor_determinant"_test = [] () {
         const tensor T22{shape<2, 2>};
         const tensor T33{shape<3, 3>};

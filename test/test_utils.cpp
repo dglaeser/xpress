@@ -90,6 +90,13 @@ int main() {
         static_assert(shape != md_shape<3, 3>{});
     };
 
+    "md_shape_is_square"_test = [] () {
+        static_assert(shape<2, 2>.is_square);
+        static_assert(shape<3, 3>.is_square);
+        static_assert(!shape<2, 2, 2>.is_square);
+        static_assert(!shape<2, 3>.is_square);
+    };
+
     "md_shape_access"_test = [] () {
         constexpr md_shape<2, 3> shape;
         static_assert(shape.at(i_c<0>) == 2);
