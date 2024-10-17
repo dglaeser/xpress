@@ -121,6 +121,17 @@ int main() {
         expect(eq(value_of(t1*t2, at(t1 = m, t2 = m)), 1+4+9+16));
     };
 
+    "tensor_mat_mul"_test = [] () {
+        tensor T{shape<2, 2>};
+        vector<2> v{};
+
+        const auto result = mat_mul(T, v);
+        expect(
+            value_of(result, at(T = std::array<std::array<int, 2>, 2>{{{1, 2}, {3, 4}}}, v = std::array<int, 2>{42, 43}))
+            == linalg::tensor{shape<2>, 42 + 2*43, 3*42 + 4*43}
+        );
+    };
+
     "tensor_is_square"_test = [] () {
         static_assert(tensor{shape<2, 2>}.is_square);
         static_assert(tensor{shape<3, 3>}.is_square);

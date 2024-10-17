@@ -63,6 +63,7 @@ namespace operators {
 namespace traits {
 
 template<typename T> struct determinant_of;
+template<typename A, typename B> struct mat_mul_of;
 
 }  // namespace traits
 
@@ -77,10 +78,18 @@ namespace detail {
         }
     };
 
+    struct default_mat_mul_operator {
+        template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
+        constexpr auto operator()(T1&& t1, T2&& t2) const noexcept {
+            return linalg::mat_mul(std::forward<T1>(t1), std::forward<T2>(t2));
+        }
+    };
+
 }  // namespace detail
 #endif  // DOXYGEN
 
 struct determinant : detail::unary_operator<traits::determinant_of, detail::default_determinant_operator> {};
+struct mat_mul : detail::binary_operator<traits::mat_mul_of, detail::default_mat_mul_operator> {};
 
 }  // namespace operators
 
@@ -88,6 +97,11 @@ template<typename T, auto _, std::size_t d0, std::size_t... dims>
 inline constexpr auto det(const tensor<T, _, d0, dims...>&) noexcept {
     static_assert(tensor<T, _, d0, dims...>::is_square, "Determinant can only be taken on square matrices.");
     return operation<operators::determinant, tensor<T, _, d0, dims...>>{};
+}
+
+template<typename T1, auto _1, std::size_t... d1, typename T2, auto _2, std::size_t... d2>
+inline constexpr auto mat_mul(const tensor<T1, _1, d1...>&, const tensor<T2, _2, d2...>&) noexcept {
+    return operation<operators::mat_mul, tensor<T1, _1, d1...>, tensor<T2, _2, d2...>>{};
 }
 
 template<typename shape, concepts::expression... E>
@@ -282,6 +296,11 @@ struct nodes_of<operation<operators::determinant, tensor<T, _, dims...>>> {
     using type = type_list<tensor<T, _, dims...>>;
 };
 
+template<typename T1, auto _1, std::size_t... d1, typename T2, auto _2, std::size_t... d2>
+struct nodes_of<operation<operators::mat_mul, tensor<T1, _1, d1...>, tensor<T2, _2, d2...>>> {
+    using type = type_list<tensor<T1, _1, d1...>, tensor<T2, _2, d2...>>;
+};
+
 template<typename shape, typename... E>
 struct nodes_of<tensor_expression<shape, E...>> {
     using type = merged_types_t<type_list<tensor_expression<shape, E...>>, merged_nodes_of_t<E...>>;
@@ -325,6 +344,14 @@ struct derivative_of<operation<operators::determinant, tensor<T, _, rows, cols>>
         } else {
             return val<0>;
         }
+    }
+};
+
+template<typename T1, auto _1, std::size_t... d1, typename T2, auto _2, std::size_t... d2>
+struct derivative_of<operation<operators::mat_mul, tensor<T1, _1, d1...>, tensor<T2, _2, d2...>>> {
+    template<typename V>
+    static constexpr decltype(auto) wrt(const type_list<V>&) {
+        static_assert(false, "not implemented.");
     }
 };
 
