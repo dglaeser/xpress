@@ -74,7 +74,9 @@ using shape_of_t = typename shape_of<T>::type;
 namespace concepts {
 
 template<typename T>
-concept tensor_expression = expression<T> and is_complete_v<traits::shape_of<T>>;
+concept tensor_expression = expression<T> and is_complete_v<traits::shape_of<T>> and requires(const T& t) {
+    { t[ *(md_index_iterator{traits::shape_of_t<T>{}}) ] } -> expression;
+};
 
 }  // namespace concepts
 
