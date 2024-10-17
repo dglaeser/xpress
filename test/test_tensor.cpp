@@ -195,6 +195,29 @@ int main() {
         expect(dr_dT == v_value);
     };
 
+    "tensor_expression_mat_mul_derivative"_test = [] () {
+        var a;
+        var b;
+        const tensor T{shape<2, 2>};
+        const auto v = vector_expression_builder<2>{}
+                        .with(a+b, at<0>())
+                        .with(a*b, at<1>())
+                        .build();
+        const auto result = mat_mul(T, v);
+
+        const int a_value = 42;
+        const int b_value = 42;
+        constexpr linalg::tensor T_value{shape<2, 2>, 1, 2, 3, 4};
+        const auto dr_dT = derivative_of(result, wrt(T), at(T = T_value, a = a_value, b = b_value));
+        const auto dr_dv = derivative_of(result, wrt(v), at(T = T_value, a = a_value, b = b_value));
+        const auto dr_da = derivative_of(result, wrt(a), at(T = T_value, a = a_value, b = b_value));
+        const auto dr_db = derivative_of(result, wrt(b), at(T = T_value, a = a_value, b = b_value));
+        expect(dr_dv == T_value);
+        expect(dr_dT == linalg::tensor{shape<2>, a_value + b_value, a_value*b_value});
+        expect(dr_da == linalg::tensor{shape<2>, (1 + 2*b_value), (3 + 4*b_value)});
+        expect(dr_db == linalg::tensor{shape<2>, (1 + 2*a_value), (3 + 4*a_value)});
+    };
+
     "tensor_2x2_determinant_derivative"_test = [] () {
         const linalg::tensor value{shape<2, 2>, 1.0, 2.0, 3.0, 4.0};
         const auto determinant = -2.0;

@@ -412,7 +412,19 @@ template<concepts::tensor_expression T1, concepts::tensor_expression T2>
 struct derivative_of<operation<operators::mat_mul, T1, T2>> {
     template<typename V>
     static constexpr decltype(auto) wrt(const type_list<V>& var) {
-        return adac::detail::differentiate<T1>(var)*T2{} + T1{}*adac::detail::differentiate<T2>(var);
+        return _mat_mul(adac::detail::differentiate<T1>(var), T2{}) + _mat_mul(T1{}, adac::detail::differentiate<T2>(var));
+    }
+
+ private:
+    template<concepts::tensor_expression _T1, concepts::tensor_expression _T2>
+    static constexpr decltype(auto) _mat_mul(const _T1& t1, const _T2& t2) noexcept {
+        return mat_mul(t1, t2);
+    }
+
+    template<concepts::expression _T1, concepts::expression _T2>
+        requires(!concepts::tensor_expression<_T1> or !concepts::tensor_expression<_T2>)
+    static constexpr decltype(auto) _mat_mul(const _T1& t1, const _T2& t2) noexcept {
+        return t1*t2;
     }
 };
 
