@@ -49,6 +49,14 @@ int main() {
         expect(linalg::mat_mul(A, B) == linalg::tensor{shape<2, 2>, 28, 33, 28, 31});
     };
 
+    "tensor_mat_vec_mul"_test = [] () {
+        constexpr linalg::tensor T{shape<2, 2>, 1, 2, 3, 4};
+        constexpr linalg::tensor v{shape<2>, 1, 2};
+        const auto result = linalg::mat_mul(T, v);
+        static_assert(linalg::traits::shape_of_t<std::remove_cvref_t<decltype(result)>>{} == shape<2>);
+        expect(result == linalg::tensor{shape<2>, 5, 11});
+    };
+
     "tensor_export"_test = [] () {
         linalg::tensor A{shape<1, 3>, 1, 2, 3};
         std::array<std::array<int, 3>, 1> copied;
