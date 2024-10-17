@@ -101,8 +101,6 @@ struct bindings : private variadic_accessor<B...> {
     template<typename T>
     static constexpr bool has_bindings_for = is_bound<T>;
 
-    using common_value_type = std::common_type_t<typename std::remove_cvref_t<B>::value_type...>;
-
     constexpr bindings(B... binders) noexcept
     : base(std::forward<B>(binders)...)
     {}
@@ -119,8 +117,6 @@ template<>
 struct bindings<> {
     template<typename... T>
     static constexpr bool has_bindings_for = false;
-
-    using common_value_type = double;
 };
 
 template<typename... B>

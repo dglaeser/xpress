@@ -213,7 +213,7 @@ inline constexpr auto mat_mul(const T1& t1, const T2& t2) noexcept {
         visit_indices_in(shape<shape1{}.last()>, [&] <std::size_t j> (const md_index<j>&) constexpr {
             const auto t1_idx = md_index{value_list<i...>::template take<shape1::size-1>() + value_list<j>{}};
             const auto t2_idx = md_index{value_list<j>{} + value_list<i...>::template drop<shape1::size-1>()};
-            result[idx] += t1[t1_idx]*t2[t2_idx];
+            result[idx] += traits::access<T1>::at(t1_idx, t1)*traits::access<T2>::at(t2_idx, t2);
         });
     });
     return result;

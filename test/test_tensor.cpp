@@ -24,6 +24,13 @@ class matrix {
 
     constexpr matrix() = default;
 
+    template<typename... _T>
+        requires(
+            sizeof...(_T) == r*c and
+            std::conjunction_v<std::is_same<std::remove_cvref_t<_T>, T>...>
+        )
+    constexpr matrix(_T... values) : _data{std::forward<_T>(values)...} {}
+
     template<typename self>
     constexpr decltype(auto) operator[](this self&& s, std::size_t i) noexcept {
         return s._data[i];
@@ -87,24 +94,15 @@ int main() {
     };
 
     "tensor_times_scalar"_test = [] () {
-        matrix<int, 2, 2> m;
-        m[0][0] = 1; m[0][1] = 2;
-        m[1][0] = 3; m[1][1] = 4;
-
+        matrix<int, 2, 2> m{1, 2, 3, 4};
         tensor t{shape<2, 2>};
         expect(value_of(t*val<2>, at(t = m)) == m*2);
         expect(value_of(val<2>*t, at(t = m)) == m*2);
     };
 
     "tensor_divided_by_scalar"_test = [] () {
-        matrix<int, 2, 2> m;
-        m[0][0] = 2; m[0][1] = 4;
-        m[1][0] = 6; m[1][1] = 8;
-
-        matrix<int, 2, 2> expected;
-        expected[0][0] = 1; expected[0][1] = 2;
-        expected[1][0] = 3; expected[1][1] = 4;
-
+        matrix<int, 2, 2> m{2, 4, 6, 8};
+        matrix<int, 2, 2> expected{1, 2, 3, 4};
         tensor t{shape<2, 2>};
         expect(value_of(t/val<2>, at(t = m)) == expected);
     };
@@ -117,20 +115,21 @@ int main() {
     };
 
     "tensor_scalar_product"_test = [] () {
-        matrix<int, 2, 2> m;
-        m[0][0] = 1; m[0][1] = 2;
-        m[1][0] = 3; m[1][1] = 4;
-
+        matrix<int, 2, 2> m{1, 2, 3, 4};
         const tensor t1{shape<2, 2>};
         const tensor t2{shape<2, 2>};
         expect(eq(value_of(t1*t2, at(t1 = m, t2 = m)), 1+4+9+16));
     };
 
-    "tensor_is_square"_test = [] () {
-        static_assert(tensor{shape<2, 2>}.is_square);
-        static_assert(tensor{shape<3, 3>}.is_square);
-        static_assert(!tensor{shape<2, 2, 2>}.is_square);
-        static_assert(!tensor{shape<2, 3>}.is_square);
+    "tensor_mat_mul"_test = [] () {
+        tensor T{shape<2, 2>};
+        vector<2> v{};
+
+        const auto result = mat_mul(T, v);
+        expect(
+            value_of(result, at(T = std::array<std::array<int, 2>, 2>{{{1, 2}, {3, 4}}}, v = std::array<int, 2>{42, 43}))
+            == linalg::tensor{shape<2>, 42 + 2*43, 3*42 + 4*43}
+        );
     };
 
     "tensor_determinant"_test = [] () {
@@ -183,6 +182,42 @@ int main() {
         { std::ostringstream s; write_to(s, T11, at(t = "M")); expect(eq(s.str(), std::string{"M[1, 1]"})); }
     };
 
+    "tensor_mat_mul_derivative"_test = [] () {
+        const tensor T{shape<2, 2>};
+        const vector<2> v{};
+        const auto result = mat_mul(T, v);
+
+        constexpr linalg::tensor T_value{shape<2, 2>, 1, 2, 3, 4};
+        constexpr linalg::tensor v_value{shape<2>, 5, 6};
+        const auto dr_dT = derivative_of(result, wrt(T), at(T = T_value, v = v_value));
+        const auto dr_dv = derivative_of(result, wrt(v), at(T = T_value, v = v_value));
+        expect(dr_dv == T_value);
+        expect(dr_dT == v_value);
+    };
+
+    "tensor_expression_mat_mul_derivative"_test = [] () {
+        var a;
+        var b;
+        const tensor T{shape<2, 2>};
+        const auto v = vector_expression_builder<2>{}
+                        .with(a+b, at<0>())
+                        .with(a*b, at<1>())
+                        .build();
+        const auto result = mat_mul(T, v);
+
+        const int a_value = 42;
+        const int b_value = 42;
+        constexpr linalg::tensor T_value{shape<2, 2>, 1, 2, 3, 4};
+        const auto dr_dT = derivative_of(result, wrt(T), at(T = T_value, a = a_value, b = b_value));
+        const auto dr_dv = derivative_of(result, wrt(v), at(T = T_value, a = a_value, b = b_value));
+        const auto dr_da = derivative_of(result, wrt(a), at(T = T_value, a = a_value, b = b_value));
+        const auto dr_db = derivative_of(result, wrt(b), at(T = T_value, a = a_value, b = b_value));
+        expect(dr_dv == T_value);
+        expect(dr_dT == linalg::tensor{shape<2>, a_value + b_value, a_value*b_value});
+        expect(dr_da == linalg::tensor{shape<2>, (1 + 2*b_value), (3 + 4*b_value)});
+        expect(dr_db == linalg::tensor{shape<2>, (1 + 2*a_value), (3 + 4*a_value)});
+    };
+
     "tensor_2x2_determinant_derivative"_test = [] () {
         const linalg::tensor value{shape<2, 2>, 1.0, 2.0, 3.0, 4.0};
         const auto determinant = -2.0;
@@ -196,6 +231,37 @@ int main() {
 
         const tensor T{shape<2, 2>};
         const auto ddetT_dT = derivative_of(det(T), wrt(T), at(T = value));
+        expect(fuzzy_eq(ddetT_dT[at<0, 0>()], expected[at<0, 0>()]));
+        expect(fuzzy_eq(ddetT_dT[at<0, 1>()], expected[at<0, 1>()]));
+        expect(fuzzy_eq(ddetT_dT[at<1, 0>()], expected[at<1, 0>()]));
+        expect(fuzzy_eq(ddetT_dT[at<1, 1>()], expected[at<1, 1>()]));
+    };
+
+    "tensor_expression_2x2_determinant_derivative"_test = [] () {
+        var a;
+        var b;
+        var c;
+        var d;
+
+        // known values because we will use a = 1, b = 2, c = 3, d = 4
+        const linalg::tensor value{shape<2, 2>, 1.0, 2.0, 3.0, 4.0};
+        const auto determinant = -2.0;
+        const linalg::tensor inverse = linalg::tensor{shape<2, 2>, 4.0, -2.0, -3.0, 1.0}*(1.0/determinant);
+        const linalg::tensor inverse_transposed = linalg::tensor{shape<2, 2>,
+            inverse[at<0, 0>()], inverse[at<1, 0>()],
+            inverse[at<0, 1>()], inverse[at<1, 1>()]
+        };
+        // see https://en.wikipedia.org/wiki/Tensor_derivative_(continuum_mechanics)#Derivative_of_the_determinant_of_a_second-order_tensor
+        const linalg::tensor expected = inverse_transposed*determinant;
+
+        const auto T = tensor_expression_builder{shape<2, 2>}
+                        .with(a, at<0, 0>())
+                        .with(b, at<0, 1>())
+                        .with(c, at<1, 0>())
+                        .with(d, at<1, 1>())
+                        .build();
+
+        const auto ddetT_dT = derivative_of(det(T), wrt(T), at(a = 1, b = 2, c = 3, d = 4));
         expect(fuzzy_eq(ddetT_dT[at<0, 0>()], expected[at<0, 0>()]));
         expect(fuzzy_eq(ddetT_dT[at<0, 1>()], expected[at<0, 1>()]));
         expect(fuzzy_eq(ddetT_dT[at<1, 0>()], expected[at<1, 0>()]));
@@ -239,10 +305,8 @@ int main() {
     };
 
     "tensor_scalar_product_derivative"_test = [] () {
-        matrix<int, 2, 2> m1;
-        matrix<int, 2, 2> m2;
-        m1[0][0] = 1; m1[0][1] = 2; m1[1][0] = 3; m1[1][1] = 4;
-        m2[0][0] = 10; m2[0][1] = 11; m2[1][0] = 12; m2[1][1] = 13;
+        matrix<int, 2, 2> m1{1, 2, 3, 4};
+        matrix<int, 2, 2> m2{10, 11, 12, 13};
         static constexpr tensor t1{shape<2, 2>};
         static constexpr tensor t2{shape<2, 2>};
         static constexpr auto expr = val<42>*(t1*t2);
