@@ -237,6 +237,37 @@ int main() {
         expect(fuzzy_eq(ddetT_dT[at<1, 1>()], expected[at<1, 1>()]));
     };
 
+    "tensor_expression_2x2_determinant_derivative"_test = [] () {
+        var a;
+        var b;
+        var c;
+        var d;
+
+        // known values because we will use a = 1, b = 2, c = 3, d = 4
+        const linalg::tensor value{shape<2, 2>, 1.0, 2.0, 3.0, 4.0};
+        const auto determinant = -2.0;
+        const linalg::tensor inverse = linalg::tensor{shape<2, 2>, 4.0, -2.0, -3.0, 1.0}*(1.0/determinant);
+        const linalg::tensor inverse_transposed = linalg::tensor{shape<2, 2>,
+            inverse[at<0, 0>()], inverse[at<1, 0>()],
+            inverse[at<0, 1>()], inverse[at<1, 1>()]
+        };
+        // see https://en.wikipedia.org/wiki/Tensor_derivative_(continuum_mechanics)#Derivative_of_the_determinant_of_a_second-order_tensor
+        const linalg::tensor expected = inverse_transposed*determinant;
+
+        const auto T = tensor_expression_builder{shape<2, 2>}
+                        .with(a, at<0, 0>())
+                        .with(b, at<0, 1>())
+                        .with(c, at<1, 0>())
+                        .with(d, at<1, 1>())
+                        .build();
+
+        const auto ddetT_dT = derivative_of(det(T), wrt(T), at(a = 1, b = 2, c = 3, d = 4));
+        expect(fuzzy_eq(ddetT_dT[at<0, 0>()], expected[at<0, 0>()]));
+        expect(fuzzy_eq(ddetT_dT[at<0, 1>()], expected[at<0, 1>()]));
+        expect(fuzzy_eq(ddetT_dT[at<1, 0>()], expected[at<1, 0>()]));
+        expect(fuzzy_eq(ddetT_dT[at<1, 1>()], expected[at<1, 1>()]));
+    };
+
     "tensor_3x3_determinant_derivative"_test = [] () {
         const linalg::tensor value{shape<3, 3>,
             1.0, 2.0, 3.0,
