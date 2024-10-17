@@ -350,8 +350,10 @@ struct derivative_of<operation<operators::determinant, tensor<T, _, rows, cols>>
 template<typename T1, auto _1, std::size_t... d1, typename T2, auto _2, std::size_t... d2>
 struct derivative_of<operation<operators::mat_mul, tensor<T1, _1, d1...>, tensor<T2, _2, d2...>>> {
     template<typename V>
-    static constexpr decltype(auto) wrt(const type_list<V>&) {
-        static_assert(false, "not implemented.");
+    static constexpr decltype(auto) wrt(const type_list<V>& var) {
+        using first = tensor<T1, _1, d1...>;
+        using second = tensor<T2, _2, d2...>;
+        return adac::detail::differentiate<first>(var)*second{} + first{}*adac::detail::differentiate<second>(var);
     }
 };
 

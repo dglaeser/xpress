@@ -189,6 +189,19 @@ int main() {
         { std::ostringstream s; write_to(s, T11, at(t = "M")); expect(eq(s.str(), std::string{"M[1, 1]"})); }
     };
 
+    "tensor_mat_mul_derivative"_test = [] () {
+        const tensor T{shape<2, 2>};
+        const vector<2> v{};
+        const auto result = mat_mul(T, v);
+
+        constexpr linalg::tensor T_value{shape<2, 2>, 1, 2, 3, 4};
+        constexpr linalg::tensor v_value{shape<2>, 5, 6};
+        const auto dr_dT = derivative_of(result, wrt(T), at(T = T_value, v = v_value));
+        const auto dr_dv = derivative_of(result, wrt(v), at(T = T_value, v = v_value));
+        expect(dr_dv == T_value);
+        expect(dr_dT == v_value);
+    };
+
     "tensor_2x2_determinant_derivative"_test = [] () {
         const linalg::tensor value{shape<2, 2>, 1.0, 2.0, 3.0, 4.0};
         const auto determinant = -2.0;
