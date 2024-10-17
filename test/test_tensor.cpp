@@ -24,6 +24,13 @@ class matrix {
 
     constexpr matrix() = default;
 
+    template<typename... _T>
+        requires(
+            sizeof...(_T) == r*c and
+            std::conjunction_v<std::is_same<std::remove_cvref_t<_T>, T>...>
+        )
+    constexpr matrix(_T... values) : _data{std::forward<_T>(values)...} {}
+
     template<typename self>
     constexpr decltype(auto) operator[](this self&& s, std::size_t i) noexcept {
         return s._data[i];
@@ -87,24 +94,15 @@ int main() {
     };
 
     "tensor_times_scalar"_test = [] () {
-        matrix<int, 2, 2> m;
-        m[0][0] = 1; m[0][1] = 2;
-        m[1][0] = 3; m[1][1] = 4;
-
+        matrix<int, 2, 2> m{1, 2, 3, 4};
         tensor t{shape<2, 2>};
         expect(value_of(t*val<2>, at(t = m)) == m*2);
         expect(value_of(val<2>*t, at(t = m)) == m*2);
     };
 
     "tensor_divided_by_scalar"_test = [] () {
-        matrix<int, 2, 2> m;
-        m[0][0] = 2; m[0][1] = 4;
-        m[1][0] = 6; m[1][1] = 8;
-
-        matrix<int, 2, 2> expected;
-        expected[0][0] = 1; expected[0][1] = 2;
-        expected[1][0] = 3; expected[1][1] = 4;
-
+        matrix<int, 2, 2> m{2, 4, 6, 8};
+        matrix<int, 2, 2> expected{1, 2, 3, 4};
         tensor t{shape<2, 2>};
         expect(value_of(t/val<2>, at(t = m)) == expected);
     };
@@ -117,10 +115,7 @@ int main() {
     };
 
     "tensor_scalar_product"_test = [] () {
-        matrix<int, 2, 2> m;
-        m[0][0] = 1; m[0][1] = 2;
-        m[1][0] = 3; m[1][1] = 4;
-
+        matrix<int, 2, 2> m{1, 2, 3, 4};
         const tensor t1{shape<2, 2>};
         const tensor t2{shape<2, 2>};
         expect(eq(value_of(t1*t2, at(t1 = m, t2 = m)), 1+4+9+16));
@@ -239,10 +234,8 @@ int main() {
     };
 
     "tensor_scalar_product_derivative"_test = [] () {
-        matrix<int, 2, 2> m1;
-        matrix<int, 2, 2> m2;
-        m1[0][0] = 1; m1[0][1] = 2; m1[1][0] = 3; m1[1][1] = 4;
-        m2[0][0] = 10; m2[0][1] = 11; m2[1][0] = 12; m2[1][1] = 13;
+        matrix<int, 2, 2> m1{1, 2, 3, 4};
+        matrix<int, 2, 2> m2{10, 11, 12, 13};
         static constexpr tensor t1{shape<2, 2>};
         static constexpr tensor t2{shape<2, 2>};
         static constexpr auto expr = val<42>*(t1*t2);
