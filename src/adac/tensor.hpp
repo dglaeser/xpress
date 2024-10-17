@@ -322,19 +322,28 @@ struct nodes_of<tensor_var<tensor, i...>> {
     using type = type_list<tensor_var<tensor, i...>>;
 };
 
-template<typename T, auto _, std::size_t... dims>
-struct nodes_of<operation<operators::determinant, tensor<T, _, dims...>>> {
-    using type = type_list<tensor<T, _, dims...>>;
-};
-
-template<typename T1, auto _1, std::size_t... d1, typename T2, auto _2, std::size_t... d2>
-struct nodes_of<operation<operators::mat_mul, tensor<T1, _1, d1...>, tensor<T2, _2, d2...>>> {
-    using type = type_list<tensor<T1, _1, d1...>, tensor<T2, _2, d2...>>;
-};
-
 template<typename shape, typename... E>
 struct nodes_of<tensor_expression<shape, E...>> {
     using type = merged_types_t<type_list<tensor_expression<shape, E...>>, merged_nodes_of_t<E...>>;
+};
+
+template<concepts::tensor_expression T>
+struct nodes_of<operation<operators::determinant, T>> {
+    using type = merged_types_t<
+        type_list<operation<operators::determinant, T>>,
+        typename nodes_of<T>::type
+    >;
+};
+
+template<concepts::tensor_expression T1, concepts::tensor_expression T2>
+struct nodes_of<operation<operators::mat_mul, T1, T2>> {
+    using type = merged_types_t<
+        type_list<operation<operators::mat_mul, T1, T2>>,
+        merged_types_t<
+            typename nodes_of<T1>::type,
+            typename nodes_of<T2>::type
+        >
+    >;
 };
 
 template<typename T, auto _, std::size_t... dims>
@@ -345,46 +354,6 @@ struct derivative_of<tensor<T, _, dims...>> {
             return val<1>;
         else
             return val<0>;
-    }
-};
-
-template<typename T, auto _, std::size_t rows, std::size_t cols>
-struct derivative_of<operation<operators::determinant, tensor<T, _, rows, cols>>> {
-    static_assert(rows == 2 || rows == 3, "Determinant derivative is only implemented for 2d & 3d matrices.");
-    static_assert(cols == 2 || cols == 3, "Determinant derivative is only implemented for 2d & 3d matrices.");
-    static_assert(rows == cols, "Determinant derivative can only be computed for square matrices.");
-
-    template<typename V>
-    static constexpr decltype(auto) wrt(const type_list<V>&) {
-        using self = tensor<T, _, rows, cols>;
-        if constexpr (std::is_same_v<V, self>) {
-            if constexpr (rows == 2) {
-                constexpr auto a = self{}[at<0, 0>()]; constexpr auto b = self{}[at<0, 1>()];
-                constexpr auto c = self{}[at<1, 0>()]; constexpr auto d = self{}[at<1, 1>()];
-                return tensor_expression{shape<2, 2>, d, -c, -b, a};
-            } else {
-                constexpr auto a = self{}[at<0, 0>()]; constexpr auto b = self{}[at<0, 1>()]; constexpr auto c = self{}[at<0, 2>()];
-                constexpr auto d = self{}[at<1, 0>()]; constexpr auto e = self{}[at<1, 1>()]; constexpr auto f = self{}[at<1, 2>()];
-                constexpr auto g = self{}[at<2, 0>()]; constexpr auto h = self{}[at<2, 1>()]; constexpr auto i = self{}[at<2, 2>()];
-                return tensor_expression{shape<3, 3>,
-                    e*i - f*h, f*g - d*i, d*h - e*g,
-                    c*h - b*i, a*i - c*g, b*g - a*h,
-                    b*f - c*e, c*d - a*f, a*e - b*d
-                };
-            }
-        } else {
-            return val<0>;
-        }
-    }
-};
-
-template<typename T1, auto _1, std::size_t... d1, typename T2, auto _2, std::size_t... d2>
-struct derivative_of<operation<operators::mat_mul, tensor<T1, _1, d1...>, tensor<T2, _2, d2...>>> {
-    template<typename V>
-    static constexpr decltype(auto) wrt(const type_list<V>& var) {
-        using first = tensor<T1, _1, d1...>;
-        using second = tensor<T2, _2, d2...>;
-        return adac::detail::differentiate<first>(var)*second{} + first{}*adac::detail::differentiate<second>(var);
     }
 };
 
@@ -406,6 +375,44 @@ struct derivative_of<tensor_expression<shape, E...>> {
     template<typename V>
     static constexpr decltype(auto) wrt(const type_list<V>& var) {
         return tensor_expression{shape{}, adac::derivative_of(E{}, var)...};
+    }
+};
+
+template<concepts::tensor_expression T>
+struct derivative_of<operation<operators::determinant, T>> {
+    static constexpr auto t_shape = traits::shape_of_t<T>{};
+    static_assert(t_shape.is_square, "Determinant derivative can only be computed for square matrices.");
+    static_assert(t_shape.first() == 2 || t_shape.first() == 3, "Determinant derivative is only implemented for 2d & 3d matrices.");
+    static_assert(t_shape.last() == 2 || t_shape.last(), "Determinant derivative is only implemented for 2d & 3d matrices.");
+
+    template<typename V>
+    static constexpr decltype(auto) wrt(const type_list<V>&) {
+        if constexpr (std::is_same_v<V, T>) {
+            if constexpr (t_shape.first() == 2) {
+                constexpr auto a = T{}[at<0, 0>()]; constexpr auto b = T{}[at<0, 1>()];
+                constexpr auto c = T{}[at<1, 0>()]; constexpr auto d = T{}[at<1, 1>()];
+                return tensor_expression{shape<2, 2>, d, -c, -b, a};
+            } else {
+                constexpr auto a = T{}[at<0, 0>()]; constexpr auto b = T{}[at<0, 1>()]; constexpr auto c = T{}[at<0, 2>()];
+                constexpr auto d = T{}[at<1, 0>()]; constexpr auto e = T{}[at<1, 1>()]; constexpr auto f = T{}[at<1, 2>()];
+                constexpr auto g = T{}[at<2, 0>()]; constexpr auto h = T{}[at<2, 1>()]; constexpr auto i = T{}[at<2, 2>()];
+                return tensor_expression{shape<3, 3>,
+                    e*i - f*h, f*g - d*i, d*h - e*g,
+                    c*h - b*i, a*i - c*g, b*g - a*h,
+                    b*f - c*e, c*d - a*f, a*e - b*d
+                };
+            }
+        } else {
+            return val<0>;
+        }
+    }
+};
+
+template<concepts::tensor_expression T1, concepts::tensor_expression T2>
+struct derivative_of<operation<operators::mat_mul, T1, T2>> {
+    template<typename V>
+    static constexpr decltype(auto) wrt(const type_list<V>& var) {
+        return adac::detail::differentiate<T1>(var)*T2{} + T1{}*adac::detail::differentiate<T2>(var);
     }
 };
 
