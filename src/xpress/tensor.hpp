@@ -134,7 +134,7 @@ struct tensor_expression {
         return std::get<md_index<i...>::as_flat_index_in(shape{})>(std::tuple<E...>{});
     }
 
-    template<std::size_t i> requires(shape::size == 1)
+    template<std::size_t i> requires(shape::dimensions == 1)
     constexpr auto operator[](const index_constant<i>&) const noexcept {
         return (*this)[md_ic<i>];
     }

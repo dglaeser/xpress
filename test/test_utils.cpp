@@ -13,7 +13,7 @@ int main() {
 
     "md_shape_properties"_test = [] () {
         constexpr md_shape<2, 3> shape;
-        static_assert(shape.size == 2);
+        static_assert(shape.dimensions == 2);
         static_assert(shape.count == 6);
     };
 

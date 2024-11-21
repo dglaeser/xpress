@@ -46,7 +46,7 @@ struct tensor {
         return self._values[md_index<i...>::as_flat_index_in(shape{})];
     }
 
-    template<typename S, std::size_t i> requires(shape::size == 1)
+    template<typename S, std::size_t i> requires(shape::dimensions == 1)
     constexpr decltype(auto) operator[](this S&& self, const index_constant<i>&) noexcept {
         return self[md_ic<i>];
     }
@@ -158,7 +158,7 @@ struct access<tensor<T, shape>> {
 };
 template<typename T> requires(xp::traits::is_indexable_v<T> and is_complete_v<shape_of<T>>)
 struct access<T> {
-    template<same_remove_cvref_t_as<T> _T, std::size_t... i> requires(sizeof...(i) == shape_of_t<T>::size)
+    template<same_remove_cvref_t_as<T> _T, std::size_t... i> requires(sizeof...(i) == shape_of_t<T>::dimensions)
     static constexpr decltype(auto) at(const md_index<i...>&, _T&& tensor) noexcept {
         return _at<i...>(std::forward<_T>(tensor));
     }
@@ -196,7 +196,7 @@ template<concepts::tensor T1, concepts::tensor T2>
 inline constexpr auto mat_mul(const T1& t1, const T2& t2) noexcept {
     using shape1 = traits::shape_of_t<T1>;
     using shape2 = traits::shape_of_t<T2>;
-    static_assert(shape1::size > 1, "First argument must be a tensor with 2 or more dimensions.");
+    static_assert(shape1::dimensions > 1, "First argument must be a tensor with 2 or more dimensions.");
     static_assert(shape1{}.last() == shape2{}.first(), "Tensor dimensions do not match.");
 
     using scalar = std::common_type_t<
@@ -212,8 +212,8 @@ inline constexpr auto mat_mul(const T1& t1, const T2& t2) noexcept {
     linalg::tensor<scalar, decltype(new_shape)> result{scalar{0}};
     visit_indices_in(new_shape, [&] <std::size_t... i> (const md_index<i...>& idx) constexpr {
         visit_indices_in(shape<shape1{}.last()>, [&] <std::size_t j> (const md_index<j>&) constexpr {
-            const auto t1_idx = md_index{values<i...>::template take<shape1::size-1>() + values<j>{}};
-            const auto t2_idx = md_index{values<j>{} + values<i...>::template drop<shape1::size-1>()};
+            const auto t1_idx = md_index{values<i...>::template take<shape1::dimensions-1>() + values<j>{}};
+            const auto t2_idx = md_index{values<j>{} + values<i...>::template drop<shape1::dimensions-1>()};
             result[idx] += traits::access<T1>::at(t1_idx, t1)*traits::access<T2>::at(t2_idx, t2);
         });
     });
@@ -222,7 +222,7 @@ inline constexpr auto mat_mul(const T1& t1, const T2& t2) noexcept {
 
 //! Return the determinant of the given tensor
 template<concepts::tensor T>
-    requires(traits::shape_of_t<T>{}.size == 2)
+    requires(traits::shape_of_t<T>{}.dimensions == 2)
 inline constexpr auto determinant_of(const T& tensor) noexcept {
     static constexpr auto rows = traits::shape_of_t<T>{}.at(ic<0>);
     static constexpr auto cols = traits::shape_of_t<T>{}.at(ic<1>);
