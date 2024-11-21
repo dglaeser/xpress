@@ -35,14 +35,14 @@ template<std::size_t... s>
 struct md_shape {
     using as_values_t = values<s...>;
 
-    static constexpr std::size_t size = sizeof...(s);
+    static constexpr std::size_t dimensions = sizeof...(s);
     static constexpr std::size_t count = values<s...>{}.reduce_with(std::multiplies{}, std::size_t{1});
     static constexpr bool is_square = sizeof...(s) == 2 && std::conjunction_v<is_equal<s, values<s...>::first()>...>;
 
     constexpr md_shape() = default;
     constexpr md_shape(const values<s...>) noexcept {}
 
-    template<std::size_t... v> requires(size > 0)
+    template<std::size_t... v> requires(dimensions > 0)
     constexpr bool operator==(const md_shape<v...>&) const noexcept { return false; }
     constexpr bool operator==(const md_shape&) const noexcept { return true; }
 
@@ -53,10 +53,10 @@ struct md_shape {
 
     //! Return the last dimension of this shape
     static constexpr auto last() noexcept {
-        return at(index_constant<size-1>{});
+        return at(index_constant<dimensions-1>{});
     }
 
-    template<std::size_t _i> requires(_i < size)
+    template<std::size_t _i> requires(_i < dimensions)
     static constexpr std::size_t at(const index_constant<_i>& idx) noexcept {
         return values<s...>::at(idx);
     }
@@ -76,16 +76,16 @@ inline constexpr md_shape<s...> shape{};
 //! Type to represent a multi-dimensional index
 template<std::size_t... i>
 struct md_index {
-    static constexpr std::size_t size = sizeof...(i);
+    static constexpr std::size_t dimensions = sizeof...(i);
 
     constexpr md_index() = default;
     constexpr md_index(const values<i...>) noexcept {}
 
-    template<std::size_t... v> requires(size > 0)
+    template<std::size_t... v> requires(dimensions > 0)
     constexpr bool operator==(const md_index<v...>&) const noexcept { return false; }
     constexpr bool operator==(const md_index&) const noexcept { return true; }
 
-    template<std::size_t _i> requires(_i < size)
+    template<std::size_t _i> requires(_i < dimensions)
     static constexpr auto at(const index_constant<_i>&) noexcept {
         return index_constant<values<i...>::at(index_constant<_i>{})>{};
     }
@@ -100,12 +100,12 @@ struct md_index {
         return md_index<i..., _i>{};
     }
 
-    template<std::size_t s0, std::size_t... s> requires(sizeof...(s) == size - 1)
+    template<std::size_t s0, std::size_t... s> requires(sizeof...(s) == dimensions - 1)
     static constexpr auto as_flat_index_in(const md_shape<s0, s...>&) noexcept {
         return ic<_sum_up_flat_index<0>(md_shape<s...>{}, 0)>;
     }
 
-    static constexpr auto as_flat_index_in(const md_shape<>&) noexcept requires(size == 0) {
+    static constexpr auto as_flat_index_in(const md_shape<>&) noexcept requires(dimensions == 0) {
         return ic<0>;
     }
 
