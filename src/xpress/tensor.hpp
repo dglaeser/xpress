@@ -142,7 +142,7 @@ struct tensor_expression {
 
     template<std::size_t i> requires(shape::size == 1)
     constexpr auto operator[](const index_constant<i>&) const noexcept {
-        return (*this)[md_i_c<i>];
+        return (*this)[md_ic<i>];
     }
 };
 
@@ -253,7 +253,7 @@ template<typename tensor, std::size_t... i>
 struct stream<tensor_var<tensor, i...>> {
     template<typename... V>
     static constexpr void to(std::ostream& out, const bindings<V...>& values) {
-        out << values[tensor{}] << "[" << value_list<i...>{} << "]";
+        out << values[tensor{}] << "[" << xp::values<i...>{} << "]";
     }
 };
 

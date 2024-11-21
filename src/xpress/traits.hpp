@@ -84,7 +84,7 @@ struct dtype_of<T> : std::type_identity<typename T::dtype> {};
 template<typename T>
 using dtype_of_t = typename dtype_of<T>::type;
 
-//! Trait to get the common data type for the given data types
+//! Trait to get the common data type for the given data types (binary trait has to be specialized for dtypes)
 template<typename... Ts>
 struct common_dtype;
 template<typename T>
