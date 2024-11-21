@@ -37,7 +37,6 @@ jobs:
         with:
           submodules: true
 
-      # install of make can be omitted once the container provides it per default
       - name: build-tests
         run: |
           sudo apt install libeigen3-dev
@@ -58,7 +57,6 @@ jobs:
         with:
           submodules: true
 
-      # install of make can be omitted once the container provides it per default
       - name: install-library
         run: |
           sudo apt install libeigen3-dev
