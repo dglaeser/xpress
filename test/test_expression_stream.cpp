@@ -39,5 +39,29 @@ int main() {
         expect(eq(out.str(), std::string{"(a*b)/c + (b + c)*a"}));
     };
 
+    "add_operator_same_operand"_test = [] () {
+        static constexpr let a;
+        constexpr auto added = a + a;
+        std::ostringstream out;
+        write_to(out, added, with(a = "a"));
+        expect(eq(out.str(), std::string{"2*a"}));
+    };
+
+    "subtract_operator_same_operand"_test = [] () {
+        static constexpr let a;
+        constexpr auto added = a - a;
+        std::ostringstream out;
+        write_to(out, added, with(a = "a"));
+        expect(eq(out.str(), std::string{"0"}));
+    };
+
+    "divide_operator_same_operand"_test = [] () {
+        static constexpr let a;
+        constexpr auto added = a/a;
+        std::ostringstream out;
+        write_to(out, added, with(a = "a"));
+        expect(eq(out.str(), std::string{"1"}));
+    };
+
     return 0;
 }

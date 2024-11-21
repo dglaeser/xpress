@@ -122,12 +122,6 @@ struct is_variable : std::false_type {};
 template<typename T>
 inline constexpr bool is_variable_v = is_variable<T>::value;
 
-//! Trait for expressions/symbol to specialize if arithmetic operators are defined in-class
-template<typename A, typename B>
-struct disable_generic_arithmetic_operators : std::false_type {};
-template<typename A, typename B>
-inline constexpr bool disable_generic_arithmetic_operators_v = disable_generic_arithmetic_operators<A, B>::value;
-
 //! Trait to get a list of all nodes in an expression tree
 template<typename T>
 struct nodes_of;

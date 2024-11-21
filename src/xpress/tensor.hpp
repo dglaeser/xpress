@@ -91,28 +91,22 @@ template<typename A, typename B> struct mat_mul_of;
 }  // namespace traits
 
 
-#ifndef DOXYGEN
-namespace detail {
+struct default_determinant_operator {
+    template<linalg::concepts::tensor T>
+    constexpr auto operator()(T&& t) const noexcept {
+        return linalg::determinant_of(std::forward<T>(t));
+    }
+};
 
-    struct default_determinant_operator {
-        template<linalg::concepts::tensor T>
-        constexpr auto operator()(T&& t) const noexcept {
-            return linalg::determinant_of(std::forward<T>(t));
-        }
-    };
+struct default_mat_mul_operator {
+    template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
+    constexpr auto operator()(T1&& t1, T2&& t2) const noexcept {
+        return linalg::mat_mul(std::forward<T1>(t1), std::forward<T2>(t2));
+    }
+};
 
-    struct default_mat_mul_operator {
-        template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
-        constexpr auto operator()(T1&& t1, T2&& t2) const noexcept {
-            return linalg::mat_mul(std::forward<T1>(t1), std::forward<T2>(t2));
-        }
-    };
-
-}  // namespace detail
-#endif  // DOXYGEN
-
-struct determinant : detail::unary_operator<traits::determinant_of, detail::default_determinant_operator> {};
-struct mat_mul : detail::binary_operator<traits::mat_mul_of, detail::default_mat_mul_operator> {};
+struct determinant : operator_base<traits::determinant_of, default_determinant_operator> {};
+struct mat_mul : operator_base<traits::mat_mul_of, default_mat_mul_operator> {};
 
 }  // namespace operators
 

@@ -34,7 +34,7 @@ struct negatable {
     }
 };
 
-//! base class for bindable symbols/expressions
+//! Base class for bindable symbols/expressions
 template<typename T = dtype::any>
 struct bindable {
     using dtype = T;

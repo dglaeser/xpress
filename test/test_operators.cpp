@@ -11,11 +11,11 @@ int main() {
     using namespace xp::testing;
 
     "value_operators"_test = [] {
-        static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<0> + val<1>)>, value<1>>);
-        static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<0> - val<1>)>, value<-1>>);
-        static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<2> * val<3>)>, value<6>>);
-        static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<6> / val<3>)>, value<2>>);
-        static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<1> / val<2.0>)>, value<0.5>>);
+        static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<42> + val<43>)>, value<85>>);
+        static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<42> - val<41>)>, value<1>>);
+        static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<42> * val<2>)>, value<84>>);
+        static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<36> / val<6>)>, value<6>>);
+        static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<41> / val<2.0>)>, value<20.5>>);
     };
 
     "add_operator_value"_test = [] () {
