@@ -48,7 +48,7 @@ struct tensor {
 
     template<typename S, std::size_t i> requires(shape::size == 1)
     constexpr decltype(auto) operator[](this S&& self, const index_constant<i>&) noexcept {
-        return self[md_i_c<i>];
+        return self[md_ic<i>];
     }
 
     template<typename V> requires(xp::traits::is_scalar_v<V>)

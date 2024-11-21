@@ -142,7 +142,7 @@ struct tensor_expression {
 
     template<std::size_t i> requires(shape::size == 1)
     constexpr auto operator[](const index_constant<i>&) const noexcept {
-        return (*this)[md_i_c<i>];
+        return (*this)[md_ic<i>];
     }
 };
 

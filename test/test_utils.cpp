@@ -59,25 +59,25 @@ int main() {
     };
 
     "md_index_as_flat_index"_test = [] () {
-        static_assert(md_i_c<0, 0>.as_flat_index_in(md_shape<3, 3>{}) == ic<0>);
-        static_assert(md_i_c<0, 1>.as_flat_index_in(md_shape<3, 3>{}) == ic<1>);
-        static_assert(md_i_c<0, 2>.as_flat_index_in(md_shape<3, 3>{}) == ic<2>);
-        static_assert(md_i_c<1, 0>.as_flat_index_in(md_shape<3, 3>{}) == ic<3>);
-        static_assert(md_i_c<1, 1>.as_flat_index_in(md_shape<3, 3>{}) == ic<4>);
-        static_assert(md_i_c<1, 2>.as_flat_index_in(md_shape<3, 3>{}) == ic<5>);
-        static_assert(md_i_c<2, 0>.as_flat_index_in(md_shape<3, 3>{}) == ic<6>);
-        static_assert(md_i_c<2, 1>.as_flat_index_in(md_shape<3, 3>{}) == ic<7>);
-        static_assert(md_i_c<2, 2>.as_flat_index_in(md_shape<3, 3>{}) == ic<8>);
-        static_assert(md_i_c<>.as_flat_index_in(md_shape<>{}) == ic<0>);
+        static_assert(md_ic<0, 0>.as_flat_index_in(md_shape<3, 3>{}) == ic<0>);
+        static_assert(md_ic<0, 1>.as_flat_index_in(md_shape<3, 3>{}) == ic<1>);
+        static_assert(md_ic<0, 2>.as_flat_index_in(md_shape<3, 3>{}) == ic<2>);
+        static_assert(md_ic<1, 0>.as_flat_index_in(md_shape<3, 3>{}) == ic<3>);
+        static_assert(md_ic<1, 1>.as_flat_index_in(md_shape<3, 3>{}) == ic<4>);
+        static_assert(md_ic<1, 2>.as_flat_index_in(md_shape<3, 3>{}) == ic<5>);
+        static_assert(md_ic<2, 0>.as_flat_index_in(md_shape<3, 3>{}) == ic<6>);
+        static_assert(md_ic<2, 1>.as_flat_index_in(md_shape<3, 3>{}) == ic<7>);
+        static_assert(md_ic<2, 2>.as_flat_index_in(md_shape<3, 3>{}) == ic<8>);
+        static_assert(md_ic<>.as_flat_index_in(md_shape<>{}) == ic<0>);
     };
 
     "md_index_contained_in"_test = [] () {
-        static_assert(md_i_c<0, 0>.is_contained_in(shape<2, 2>));
-        static_assert(md_i_c<0, 1>.is_contained_in(shape<2, 2>));
-        static_assert(md_i_c<1, 0>.is_contained_in(shape<2, 2>));
-        static_assert(md_i_c<1, 1>.is_contained_in(shape<2, 2>));
-        static_assert(!md_i_c<1, 2>.is_contained_in(shape<2, 2>));
-        static_assert(!md_i_c<2, 1>.is_contained_in(shape<2, 2>));
+        static_assert(md_ic<0, 0>.is_contained_in(shape<2, 2>));
+        static_assert(md_ic<0, 1>.is_contained_in(shape<2, 2>));
+        static_assert(md_ic<1, 0>.is_contained_in(shape<2, 2>));
+        static_assert(md_ic<1, 1>.is_contained_in(shape<2, 2>));
+        static_assert(!md_ic<1, 2>.is_contained_in(shape<2, 2>));
+        static_assert(!md_ic<2, 1>.is_contained_in(shape<2, 2>));
     };
 
     "md_index_iterator"_test = [] () {

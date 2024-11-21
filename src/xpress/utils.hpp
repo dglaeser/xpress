@@ -48,7 +48,7 @@ struct md_shape {
         return at(index_constant<0>{});
     }
 
-    //! Return the last diension of this shape
+    //! Return the last dimension of this shape
     static constexpr auto last() noexcept {
         return at(index_constant<size-1>{});
     }
@@ -129,7 +129,7 @@ struct md_index {
 };
 
 template<std::size_t... i>
-inline constexpr md_index<i...> md_i_c{};
+inline constexpr md_index<i...> md_ic{};
 
 template<std::size_t... i> requires(sizeof...(i) > 0)
 inline constexpr auto at() noexcept {
