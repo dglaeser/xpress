@@ -253,7 +253,7 @@ template<typename tensor, std::size_t... i>
 struct stream<tensor_var<tensor, i...>> {
     template<typename... V>
     static constexpr void to(std::ostream& out, const bindings<V...>& values) {
-        out << values[tensor{}] << "[" << value_list<i...>{} << "]";
+        out << values[tensor{}] << "[" << xp::values<i...>{} << "]";
     }
 };
 

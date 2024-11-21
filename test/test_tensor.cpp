@@ -338,12 +338,12 @@ int main() {
         var a;
         var b;
         auto v = vector_expression::from(a, b);
-        static_assert(std::is_same_v<decltype(v[i_c<0>]), decltype(a)>);
-        static_assert(std::is_same_v<decltype(v[i_c<1>]), decltype(b)>);
-        static_assert(value_of(v, at(a = 42, b = 43))[i_c<0>] == 42);
-        static_assert(value_of(v, at(a = 42, b = 43))[i_c<1>] == 43);
-        expect(eq(value_of(v, at(a = 42, b = 43))[i_c<0>], 42));
-        expect(eq(value_of(v, at(a = 42, b = 43))[i_c<1>], 43));
+        static_assert(std::is_same_v<decltype(v[ic<0>]), decltype(a)>);
+        static_assert(std::is_same_v<decltype(v[ic<1>]), decltype(b)>);
+        static_assert(value_of(v, at(a = 42, b = 43))[ic<0>] == 42);
+        static_assert(value_of(v, at(a = 42, b = 43))[ic<1>] == 43);
+        expect(eq(value_of(v, at(a = 42, b = 43))[ic<0>], 42));
+        expect(eq(value_of(v, at(a = 42, b = 43))[ic<1>], 43));
     };
 
     "tensor_expression_value"_test = [] () {

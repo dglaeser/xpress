@@ -24,159 +24,20 @@ namespace xp {
 //! bring in all cpputils utilities
 using namespace cpputils;
 
-//! Instance of a compile-time index
-template<std::size_t i>
-inline constexpr index_constant<i> i_c{};
-
 //! Null type
 struct none {};
-
-
-namespace traits {
-
-template<auto a, auto b> struct is_equal : std::bool_constant<(a == b)> {};
-template<auto a, auto b> struct is_less : std::bool_constant<(a < b)> {};
-
-}  // namespace traits
-
-
-#ifndef DOXYGEN
-namespace detail {
-
-    template<std::size_t i, auto v>
-    struct value_i {
-        static constexpr auto at(index_constant<i>) noexcept {
-            return v;
-        }
-    };
-
-    template<typename I, auto...>
-    struct values;
-    template<std::size_t... i, auto... v> requires(sizeof...(i) == sizeof...(v))
-    struct values<std::index_sequence<i...>, v...> : value_i<i, v>... {
-        using value_i<i, v>::at...;
-    };
-
-    template<auto... v>
-    struct value_list_helper {};
-
-    template<std::size_t i, std::size_t n, auto... values>
-    struct drop_n;
-    template<std::size_t i, std::size_t n, auto v0, auto... v> requires(i < n)
-    struct drop_n<i, n, v0, v...> : drop_n<i+1, n, v...> {};
-    template<std::size_t i, std::size_t n, auto... v> requires(i == n)
-    struct drop_n<i, n, v...> : std::type_identity<value_list_helper<v...>> {};
-
-}  // namespace detail
-#endif  // DOXYGEN
-
-//! Class to represent a list of values.
-template<auto... v>
-struct value_list : detail::values<std::make_index_sequence<sizeof...(v)>, v...> {
-    static constexpr std::size_t size = sizeof...(v);
-
-    //! Return a new list with the values from this list, dropping the first n values
-    template<std::size_t n> requires(n <= sizeof...(v))
-    static constexpr auto drop() noexcept {
-        return [] <auto... _v> (const detail::value_list_helper<_v...>&) constexpr {
-            return value_list<_v...>{};
-        }(typename detail::drop_n<0, n, v...>::type{});
-    }
-
-    //! Return a new list with the values from this list, dropping the last n values
-    template<std::size_t n> requires(n <= sizeof...(v))
-    static constexpr auto crop() noexcept {
-        return [] <std::size_t... i> (const std::index_sequence<i...>&) constexpr {
-            return value_list<at(index_constant<i>{})...>{};
-        }(std::make_index_sequence<sizeof...(v) - n>{});
-    }
-
-    //! Return a new list with the first n values from this list
-    template<std::size_t n> requires(n <= sizeof...(v))
-    static constexpr auto take() noexcept {
-        return [] <std::size_t... i> (const std::index_sequence<i...>&) constexpr {
-            return value_list<at(index_constant<i>{})...>{};
-        }(std::make_index_sequence<n>{});
-    }
-
-    //! Return the first value in the list
-    static constexpr auto first() noexcept {
-        return at(index_constant<0>{});
-    }
-
-    //! Return the last value in the list
-    static constexpr auto last() noexcept {
-        return at(index_constant<size-1>{});
-    }
-
-    //! Return the value at the given index in the list
-    template<std::size_t i> requires(i < size)
-    static constexpr auto at(index_constant<i> idx) noexcept {
-        using base = detail::values<std::make_index_sequence<size>, v...>;
-        return base::at(idx);
-    }
-
-    //! Perform a reduction operation on this list
-    template<typename op, typename T>
-    static constexpr auto reduce_with(op&& action, T&& initial) noexcept {
-        return _reduce_with(std::forward<op>(action), std::forward<T>(initial), v...);
-    }
-
-    //! Concatenate this list with another one
-    template<auto... _v>
-    constexpr auto operator+(const value_list<_v...>&) const {
-        return value_list<v..., _v...>{};
-    }
-
-    //! Test this list for equality with another one
-    template<auto... _v>
-    constexpr bool operator==(const value_list<_v...>&) const {
-        if constexpr (sizeof...(_v) == size)
-            return std::conjunction_v<traits::is_equal<v, _v>...>;
-        return false;
-    }
-
-    //! Write this list to the given output stream
-    friend std::ostream& operator<<(std::ostream& s, const value_list&) {
-        if constexpr (size > 0)
-            _write_to<v...>(s);
-        return s;
-    }
-
- private:
-    template<auto v0, auto... vs>
-    static void _write_to(std::ostream& s) {
-        s << std::to_string(v0);
-        (..., (s << ", " << std::to_string(vs)));
-    }
-
-    template<typename op, typename T>
-    static constexpr auto _reduce_with(op&&, T&& initial) noexcept {
-        return std::forward<T>(initial);
-    }
-
-    template<typename op, typename T, typename V0, typename... V>
-    static constexpr auto _reduce_with(op&& action, T&& initial, V0&& v0, V&&... values) noexcept {
-        auto next = action(std::forward<T>(initial), std::forward<V0>(v0));
-        if constexpr (sizeof...(V) == 0) {
-            return next;
-        } else {
-            return _reduce_with(std::forward<op>(action), std::move(next), std::forward<V>(values)...);
-        }
-    }
-};
 
 //! Type to represent a multi-dimensional shape
 template<std::size_t... s>
 struct md_shape {
-    using as_value_list_t = value_list<s...>;
+    using as_values_t = values<s...>;
 
     static constexpr std::size_t size = sizeof...(s);
-    static constexpr std::size_t count = value_list<s...>{}.reduce_with(std::multiplies{}, std::size_t{1});
-    static constexpr bool is_square = sizeof...(s) == 2 && std::conjunction_v<traits::is_equal<s, value_list<s...>::first()>...>;
+    static constexpr std::size_t count = values<s...>{}.reduce_with(std::multiplies{}, std::size_t{1});
+    static constexpr bool is_square = sizeof...(s) == 2 && std::conjunction_v<is_equal<s, values<s...>::first()>...>;
 
     constexpr md_shape() = default;
-    constexpr md_shape(const value_list<s...>) noexcept {}
+    constexpr md_shape(const values<s...>) noexcept {}
 
     template<std::size_t... v> requires(size > 0)
     constexpr bool operator==(const md_shape<v...>&) const noexcept { return false; }
@@ -194,12 +55,12 @@ struct md_shape {
 
     template<std::size_t _i> requires(_i < size)
     static constexpr std::size_t at(const index_constant<_i>& idx) noexcept {
-        return value_list<s...>::at(idx);
+        return values<s...>::at(idx);
     }
 
     friend std::ostream& operator<<(std::ostream& out, const md_shape&) {
         out << "<";
-        out << value_list<s...>{};
+        out << values<s...>{};
         out << ">";
         return out;
     }
@@ -214,7 +75,7 @@ struct md_index {
     static constexpr std::size_t size = sizeof...(i);
 
     constexpr md_index() = default;
-    constexpr md_index(const value_list<i...>) noexcept {}
+    constexpr md_index(const values<i...>) noexcept {}
 
     template<std::size_t... v> requires(size > 0)
     constexpr bool operator==(const md_index<v...>&) const noexcept { return false; }
@@ -222,7 +83,7 @@ struct md_index {
 
     template<std::size_t _i> requires(_i < size)
     static constexpr auto at(const index_constant<_i>&) noexcept {
-        return index_constant<value_list<i...>::at(index_constant<_i>{})>{};
+        return index_constant<values<i...>::at(index_constant<_i>{})>{};
     }
 
     template<std::size_t _i>
@@ -237,11 +98,11 @@ struct md_index {
 
     template<std::size_t s0, std::size_t... s> requires(sizeof...(s) == size - 1)
     static constexpr auto as_flat_index_in(const md_shape<s0, s...>&) noexcept {
-        return i_c<_sum_up_flat_index<0>(md_shape<s...>{}, 0)>;
+        return ic<_sum_up_flat_index<0>(md_shape<s...>{}, 0)>;
     }
 
     static constexpr auto as_flat_index_in(const md_shape<>&) noexcept requires(size == 0) {
-        return i_c<0>;
+        return ic<0>;
     }
 
     template<std::size_t... s>
@@ -249,7 +110,7 @@ struct md_index {
         if constexpr (sizeof...(s) != sizeof...(i))
             return false;
         else
-            return std::conjunction_v<traits::is_less<i, s>...>;
+            return std::conjunction_v<is_less<i, s>...>;
     }
 
  private:
@@ -257,13 +118,13 @@ struct md_index {
     static constexpr std::size_t _sum_up_flat_index(const md_shape<s0, s...>&, std::size_t current) noexcept {
         return _sum_up_flat_index<_i + 1>(
             md_shape<s...>{},
-            current + at(i_c<_i>).value*value_list<s0, s...>{}.reduce_with(std::multiplies{}, std::size_t{1})
+            current + at(ic<_i>).value*values<s0, s...>{}.reduce_with(std::multiplies{}, std::size_t{1})
         );
     }
 
     template<std::size_t _i>
     static constexpr std::size_t _sum_up_flat_index(const md_shape<>&, std::size_t current) noexcept {
-        return current + at(i_c<_i>).value;
+        return current + at(ic<_i>).value;
     }
 };
 
@@ -315,9 +176,9 @@ struct md_index_iterator<md_shape<s...>, md_index<i...>> {
  private:
     template<std::size_t _i, bool was_incremented, std::size_t... c>
     static constexpr auto _incremented(md_index<c...>) noexcept {
-        constexpr std::size_t at_i = md_index<i...>::at(i_c<_i>).value;
-        constexpr bool do_increment = !was_incremented && at_i < md_shape<s...>::at(i_c<_i>) - 1;
-        constexpr bool do_zero = !was_incremented && at_i >= md_shape<s...>::at(i_c<_i>) - 1;
+        constexpr std::size_t at_i = md_index<i...>::at(ic<_i>).value;
+        constexpr bool do_increment = !was_incremented && at_i < md_shape<s...>::at(ic<_i>) - 1;
+        constexpr bool do_zero = !was_incremented && at_i >= md_shape<s...>::at(ic<_i>) - 1;
         constexpr auto update = [&] () constexpr {
             if constexpr (do_increment)
                 return md_index<at_i+1, c...>{};

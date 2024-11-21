@@ -204,16 +204,16 @@ inline constexpr auto mat_mul(const T1& t1, const T2& t2) noexcept {
         xp::traits::scalar_type_t<T2>
     >;
     constexpr md_shape new_shape{
-        typename shape1::as_value_list_t{}.template crop<1>()
-        + typename shape2::as_value_list_t{}.template drop<1>()
+        typename shape1::as_values_t{}.template crop<1>()
+        + typename shape2::as_values_t{}.template drop<1>()
     };
 
     // todo: deduce return tensor type somehow?
     linalg::tensor<scalar, decltype(new_shape)> result{scalar{0}};
     visit_indices_in(new_shape, [&] <std::size_t... i> (const md_index<i...>& idx) constexpr {
         visit_indices_in(shape<shape1{}.last()>, [&] <std::size_t j> (const md_index<j>&) constexpr {
-            const auto t1_idx = md_index{value_list<i...>::template take<shape1::size-1>() + value_list<j>{}};
-            const auto t2_idx = md_index{value_list<j>{} + value_list<i...>::template drop<shape1::size-1>()};
+            const auto t1_idx = md_index{values<i...>::template take<shape1::size-1>() + values<j>{}};
+            const auto t2_idx = md_index{values<j>{} + values<i...>::template drop<shape1::size-1>()};
             result[idx] += traits::access<T1>::at(t1_idx, t1)*traits::access<T2>::at(t2_idx, t2);
         });
     });
@@ -224,8 +224,8 @@ inline constexpr auto mat_mul(const T1& t1, const T2& t2) noexcept {
 template<concepts::tensor T>
     requires(traits::shape_of_t<T>{}.size == 2)
 inline constexpr auto determinant_of(const T& tensor) noexcept {
-    static constexpr auto rows = traits::shape_of_t<T>{}.at(i_c<0>);
-    static constexpr auto cols = traits::shape_of_t<T>{}.at(i_c<1>);
+    static constexpr auto rows = traits::shape_of_t<T>{}.at(ic<0>);
+    static constexpr auto cols = traits::shape_of_t<T>{}.at(ic<1>);
     static_assert(rows == cols, "Determinant can only be computed for square matrices.");
     static_assert(rows == 2 || rows == 3, "Determinant is only implemented for 2d & 3d matrices.");
 
