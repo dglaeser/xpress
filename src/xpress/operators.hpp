@@ -131,6 +131,8 @@ inline constexpr auto operator+(const A&, const B&) noexcept {
         return B{};
     else if constexpr (traits::is_zero_value_v<B>)
         return A{};
+    else if constexpr (std::is_same_v<A, B>)
+        return val<2>*A{};
     else
         return operation<operators::add, A, B>{};
 }
