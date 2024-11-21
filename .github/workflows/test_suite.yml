@@ -14,16 +14,23 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
-    container: dglaeser/compiler-images:${{ matrix.compiler }}
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-          compiler: [gcc-14, clang-19-git]
-          include:
-            - benchmark: OFF
-              compiler: gcc-14
-            - benchmark: ON
-              compiler: clang-19-git
+        compiler: [gcc-14, clang-18]
+        include:
+          - benchmark: ON
+            compiler: gcc-14
+          - c_compiler: gcc-14
+            compiler: gcc-14
+          - cxx_compiler: g++-14
+            compiler: gcc-14
+          - benchmark: ON
+            compiler: clang-18
+          - c_compiler: clang-18
+            compiler: clang-18
+          - cxx_compiler: clang++-18
+            compiler: clang-18
     steps:
       - name: checkout-repository
         uses: actions/checkout@v2
@@ -33,11 +40,9 @@ jobs:
       # install of make can be omitted once the container provides it per default
       - name: build-tests
         run: |
-          apt update && apt install -y make libeigen3-dev
-          echo "Using C compiler ${C_COMPILER}"
-          echo "Using C++ compiler ${CXX_COMPILER}"
-          cmake -DCMAKE_C_COMPILER=${C_COMPILER} \
-                -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+          sudo apt install libeigen3-dev
+          cmake -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+                -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} \
                 -DADAC_BUILD_BENCHMARK=${{ matrix.benchmark }} \
                 -B build
           cmake --build build
@@ -46,8 +51,7 @@ jobs:
         run: cd build && ctest --output-on-failure
 
   test-installed-package:
-    runs-on: ubuntu-22.04
-    container: dglaeser/compiler-images:gcc-14
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout-repository
         uses: actions/checkout@v2
@@ -57,11 +61,9 @@ jobs:
       # install of make can be omitted once the container provides it per default
       - name: install-library
         run: |
-          apt update && apt install make
-          echo "Using C compiler ${C_COMPILER}"
-          echo "Using C++ compiler ${CXX_COMPILER}"
-          cmake -DCMAKE_C_COMPILER=${C_COMPILER} \
-                -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+          sudo apt install libeigen3-dev
+          cmake -DCMAKE_C_COMPILER=/usr/bin/gcc-14 \
+                -DCMAKE_CXX_COMPILER=/usr/bin/g++-14 \
                 -DCMAKE_INSTALL_PREFIX=$(pwd)/install \
                 -DADAC_BUILD_TESTS=OFF \
                 -B build
@@ -82,8 +84,8 @@ jobs:
       - name: build-test-project
         run: |
           cd test_project
-          cmake -DCMAKE_C_COMPILER=${C_COMPILER} \
-                -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+          cmake -DCMAKE_C_COMPILER=/usr/bin/gcc-14 \
+                -DCMAKE_CXX_COMPILER=/usr/bin/g++-14 \
                 -Dadac_ROOT=$(pwd)/../install \
                 -B build
           cmake --build build
