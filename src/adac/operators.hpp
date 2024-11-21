@@ -205,7 +205,7 @@ struct is_equal_node<operation<op, T1, T2>, operation<op, T2, T1>> : std::true_t
 
 template<typename op, typename T, typename... Ts>
 struct nodes_of<operation<op, T, Ts...>> {
-    using type = merged_types_t<type_list<operation<op, T, Ts...>>, merged_nodes_of_t<T, Ts...>>;
+    using type = merged_t<type_list<operation<op, T, Ts...>>, merged_nodes_of_t<T, Ts...>>;
 };
 
 template<typename op, typename... Ts>
@@ -274,14 +274,14 @@ template<typename T1, typename T2>
 struct stream<operation<operators::multiply, T1, T2>> {
     template<typename... V>
     static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
-        static constexpr bool has_subterms_1 = type_list_size_v<nodes_of_t<T1>> > 1;
+        static constexpr bool has_subterms_1 = nodes_of_t<T1>::size > 1;
         if constexpr (has_subterms_1) out << "(";
         write_to(out, T1{}, values);
         if constexpr (has_subterms_1) out << ")";
 
         out << "*";
 
-        static constexpr bool has_subterms_2 = type_list_size_v<nodes_of_t<T2>> > 1;
+        static constexpr bool has_subterms_2 = nodes_of_t<T2>::size > 1;
         if constexpr (has_subterms_2) out << "(";
         write_to(out, T2{}, values);
         if constexpr (has_subterms_2) out << ")";
@@ -302,14 +302,14 @@ template<typename T1, typename T2>
 struct stream<operation<operators::divide, T1, T2>> {
     template<typename... V>
     static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
-        static constexpr bool has_subterms_1 = type_list_size_v<nodes_of_t<T1>> > 1;
+        static constexpr bool has_subterms_1 = nodes_of_t<T1>::size > 1;
         if constexpr (has_subterms_1) out << "(";
         write_to(out, T1{}, values);
         if constexpr (has_subterms_1) out << ")";
 
         out << "/";
 
-        static constexpr bool has_subterms_2 = type_list_size_v<nodes_of_t<T2>> > 1;
+        static constexpr bool has_subterms_2 = nodes_of_t<T2>::size > 1;
         if constexpr (has_subterms_2) out << "(";
         write_to(out, T2{}, values);
         if constexpr (has_subterms_2) out << ")";
@@ -351,7 +351,7 @@ struct stream<operation<operators::pow, T1, T2>> {
     static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
         write_to(out, T1{}, values);
         out << "^";
-        static constexpr bool exponent_has_subterms = type_list_size_v<nodes_of_t<T2>> > 1;
+        static constexpr bool exponent_has_subterms = nodes_of_t<T2>::size > 1;
         if constexpr (exponent_has_subterms) out << "(";
         write_to(out, T2{}, values);
         if constexpr (exponent_has_subterms) out << ")";

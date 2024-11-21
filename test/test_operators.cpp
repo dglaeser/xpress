@@ -242,7 +242,7 @@ int main() {
         auto result = c_times_sum*val<42>;
 
         using nodes = nodes_of_t<decltype(result)>;
-        static_assert(type_list_size_v<nodes> == 7);
+        static_assert(nodes::size == 7);
         static_assert(is_any_of_v<decltype(a), nodes>);
         static_assert(is_any_of_v<decltype(b), nodes>);
         static_assert(is_any_of_v<decltype(c), nodes>);
@@ -252,14 +252,14 @@ int main() {
         static_assert(is_any_of_v<value<42>, nodes>);
 
         using leafs = leaf_nodes_of_t<decltype(result)>;
-        static_assert(type_list_size_v<leafs> == 4);
+        static_assert(leafs::size == 4);
         static_assert(is_any_of_v<decltype(a), leafs>);
         static_assert(is_any_of_v<decltype(b), leafs>);
         static_assert(is_any_of_v<decltype(c), leafs>);
         static_assert(is_any_of_v<value<42>, leafs>);
 
         using composites = composite_nodes_of_t<decltype(result)>;
-        static_assert(type_list_size_v<composites> == 3);
+        static_assert(composites::size == 3);
         static_assert(is_any_of_v<decltype(sum), composites>);
         static_assert(is_any_of_v<decltype(c_times_sum), composites>);
         static_assert(is_any_of_v<decltype(result), composites>);
@@ -275,7 +275,7 @@ int main() {
         auto expr = sum_1 + sum_2;
 
         using nodes = nodes_of_t<decltype(expr)>;
-        static_assert(type_list_size_v<nodes> == 7);
+        static_assert(nodes::size == 7);
         static_assert(is_any_of_v<decltype(a), nodes>);
         static_assert(is_any_of_v<decltype(b), nodes>);
         static_assert(is_any_of_v<decltype(sum_1), nodes>);
@@ -283,8 +283,8 @@ int main() {
         static_assert(is_any_of_v<decltype(expr), nodes>);
 
         // duplicates of a & b should disappear
-        using made_unique = unique_types_t<nodes>;
-        static_assert(type_list_size_v<made_unique> == 5);
+        using made_unique = unique_t<nodes>;
+        static_assert(made_unique::size == 5);
         static_assert(is_any_of_v<decltype(a), made_unique>);
         static_assert(is_any_of_v<decltype(b), made_unique>);
         static_assert(is_any_of_v<decltype(sum_1), made_unique>);
@@ -293,18 +293,18 @@ int main() {
 
         // sum_1 & sum_2 should be identified as equal nodes
         using unique_nodes = unique_nodes_of_t<decltype(expr)>;
-        static_assert(type_list_size_v<unique_nodes> == 4);
+        static_assert(unique_nodes::size == 4);
         static_assert(is_any_of_v<decltype(a), unique_nodes>);
         static_assert(is_any_of_v<decltype(b), unique_nodes>);
         static_assert(is_any_of_v<decltype(expr), unique_nodes>);
 
         using unique_leafs = unique_leaf_nodes_of_t<decltype(expr)>;
-        static_assert(type_list_size_v<unique_leafs> == 2);
+        static_assert(unique_leafs::size == 2);
         static_assert(is_any_of_v<decltype(a), unique_leafs>);
         static_assert(is_any_of_v<decltype(b), unique_leafs>);
 
         using unique_composites = unique_composite_nodes_of_t<decltype(expr)>;
-        static_assert(type_list_size_v<unique_leafs> == 2);
+        static_assert(unique_leafs::size == 2);
         static_assert(is_any_of_v<decltype(sum_1), unique_composites> || is_any_of_v<decltype(sum_2), unique_composites>);
         static_assert(is_any_of_v<decltype(expr), unique_composites>);
     };
@@ -319,12 +319,12 @@ int main() {
         auto expr = sum_1 + sum_2*val<42>;
 
         using symbols = symbols_of_t<decltype(expr)>;
-        static_assert(type_list_size_v<symbols> == 2);
+        static_assert(symbols::size == 2);
         static_assert(is_any_of_v<decltype(a), symbols>);
         static_assert(is_any_of_v<decltype(b), symbols>);
 
         using variables = variables_of_t<decltype(expr)>;
-        static_assert(type_list_size_v<variables> == 1);
+        static_assert(variables::size == 1);
         static_assert(is_any_of_v<decltype(b), variables>);
     };
 

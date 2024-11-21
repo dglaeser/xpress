@@ -324,12 +324,12 @@ struct nodes_of<tensor_var<tensor, i...>> {
 
 template<typename shape, typename... E>
 struct nodes_of<tensor_expression<shape, E...>> {
-    using type = merged_types_t<type_list<tensor_expression<shape, E...>>, merged_nodes_of_t<E...>>;
+    using type = merged_t<type_list<tensor_expression<shape, E...>>, merged_nodes_of_t<E...>>;
 };
 
 template<concepts::tensor_expression T>
 struct nodes_of<operation<operators::determinant, T>> {
-    using type = merged_types_t<
+    using type = merged_t<
         type_list<operation<operators::determinant, T>>,
         typename nodes_of<T>::type
     >;
@@ -337,9 +337,9 @@ struct nodes_of<operation<operators::determinant, T>> {
 
 template<concepts::tensor_expression T1, concepts::tensor_expression T2>
 struct nodes_of<operation<operators::mat_mul, T1, T2>> {
-    using type = merged_types_t<
+    using type = merged_t<
         type_list<operation<operators::mat_mul, T1, T2>>,
-        merged_types_t<
+        merged_t<
             typename nodes_of<T1>::type,
             typename nodes_of<T2>::type
         >
