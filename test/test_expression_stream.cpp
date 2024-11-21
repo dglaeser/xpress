@@ -47,5 +47,13 @@ int main() {
         expect(eq(out.str(), std::string{"2*a"}));
     };
 
+    "subtract_operator_same_operand"_test = [] () {
+        static constexpr let a;
+        constexpr auto added = a - a;
+        std::ostringstream out;
+        write_to(out, added, with(a = "a"));
+        expect(eq(out.str(), std::string{"0"}));
+    };
+
     return 0;
 }
