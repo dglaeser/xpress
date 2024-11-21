@@ -66,8 +66,8 @@ template<concepts::expression E>
 struct expression_evaluator {
     constexpr expression_evaluator(const E&) noexcept {}
 
-    //! Evaluate the expression at the given values
-    template<concepts::binder... V>
+    //! Evaluate the expression at the given (bound) values
+    template<binder... V>
     constexpr decltype(auto) at(V&&... values) const noexcept {
         return at(bindings{std::forward<V>(values)...});
     }

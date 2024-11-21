@@ -60,7 +60,7 @@ struct derivatives : private indexed<typename D::variable...> {
     }
 
     //! Evaluate the derivatives at the given values
-    template<concepts::binder... V>
+    template<binder... V>
     constexpr auto at(V&&... values) const noexcept {
         return at(bindings{std::forward<V>(values)...});
     }

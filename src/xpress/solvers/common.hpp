@@ -20,7 +20,7 @@ namespace xp::solvers {
 //! \{
 
 //! Convenience function to create bindings for an initial guess
-template<concepts::binder... B>
+template<binder... B>
 inline constexpr auto starting_from(B&&... b) noexcept {
     return bindings{std::forward<B>(b)...};
 }
