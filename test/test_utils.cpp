@@ -3,13 +3,13 @@
 #include <algorithm>
 #include <sstream>
 
-#include <adac/utils.hpp>
+#include <xpress/utils.hpp>
 
 #include "testing.hpp"
 
 int main() {
-    using namespace adac::testing;
-    using namespace adac;
+    using namespace xp::testing;
+    using namespace xp;
 
     "value_list_access"_test = [] () {
         constexpr value_list<0, 1, 2> values;

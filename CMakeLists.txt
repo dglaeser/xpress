@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 3.18)
 
 if(NOT DEFINED PROJECT_NAME)
-  set(ADAC_SUBPROJECT OFF)
+  set(XPRESS_SUBPROJECT OFF)
 else()
-  set(ADAC_SUBPROJECT ON)
+  set(XPRESS_SUBPROJECT ON)
 endif()
 
-project(adac)
+project(xpress)
 
-set(ADAC_NAMESPACE adac)
-option(ADAC_BUILD_TESTS "Control if tests should be built" ON)
-# option(ADAC_BUILD_EXAMPLES "Control if examples should be built" OFF)
-option(ADAC_BUILD_BENCHMARK "Control if benchmarks should be built" OFF)
+set(XPRESS_NAMESPACE xpress)
+option(XPRESS_BUILD_TESTS "Control if tests should be built" ON)
+# option(XPRESS_BUILD_EXAMPLES "Control if examples should be built" OFF)
+option(XPRESS_BUILD_BENCHMARK "Control if benchmarks should be built" OFF)
 
 include(GNUInstallDirs)
 add_library(${PROJECT_NAME} INTERFACE)
@@ -20,15 +20,15 @@ target_include_directories(${PROJECT_NAME}
     INTERFACE $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/src>
               $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/deps/cpputils/src>
               $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-              $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/adac/deps/>
+              $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/xpress/deps/>
 )
 
 # Alias to be used in test suite or when included as sub-project
-add_library(${ADAC_NAMESPACE}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(${XPRESS_NAMESPACE}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-if (NOT ADAC_SUBPROJECT)
+if (NOT XPRESS_SUBPROJECT)
     include(GNUInstallDirs)
-    set(ADAC_INSTALL_CMAKE_DATA_DIR "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake")
+    set(XPRESS_INSTALL_CMAKE_DATA_DIR "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake")
     install(
         DIRECTORY src/${PROJECT_NAME}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
@@ -47,8 +47,8 @@ if (NOT ADAC_SUBPROJECT)
     install(
         EXPORT ${PROJECT_NAME}_Targets
         FILE ${PROJECT_NAME}Targets.cmake
-        NAMESPACE ${ADAC_NAMESPACE}::
-        DESTINATION ${ADAC_INSTALL_CMAKE_DATA_DIR}
+        NAMESPACE ${XPRESS_NAMESPACE}::
+        DESTINATION ${XPRESS_INSTALL_CMAKE_DATA_DIR}
     )
 
     include(CMakePackageConfigHelpers)
@@ -57,28 +57,28 @@ if (NOT ADAC_SUBPROJECT)
         "${PROJECT_BINARY_DIR}/cmake/pkg/${PROJECT_NAME}Config.cmake"
         PATH_VARS
             CMAKE_INSTALL_INCLUDEDIR
-            ADAC_INSTALL_CMAKE_DATA_DIR
+            XPRESS_INSTALL_CMAKE_DATA_DIR
         INSTALL_DESTINATION
-            ${ADAC_INSTALL_CMAKE_DATA_DIR}
+            ${XPRESS_INSTALL_CMAKE_DATA_DIR}
     )
     install(
         FILES
             "${PROJECT_BINARY_DIR}/cmake/pkg/${PROJECT_NAME}Config.cmake"
         DESTINATION
-            ${ADAC_INSTALL_CMAKE_DATA_DIR}
+            ${XPRESS_INSTALL_CMAKE_DATA_DIR}
     )
 
-    if (ADAC_BUILD_BENCHMARK)
+    if (XPRESS_BUILD_BENCHMARK)
         enable_testing()
         add_subdirectory(benchmark)
     endif ()
 
-    if (ADAC_BUILD_TESTS)
+    if (XPRESS_BUILD_TESTS)
         enable_testing()
         add_subdirectory(test)
     endif ()
 
-    # if (ADAC_BUILD_EXAMPLES)
+    # if (XPRESS_BUILD_EXAMPLES)
     #     enable_testing()
     #     add_subdirectory(examples)
     # endif ()

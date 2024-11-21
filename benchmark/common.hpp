@@ -7,7 +7,7 @@
 #include <vector>
 #include <chrono>
 
-namespace adac::benchmark {
+namespace xp::benchmark {
 
 class Measurement {
  public:
@@ -53,4 +53,4 @@ auto measure(action&& a, std::size_t warmup = 10, std::size_t measurements = 20)
     return std::make_pair(measurement, result);
 }
 
-}  // namespace adac::benchmark
+}  // namespace xp::benchmark

@@ -1,4 +1,4 @@
-#include <adac/dtype.hpp>
+#include <xpress/dtype.hpp>
 
 #include "testing.hpp"
 
@@ -6,9 +6,9 @@ template<typename T1, typename T2>
 inline constexpr bool verify_same = std::is_same_v<T1, T2>;
 
 int main() {
-    using namespace adac::testing;
-    using namespace adac::dtype;
-    using namespace adac::traits;
+    using namespace xp::testing;
+    using namespace xp::dtype;
+    using namespace xp::traits;
 
     static_assert(verify_same<common_dtype_t<integral, real>, real>);
     static_assert(verify_same<common_dtype_t<real, integral>, real>);

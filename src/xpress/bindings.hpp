@@ -13,7 +13,7 @@
 #include "dtype.hpp"
 
 
-namespace adac {
+namespace xp {
 
 //! \addtogroup Bindings
 //! \{
@@ -137,4 +137,4 @@ inline constexpr auto with(B&&... b) {
 
 //! \} group Bindings
 
-}  // namespace adac
+}  // namespace xp

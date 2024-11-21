@@ -14,7 +14,7 @@
 #include "traits.hpp"
 
 
-namespace adac {
+namespace xp {
 
 namespace dtype {
 
@@ -60,4 +60,4 @@ template<typename T> requires(not std::is_same_v<T, dtype::any>) struct common_d
 template<typename T> requires(not std::is_same_v<T, dtype::any>) struct common_dtype<dtype::any, T> : std::type_identity<dtype::any> {};
 
 }  // namespace traits
-}  // namespace adac
+}  // namespace xp

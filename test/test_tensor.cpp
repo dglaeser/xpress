@@ -4,13 +4,14 @@
 #include <type_traits>
 #include <sstream>
 
-#include <adac/operators.hpp>
-#include <adac/symbols.hpp>
-#include <adac/tensor.hpp>
+#include <xpress/operators.hpp>
+#include <xpress/symbols.hpp>
+#include <xpress/tensor.hpp>
 
 #include "testing.hpp"
 
 
+// TODO: simplify tests accordingly
 template<typename T, std::size_t r, std::size_t c>
 class matrix {
     constexpr matrix(std::array<std::array<T, c>, r>&& data)
@@ -60,8 +61,8 @@ class matrix {
 
 
 int main() {
-    using namespace adac::testing;
-    using namespace adac;
+    using namespace xp::testing;
+    using namespace xp;
 
     "tensor_uniqueness_test"_test = [] () {
         tensor t1{shape<2, 3>};

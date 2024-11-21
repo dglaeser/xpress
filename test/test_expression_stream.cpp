@@ -1,14 +1,14 @@
 #include <string>
 #include <sstream>
 
-#include <adac/symbols.hpp>
-#include <adac/operators.hpp>
+#include <xpress/symbols.hpp>
+#include <xpress/operators.hpp>
 
 #include "testing.hpp"
 
 int main() {
-    using namespace adac;
-    using namespace adac::testing;
+    using namespace xp;
+    using namespace xp::testing;
 
     "addition_stream"_test = [] () {
         var a;

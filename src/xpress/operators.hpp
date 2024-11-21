@@ -17,7 +17,7 @@
 #include "expressions.hpp"
 
 
-namespace adac {
+namespace xp {
 
 //! \addtogroup Operators
 //! \{
@@ -67,7 +67,7 @@ namespace detail {
                 static_assert(
                     requires(T&& t) { { default_t{}(std::forward<T>(t)) }; },
                     "Default unary operator cannot be invoked with the given type. "
-                    "Please specialize the respective trait in adac::operators::traits."
+                    "Please specialize the respective trait in xp::operators::traits."
                 );
                 return default_t{}(std::forward<T>(t));
             }
@@ -84,7 +84,7 @@ namespace detail {
                 static_assert(
                     requires(T&&... t) { { default_t{}(std::forward<T>(t)...) }; },
                     "Default binary operator cannot be invoked with the given types. "
-                    "Please specialize the respective trait in adac::operators::traits."
+                    "Please specialize the respective trait in xp::operators::traits."
                 );
                 return default_t{}(std::forward<T>(t)...);
             }
@@ -216,7 +216,7 @@ struct value_of<operation<op, Ts...>> {
         if constexpr (bindings<V...>::template has_bindings_for<self>)
             return binders[self{}];
         else
-            return op{}(adac::value_of(Ts{}, binders)...);
+            return op{}(xp::value_of(Ts{}, binders)...);
     }
 };
 
@@ -226,7 +226,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::add, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        return adac::detail::differentiate<T1>(var) + adac::detail::differentiate<T2>(var);
+        return xp::detail::differentiate<T1>(var) + xp::detail::differentiate<T2>(var);
     }
 };
 
@@ -246,7 +246,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::subtract, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        return adac::detail::differentiate<T1>(var) - adac::detail::differentiate<T2>(var);
+        return xp::detail::differentiate<T1>(var) - xp::detail::differentiate<T2>(var);
     }
 };
 
@@ -266,7 +266,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::multiply, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        return adac::detail::differentiate<T1>(var)*T2{} + T1{}*adac::detail::differentiate<T2>(var);
+        return xp::detail::differentiate<T1>(var)*T2{} + T1{}*xp::detail::differentiate<T2>(var);
     }
 };
 
@@ -294,7 +294,7 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::divide, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        return adac::detail::differentiate<T1>(var)/T2{} - T1{}*adac::detail::differentiate<T2>(var)/(T2{}*T2{});
+        return xp::detail::differentiate<T1>(var)/T2{} - T1{}*xp::detail::differentiate<T2>(var)/(T2{}*T2{});
     }
 };
 
@@ -321,7 +321,7 @@ template<typename T>
 struct derivative_of<operation<operators::log, T>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        return adac::detail::differentiate<T>(var)/T{};
+        return xp::detail::differentiate<T>(var)/T{};
     }
 };
 
@@ -340,8 +340,8 @@ template<typename T1, typename T2>
 struct derivative_of<operation<operators::pow, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
-        return T2{}*pow(T1{}, T2{} - val<1>)*adac::detail::differentiate<T1>(var)
-            + pow(T1{}, T2{})*log(T2{})*adac::detail::differentiate<T2>(var);
+        return T2{}*pow(T1{}, T2{} - val<1>)*xp::detail::differentiate<T1>(var)
+            + pow(T1{}, T2{})*log(T2{})*xp::detail::differentiate<T2>(var);
     }
 };
 
@@ -362,4 +362,4 @@ struct stream<operation<operators::pow, T1, T2>> {
 
 //! \} group Operators
 
-}  // namespace adac
+}  // namespace xp

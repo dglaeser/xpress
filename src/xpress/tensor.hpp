@@ -19,7 +19,7 @@
 #include "values.hpp"
 
 
-namespace adac {
+namespace xp {
 
 //! \addtogroup Symbols
 //! \{
@@ -308,7 +308,7 @@ template<typename shape, typename... E>
 struct value_of<tensor_expression<shape, E...>> {
     template<typename... V>
     static constexpr decltype(auto) from(const bindings<V...>& values) {
-        return linalg::tensor{shape{}, adac::value_of(E{}, values)...};
+        return linalg::tensor{shape{}, xp::value_of(E{}, values)...};
     }
 };
 
@@ -374,7 +374,7 @@ template<typename shape, typename... E>
 struct derivative_of<tensor_expression<shape, E...>> {
     template<typename V>
     static constexpr decltype(auto) wrt(const type_list<V>& var) {
-        return tensor_expression{shape{}, adac::derivative_of(E{}, var)...};
+        return tensor_expression{shape{}, xp::derivative_of(E{}, var)...};
     }
 };
 
@@ -412,7 +412,7 @@ template<concepts::tensor_expression T1, concepts::tensor_expression T2>
 struct derivative_of<operation<operators::mat_mul, T1, T2>> {
     template<typename V>
     static constexpr decltype(auto) wrt(const type_list<V>& var) {
-        return _mat_mul(adac::detail::differentiate<T1>(var), T2{}) + _mat_mul(T1{}, adac::detail::differentiate<T2>(var));
+        return _mat_mul(xp::detail::differentiate<T1>(var), T2{}) + _mat_mul(T1{}, xp::detail::differentiate<T2>(var));
     }
 
  private:
@@ -432,4 +432,4 @@ struct derivative_of<operation<operators::mat_mul, T1, T2>> {
 
 //! \} group Symbols
 
-}  // namespace adac
+}  // namespace xp

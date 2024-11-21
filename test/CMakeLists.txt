@@ -6,10 +6,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ut)
 
-find_package(adac)
+find_package(xpress)
 function (ad_add_test NAME SOURCE)
     add_executable(${NAME} ${SOURCE})
-    target_link_libraries(${NAME} PRIVATE adac::adac Boost::ut)
+    target_link_libraries(${NAME} PRIVATE xpress::xpress Boost::ut)
     add_test(NAME ${NAME} COMMAND ./${NAME})
 endfunction ()
 

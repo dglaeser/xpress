@@ -12,16 +12,16 @@
 #include <iostream>
 #include <string>
 
-#include <adac/concepts.hpp>
-#include <adac/bindings.hpp>
-#include <adac/expressions.hpp>
-#include <adac/traits.hpp>
-#include <adac/linalg.hpp>
+#include <xpress/concepts.hpp>
+#include <xpress/bindings.hpp>
+#include <xpress/expressions.hpp>
+#include <xpress/traits.hpp>
+#include <xpress/linalg.hpp>
 
 #include "common.hpp"
 
 
-namespace adac::solvers {
+namespace xp::solvers {
 
 //! \addtogroup Solvers
 //! \{
@@ -122,4 +122,4 @@ struct newton {
 
 //! \} group Solvers
 
-}  // namespace adac::solvers
+}  // namespace xp::solvers

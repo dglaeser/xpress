@@ -8,7 +8,7 @@
 #include <autodiff/forward/dual.hpp>
 #include <autodiff/reverse/var.hpp>
 #else
-#include <adac/adac.hpp>
+#include <xpress/xp.hpp>
 #endif
 
 #include "common.hpp"
@@ -21,7 +21,7 @@ autodiff::dual f(autodiff::dual _a, autodiff::dual _b) {
 #endif
 
 int main() {
-    using namespace adac;
+    using namespace xp;
 
     const double a_value = 2.0;
     const double b_value = 5.0;

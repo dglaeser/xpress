@@ -1,10 +1,10 @@
-#include <adac/symbols.hpp>
+#include <xpress/symbols.hpp>
 
 #include "testing.hpp"
 
 int main() {
-    using namespace adac::testing;
-    using namespace adac;
+    using namespace xp::testing;
+    using namespace xp;
 
     "unit_value"_test = [] () {
         static_assert(traits::is_unit_value_v<value<1>>);

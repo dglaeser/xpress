@@ -15,7 +15,7 @@
 #include "traits.hpp"
 
 
-namespace adac {
+namespace xp {
 
 //! \addtogroup Values
 //! \{
@@ -80,4 +80,4 @@ struct stream<value<v>> {
 
 //! \} group Values
 
-}  // namespace adac
+}  // namespace xp
