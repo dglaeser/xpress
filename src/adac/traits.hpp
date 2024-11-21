@@ -142,7 +142,7 @@ inline constexpr bool is_equal_node_v = is_equal_node<A, B>::value;
 
 //! Trait to determine if a node is a leaf node (defaults to checking if there is only one node in its expression tree)
 template<typename T>
-struct is_leaf_node : std::bool_constant<type_list_size_v<typename nodes_of<T>::type> == 1> {};
+struct is_leaf_node : std::bool_constant<nodes_of_t<T>::size == 1> {};
 template<typename T>
 inline constexpr bool is_leaf_node_v = is_leaf_node<T>::value;
 
@@ -154,13 +154,13 @@ inline constexpr bool is_composite_node_v = is_composite_node<T>::value;
 
 //! All leaf nodes in the given expresssion
 template<typename T>
-struct leaf_nodes_of : std::type_identity<filtered_types_t<traits::is_leaf_node, nodes_of_t<T>>> {};
+struct leaf_nodes_of : std::type_identity<filtered_t<traits::is_leaf_node, nodes_of_t<T>>> {};
 template<typename T>
 using leaf_nodes_of_t = typename leaf_nodes_of<T>::type;
 
 //! All non-leaf nodes in the given expression
 template<typename T>
-struct composite_nodes_of : std::type_identity<filtered_types_t<traits::is_composite_node, nodes_of_t<T>>> {};
+struct composite_nodes_of : std::type_identity<filtered_t<traits::is_composite_node, nodes_of_t<T>>> {};
 template<typename T>
 using composite_nodes_of_t = typename composite_nodes_of<T>::type;
 
@@ -175,7 +175,7 @@ namespace detail {
     template<typename... R, typename E0, typename... Es>
     struct merged_nodes_of<type_list<R...>, E0, Es...> {
         using type = typename merged_nodes_of<
-            merged_types_t<type_list<R...>, typename nodes_of<E0>::type>,
+            merged_t<type_list<R...>, typename nodes_of<E0>::type>,
             Es...
         >::type;
     };
@@ -188,7 +188,7 @@ namespace detail {
         using type = std::conditional_t<
             std::disjunction_v<traits::is_equal_node<T, Ts>...>,
             typename unique_nodes_of<type_list<Ts...>>::type,
-            merged_types_t<type_list<T>, typename unique_nodes_of<type_list<Ts...>>::type>
+            merged_t<type_list<T>, typename unique_nodes_of<type_list<Ts...>>::type>
         >;
     };
 
@@ -221,25 +221,25 @@ using unique_nodes_of_t = typename unique_nodes_of<T>::type;
 
 //! All leaf nodes in the given expresssion
 template<typename T>
-struct unique_leaf_nodes_of : std::type_identity<filtered_types_t<traits::is_leaf_node, unique_nodes_of_t<T>>> {};
+struct unique_leaf_nodes_of : std::type_identity<filtered_t<traits::is_leaf_node, unique_nodes_of_t<T>>> {};
 template<typename T>
 using unique_leaf_nodes_of_t = typename unique_leaf_nodes_of<T>::type;
 
 //! All unique non-leaf nodes in the given expression
 template<typename T>
-struct unique_composite_nodes_of : std::type_identity<filtered_types_t<traits::is_composite_node, unique_nodes_of_t<T>>> {};
+struct unique_composite_nodes_of : std::type_identity<filtered_t<traits::is_composite_node, unique_nodes_of_t<T>>> {};
 template<typename T>
 using unique_composite_nodes_of_t = typename unique_composite_nodes_of<T>::type;
 
 //! All symbols in the given expression
 template<typename T>
-struct symbols_of : std::type_identity<filtered_types_t<traits::is_symbol, unique_leaf_nodes_of_t<T>>> {};
+struct symbols_of : std::type_identity<filtered_t<traits::is_symbol, unique_leaf_nodes_of_t<T>>> {};
 template<typename T>
 using symbols_of_t = typename symbols_of<T>::type;
 
 //! All variables in the given expression
 template<typename T>
-struct variables_of : std::type_identity<filtered_types_t<traits::is_variable, unique_leaf_nodes_of_t<T>>> {};
+struct variables_of : std::type_identity<filtered_t<traits::is_variable, unique_leaf_nodes_of_t<T>>> {};
 template<typename T>
 using variables_of_t = typename variables_of<T>::type;
 

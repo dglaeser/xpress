@@ -74,9 +74,9 @@ namespace detail {
 //! Data structure to store values bound to symbols.
 template<typename... B>
     requires(are_unique_v<B...> and detail::are_binders<B...>)
-struct bindings : private variadic_accessor<B...> {
+struct bindings : private indexed_tuple<B...> {
  private:
-    using base = variadic_accessor<B...>;
+    using base = indexed_tuple<B...>;
 
     template<typename T>
     using symbol_type_of = typename std::remove_cvref_t<T>::symbol_type;

@@ -91,7 +91,7 @@ tensor(const md_shape<s...>&, Ts&&...) -> tensor<std::common_type_t<Ts...>, md_s
 
 template<std::size_t... s, typename... Ts>
     requires(sizeof...(Ts) > 0 and !std::conjunction_v<adac::traits::is_scalar<std::remove_cvref_t<Ts>>...>)
-tensor(const md_shape<s...>&, Ts&&...) -> tensor<std::remove_cvref_t<first_type_t<type_list<Ts...>>>, md_shape<s...>>;
+tensor(const md_shape<s...>&, Ts&&...) -> tensor<std::remove_cvref_t<first_t<type_list<Ts...>>>, md_shape<s...>>;
 
 namespace traits {
 
