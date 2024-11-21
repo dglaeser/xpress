@@ -111,8 +111,8 @@ namespace detail {
 }  // namespace detail
 #endif  // DOXYGEN
 
-struct determinant : detail::unary_operator<traits::determinant_of, detail::default_determinant_operator> {};
-struct mat_mul : detail::binary_operator<traits::mat_mul_of, detail::default_mat_mul_operator> {};
+struct determinant : operator_base<traits::determinant_of, detail::default_determinant_operator> {};
+struct mat_mul : operator_base<traits::mat_mul_of, detail::default_mat_mul_operator> {};
 
 }  // namespace operators
 
