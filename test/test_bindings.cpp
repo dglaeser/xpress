@@ -1,7 +1,7 @@
 #include <utility>
 #include <type_traits>
 
-#include <adac/bindings.hpp>
+#include <xpress/bindings.hpp>
 
 #include "testing.hpp"
 
@@ -11,14 +11,14 @@ struct value { int v; };
 template<typename S = int>
 struct symbol {
     template<typename T>
-    constexpr auto operator=(T&& t) const noexcept -> adac::value_binder<symbol, T> {
+    constexpr auto operator=(T&& t) const noexcept -> xp::value_binder<symbol, T> {
         return {symbol{}, std::forward<T>(t)};
     }
 };
 
 
 int main() {
-    using namespace adac::testing;
+    using namespace xp::testing;
 
     "value_binder"_test = [] () {
         symbol s{};
@@ -31,7 +31,7 @@ int main() {
 
     "value_binder_by_reference"_test = [] () {
         value v{0};
-        adac::value_binder binder{symbol{}, v};
+        xp::value_binder binder{symbol{}, v};
         expect(eq(binder.get().v, 0));
         expect(eq(v.v, 0));
 
@@ -47,7 +47,7 @@ int main() {
         symbol<int> s1{};
         symbol<char> s2{};
 
-        constexpr adac::bindings binders{s1 = 42, s2 = 44};
+        constexpr xp::bindings binders{s1 = 42, s2 = 44};
         expect(eq(binders[s1], 42));
         expect(eq(binders[s2], 44));
         static_assert(binders[s1] == 42);
@@ -61,7 +61,7 @@ int main() {
         symbol<int> s1{};
         symbol<char> s2{};
 
-        adac::bindings binders{s1 = v1, s2 = v2};
+        xp::bindings binders{s1 = v1, s2 = v2};
         v1 = 42;
         v2 = 44;
         expect(eq(binders[s1], 42));

@@ -13,7 +13,7 @@
 #include "bindings.hpp"
 
 
-namespace adac {
+namespace xp {
 
 //! \addtogroup Expressions
 //! \{
@@ -84,4 +84,4 @@ derivatives(D&&...) -> derivatives<std::remove_cvref_t<D>...>;
 
 //! \} group Expressions
 
-}  // namespace adac
+}  // namespace xp

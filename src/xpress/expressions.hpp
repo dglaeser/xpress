@@ -21,7 +21,7 @@
 #include "derivatives.hpp"
 
 
-namespace adac {
+namespace xp {
 
 //! \addtogroup Expressions
 //! \{
@@ -169,4 +169,4 @@ inline constexpr auto wrt(const V&...) {
 
 //! \} group Expressions
 
-}  // namespace adac
+}  // namespace xp

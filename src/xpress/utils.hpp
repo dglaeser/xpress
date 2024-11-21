@@ -16,7 +16,7 @@
 #include <cpputils/utility.hpp>
 
 
-namespace adac {
+namespace xp {
 
 //! \addtogroup Utilities
 //! \{
@@ -305,7 +305,7 @@ struct md_index_iterator<md_shape<s...>, md_index<i...>> {
             md_index<i...>::as_flat_index_in(md_shape<s...>{}).value < md_shape<s...>::count - 1,
             "End of the range has already been reached"
         );
-        return adac::md_index_iterator{md_shape<s...>{}, _incremented<sizeof...(s) - 1, false>(md_index<>{})};
+        return xp::md_index_iterator{md_shape<s...>{}, _incremented<sizeof...(s) - 1, false>(md_index<>{})};
     }
 
     constexpr md_index<i...> operator*() const noexcept {
@@ -361,4 +361,4 @@ concept same_remove_cvref_t_as = std::is_same_v<std::remove_cvref_t<A>, std::rem
 
 //! \} group Utilities
 
-}  // namespace adac
+}  // namespace xp

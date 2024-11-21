@@ -42,7 +42,7 @@ jobs:
           sudo apt install libeigen3-dev
           cmake -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
                 -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} \
-                -DADAC_BUILD_BENCHMARK=${{ matrix.benchmark }} \
+                -DXPRESS_BUILD_BENCHMARK=${{ matrix.benchmark }} \
                 -B build
           cmake --build build
 
@@ -63,7 +63,7 @@ jobs:
           cmake -DCMAKE_C_COMPILER=/usr/bin/gcc-14 \
                 -DCMAKE_CXX_COMPILER=/usr/bin/g++-14 \
                 -DCMAKE_INSTALL_PREFIX=$(pwd)/install \
-                -DADAC_BUILD_TESTS=OFF \
+                -DXPRESS_BUILD_TESTS=OFF \
                 -B build
           cmake --build build
           cmake --install build
@@ -74,8 +74,8 @@ jobs:
           cp -r test test_project/
           cd test_project
           echo "cmake_minimum_required(VERSION 3.18)" > CMakeLists.txt
-          echo "project(adac_test_suite)" >> CMakeLists.txt
-          echo "find_package(adac REQUIRED)" >> CMakeLists.txt
+          echo "project(xpress_test_suite)" >> CMakeLists.txt
+          echo "find_package(xpress REQUIRED)" >> CMakeLists.txt
           echo "add_subdirectory(test)" >> CMakeLists.txt
           cd ..
 
@@ -84,7 +84,7 @@ jobs:
           cd test_project
           cmake -DCMAKE_C_COMPILER=/usr/bin/gcc-14 \
                 -DCMAKE_CXX_COMPILER=/usr/bin/g++-14 \
-                -Dadac_ROOT=$(pwd)/../install \
+                -Dxpress_ROOT=$(pwd)/../install \
                 -B build
           cmake --build build
           cd ..

@@ -1,14 +1,14 @@
 #include <type_traits>
 #include <memory>
 
-#include <adac/symbols.hpp>
-#include <adac/operators.hpp>
+#include <xpress/symbols.hpp>
+#include <xpress/operators.hpp>
 
 #include "testing.hpp"
 
 int main() {
-    using namespace adac;
-    using namespace adac::testing;
+    using namespace xp;
+    using namespace xp::testing;
 
     "value_operators"_test = [] {
         static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<0> + val<1>)>, value<1>>);
@@ -232,7 +232,7 @@ int main() {
     };
 
     "operation_nodes_of"_test = [] () {
-        using namespace adac::traits;
+        using namespace xp::traits;
 
         let a;
         var b;
@@ -266,7 +266,7 @@ int main() {
     };
 
     "operation_unique_nodes_of"_test = [] () {
-        using namespace adac::traits;
+        using namespace xp::traits;
 
         let a;
         var b;
@@ -310,7 +310,7 @@ int main() {
     };
 
     "operation_symbols_variables_of"_test = [] () {
-        using namespace adac::traits;
+        using namespace xp::traits;
 
         let a;
         var b;

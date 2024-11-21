@@ -13,7 +13,7 @@
 #include "utils.hpp"
 
 
-namespace adac::traits {
+namespace xp::traits {
 
 //! \addtogroup Traits
 //! \{
@@ -257,4 +257,4 @@ inline constexpr bool is_zero_value_v = is_zero_value<T>::value;
 
 //! \} group Traits
 
-}  // namespace adac::traits
+}  // namespace xp::traits

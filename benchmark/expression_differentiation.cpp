@@ -8,13 +8,13 @@
 #include <autodiff/forward/dual.hpp>
 #include <autodiff/reverse/var.hpp>
 #else
-#include <adac/adac.hpp>
+#include <xpress/xp.hpp>
 #endif
 
 #include "common.hpp"
 #include "benchmark_expression.hpp"
 
-using namespace adac;
+using namespace xp;
 
 #if USE_AUTODIFF
 autodiff::dual f(autodiff::dual _a, autodiff::dual _b) {

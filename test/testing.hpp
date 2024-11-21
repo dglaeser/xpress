@@ -4,7 +4,7 @@
 
 #include <boost/ut.hpp>
 
-namespace adac::testing {
+namespace xp::testing {
 
 using boost::ut::operator""_test;
 using boost::ut::expect;
@@ -16,4 +16,4 @@ inline constexpr bool fuzzy_eq(const A& a, const B& b, const E& eps = 1e-6) noex
     return (delta >= 0 && delta < eps) || (delta < 0 && delta > E{-1}*eps);
 }
 
-}  // namespace adac::testing
+}  // namespace xp::testing

@@ -1,13 +1,13 @@
 #include <array>
 #include <algorithm>
 
-#include <adac/linalg.hpp>
+#include <xpress/linalg.hpp>
 
 #include "testing.hpp"
 
 int main() {
-    using namespace adac::testing;
-    using namespace adac;
+    using namespace xp::testing;
+    using namespace xp;
 
     "size_of_trait"_test = [] () {
         static_assert(linalg::traits::size_of_v<std::array<int, 2>> == 2);

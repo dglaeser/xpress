@@ -15,7 +15,7 @@
 #include "expressions.hpp"
 
 
-namespace adac {
+namespace xp {
 
 //! \addtogroup Symbols
 //! \{
@@ -98,4 +98,4 @@ template<typename T, auto _> struct stream<let<T, _>> : _bound_symbol_stream<let
 
 //! \} group Symbols
 
-}  // namespace adac
+}  // namespace xp

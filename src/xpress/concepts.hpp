@@ -16,7 +16,7 @@
 #include "bindings.hpp"
 
 
-namespace adac {
+namespace xp {
 
 template<typename T>
 struct is_expression : std::bool_constant<
@@ -61,4 +61,4 @@ concept expression = is_expression_v<T>;
 //! \} group Concepts
 
 }  // namespace concepts
-}  // namespace adac
+}  // namespace xp

@@ -1,12 +1,12 @@
-#include <adac/adac.hpp>
-#include <adac/solvers/newton.hpp>
+#include <xpress/xp.hpp>
+#include <xpress/solvers/newton.hpp>
 
 #include "testing.hpp"
 
 int main() {
-    using namespace adac;
-    using namespace adac::solvers;
-    using namespace adac::testing;
+    using namespace xp;
+    using namespace xp::solvers;
+    using namespace xp::testing;
 
     "netwon_solver_constexpr"_test = [] () {
         var a;

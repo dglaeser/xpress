@@ -11,10 +11,10 @@
 #include <type_traits>
 #include <ostream>
 
-#include <adac/bindings.hpp>
+#include <xpress/bindings.hpp>
 
 
-namespace adac::solvers {
+namespace xp::solvers {
 
 //! \addtogroup Solvers
 //! \{
@@ -58,4 +58,4 @@ class progress_logger {
 
 //! \} group Solvers
 
-}  // namespace adac::solvers
+}  // namespace xp::solvers
