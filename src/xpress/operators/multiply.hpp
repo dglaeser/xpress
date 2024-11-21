@@ -30,7 +30,7 @@ namespace traits { template<> struct is_commutative<multiply> : std::true_type {
 }  // namespace operators
 
 template<concepts::expression A, concepts::expression B>
-    requires(!traits::disable_generic_arithmetic_operators<A, B>::value)
+    requires( not requires(const A& a, const B& b) { { a.operator*(b) }; } )
 inline constexpr auto operator*(const A&, const B&) noexcept {
     if constexpr (traits::is_zero_value_v<A> || traits::is_zero_value_v<B>)
         return val<0>;

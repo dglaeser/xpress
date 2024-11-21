@@ -43,9 +43,6 @@ struct is_unit_value<value<v>> : std::bool_constant<v == 1> {};
 template<auto v>
 struct is_zero_value<value<v>> : std::bool_constant<v == 0> {};
 
-template<auto v, auto k>
-struct disable_generic_arithmetic_operators<value<v>, value<k>> : std::true_type {};
-
 template<auto v>
 struct nodes_of<value<v>> : std::type_identity<type_list<value<v>>> {};
 
