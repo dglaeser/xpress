@@ -21,8 +21,11 @@ namespace xp {
 //! \addtogroup Utilities
 //! \{
 
-//! bring in all cpputils utilities
+// bring in all cpputils utilities
 using namespace cpputils;
+
+template<typename A, typename B>
+concept same_remove_cvref_t_as = std::is_same_v<std::remove_cvref_t<A>, std::remove_cvref_t<B>>;
 
 //! Null type
 struct none {};
@@ -66,6 +69,7 @@ struct md_shape {
     }
 };
 
+//! Instance of md_shape
 template<std::size_t... s>
 inline constexpr md_shape<s...> shape{};
 
@@ -128,9 +132,11 @@ struct md_index {
     }
 };
 
+//! Instance of a md_index
 template<std::size_t... i>
 inline constexpr md_index<i...> md_ic{};
 
+//! Factory function to create an md_index from the given indices
 template<std::size_t... i> requires(sizeof...(i) > 0)
 inline constexpr auto at() noexcept {
     return md_index<i...>{};
@@ -212,13 +218,6 @@ inline constexpr void visit_indices_in(const md_shape<s...>& shape, visitor&& v)
     };
     index_visit(md_index_iterator{shape});
 }
-
-namespace concepts {
-
-template<typename A, typename B>
-concept same_remove_cvref_t_as = std::is_same_v<std::remove_cvref_t<A>, std::remove_cvref_t<B>>;
-
-}  // namespace concepts
 
 //! \} group Utilities
 

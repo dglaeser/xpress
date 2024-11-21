@@ -72,7 +72,7 @@ template<typename T>
 struct _symbol_derivative {
     template<typename V>
     static constexpr auto wrt(const type_list<V>&) noexcept {
-        if constexpr (concepts::same_remove_cvref_t_as<T, V>)
+        if constexpr (same_remove_cvref_t_as<T, V>)
             return val<1>;
         else
             return val<0>;

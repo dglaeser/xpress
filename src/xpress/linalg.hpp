@@ -151,14 +151,14 @@ template<typename T>
 struct access;
 template<typename T, typename shape>
 struct access<tensor<T, shape>> {
-    template<concepts::same_remove_cvref_t_as<tensor<T, shape>> _T, std::size_t... i>
+    template<same_remove_cvref_t_as<tensor<T, shape>> _T, std::size_t... i>
     static constexpr decltype(auto) at(const md_index<i...>& idx, _T&& tensor) noexcept {
         return tensor[idx];
     }
 };
 template<typename T> requires(xp::traits::is_indexable_v<T> and is_complete_v<shape_of<T>>)
 struct access<T> {
-    template<concepts::same_remove_cvref_t_as<T> _T, std::size_t... i> requires(sizeof...(i) == shape_of_t<T>::size)
+    template<same_remove_cvref_t_as<T> _T, std::size_t... i> requires(sizeof...(i) == shape_of_t<T>::size)
     static constexpr decltype(auto) at(const md_index<i...>&, _T&& tensor) noexcept {
         return _at<i...>(std::forward<_T>(tensor));
     }
@@ -254,7 +254,7 @@ namespace xp::operators::traits {
 
 template<linalg::concepts::tensor T, typename S> requires(xp::traits::is_scalar_v<S>)
 struct multiplication_of<T, S> {
-    template<concepts::same_remove_cvref_t_as<T> _T, concepts::same_remove_cvref_t_as<S> _S>
+    template<same_remove_cvref_t_as<T> _T, same_remove_cvref_t_as<S> _S>
     constexpr T operator()(_T&& tensor, _S&& scalar) const noexcept {
         T result;
         visit_indices_in(linalg::traits::shape_of_t<T>{}, [&] (const auto& idx) {
@@ -266,7 +266,7 @@ struct multiplication_of<T, S> {
 };
 template<typename S, linalg::concepts::tensor T> requires(xp::traits::is_scalar_v<S>)
 struct multiplication_of<S, T> {
-    template<concepts::same_remove_cvref_t_as<S> _S, concepts::same_remove_cvref_t_as<T> _T>
+    template<same_remove_cvref_t_as<S> _S, same_remove_cvref_t_as<T> _T>
     constexpr T operator()(_S&& scalar, _T&& tensor) const noexcept {
         return multiplication_of<T, S>{}(std::forward<_T>(tensor), std::forward<_S>(scalar));
     }
@@ -274,7 +274,7 @@ struct multiplication_of<S, T> {
 
 template<linalg::concepts::tensor T, typename S> requires(xp::traits::is_scalar_v<S>)
 struct division_of<T, S> {
-    template<concepts::same_remove_cvref_t_as<T> _T, concepts::same_remove_cvref_t_as<S> _S>
+    template<same_remove_cvref_t_as<T> _T, same_remove_cvref_t_as<S> _S>
     constexpr T operator()(_T&& tensor, _S&& scalar) const noexcept {
         T result;
         visit_indices_in(linalg::traits::shape_of_t<T>{}, [&] (const auto& idx) {
@@ -288,7 +288,7 @@ struct division_of<T, S> {
 template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
     requires(linalg::traits::shape_of_t<T1>{} == linalg::traits::shape_of_t<T2>{})
 struct multiplication_of<T1, T2> {
-    template<concepts::same_remove_cvref_t_as<T1> _T1, concepts::same_remove_cvref_t_as<T2> _T2>
+    template<same_remove_cvref_t_as<T1> _T1, same_remove_cvref_t_as<T2> _T2>
     constexpr auto operator()(_T1&& A, _T2&& B) const noexcept {
         xp::traits::scalar_type_t<T1> result{0};
         visit_indices_in(linalg::traits::shape_of_t<T1>{}, [&] (const auto& idx) {
@@ -302,7 +302,7 @@ struct multiplication_of<T1, T2> {
 template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
     requires(linalg::traits::shape_of_t<T1>{} == linalg::traits::shape_of_t<T2>{})
 struct addition_of<T1, T2> {
-    template<concepts::same_remove_cvref_t_as<T1> _T1, concepts::same_remove_cvref_t_as<T2> _T2>
+    template<same_remove_cvref_t_as<T1> _T1, same_remove_cvref_t_as<T2> _T2>
     constexpr auto operator()(_T1&& A, _T2&& B) const noexcept {
         using scalar = std::common_type_t<xp::traits::scalar_type_t<T1>, xp::traits::scalar_type_t<T2>>;
         using shape = linalg::traits::shape_of_t<T1>;
@@ -317,7 +317,7 @@ struct addition_of<T1, T2> {
 template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
     requires(linalg::traits::shape_of_t<T1>{} == linalg::traits::shape_of_t<T2>{})
 struct subtraction_of<T1, T2> {
-    template<concepts::same_remove_cvref_t_as<T1> _T1, concepts::same_remove_cvref_t_as<T2> _T2>
+    template<same_remove_cvref_t_as<T1> _T1, same_remove_cvref_t_as<T2> _T2>
     constexpr auto operator()(_T1&& A, _T2&& B) const noexcept {
         using scalar = std::common_type_t<xp::traits::scalar_type_t<T1>, xp::traits::scalar_type_t<T2>>;
         using shape = linalg::traits::shape_of_t<T1>;

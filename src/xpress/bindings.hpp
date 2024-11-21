@@ -24,7 +24,7 @@ struct value_binder {
     using symbol_type = std::remove_cvref_t<S>;
     using value_type = std::remove_cvref_t<V>;
 
-    template<concepts::same_remove_cvref_t_as<V> _V>
+    template<same_remove_cvref_t_as<V> _V>
     constexpr value_binder(const S&, _V&& v) noexcept
     : _value{std::forward<_V>(v)}
     {}
@@ -45,9 +45,6 @@ struct value_binder {
 template<typename S, typename V>
 value_binder(S&&, V&&) -> value_binder<std::remove_cvref_t<S>, V>;
 
-
-namespace concepts {
-
 //! Concept for types that bind values to symbols
 template<typename T>
 concept binder = requires(const T& t) {
@@ -56,24 +53,9 @@ concept binder = requires(const T& t) {
     { t.get() } -> same_remove_cvref_t_as<typename T::value_type>;
 };
 
-}  // namespace concepts
-
-
-#ifndef DOXYGEN
-namespace detail {
-
-    template<typename T>
-    struct is_value_binder : std::bool_constant<concepts::binder<T>> {};
-
-    template<typename... B>
-    inline constexpr bool are_binders = std::conjunction_v<is_value_binder<B>...>;
-
-}  // namespace detail
-#endif  // DOXYGEN
-
 //! Data structure to store values bound to symbols.
-template<typename... B>
-    requires(are_unique_v<B...> and detail::are_binders<B...>)
+template<binder... B>
+    requires(are_unique_v<B...>)
 struct bindings : private indexed_tuple<B...> {
  private:
     using base = indexed_tuple<B...>;
@@ -122,15 +104,14 @@ struct bindings<> {
 template<typename... B>
 bindings(B&&...) -> bindings<B...>;
 
-
 //! Create bindings from the given bound symbols
-template<typename... B> requires(detail::are_binders<B...>)
+template<binder... B>
 inline constexpr auto at(B&&... b) {
     return bindings{std::forward<B>(b)...};
 }
 
 //! Alternative syntax for creating bindings
-template<typename... B> requires(detail::are_binders<B...>)
+template<binder... B>
 inline constexpr auto with(B&&... b) {
     return bindings{std::forward<B>(b)...};
 }

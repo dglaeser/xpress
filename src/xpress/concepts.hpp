@@ -57,7 +57,6 @@ concept variable = traits::is_variable_v<T>;
 template<typename T>
 concept expression = is_expression_v<T>;
 
-
 //! \} group Concepts
 
 }  // namespace concepts
