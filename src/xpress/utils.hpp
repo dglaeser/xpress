@@ -66,6 +66,7 @@ struct md_shape {
     }
 };
 
+//! Instance of md_shape
 template<std::size_t... s>
 inline constexpr md_shape<s...> shape{};
 
@@ -128,9 +129,11 @@ struct md_index {
     }
 };
 
+//! Instance of a md_index
 template<std::size_t... i>
 inline constexpr md_index<i...> md_ic{};
 
+//! Factory function to create an md_index from the given indices
 template<std::size_t... i> requires(sizeof...(i) > 0)
 inline constexpr auto at() noexcept {
     return md_index<i...>{};
