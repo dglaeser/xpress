@@ -30,7 +30,7 @@ struct value {
     template<typename Self, auto k> constexpr auto operator/(this Self&&, value<k>) { return value<v/k>{}; }
 };
 
-//! instance of a constant value
+//! Instance of a constant value
 template<auto v>
 inline constexpr value<v> val;
 
