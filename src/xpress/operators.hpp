@@ -174,6 +174,8 @@ inline constexpr auto operator/(const A&, const B&) noexcept {
         return val<0>;
     else if constexpr (traits::is_unit_value_v<B>)
         return A{};
+    else if constexpr (std::is_same_v<A, B>)
+        return val<1>;
     else
         return operation<operators::divide, A, B>{};
 }
