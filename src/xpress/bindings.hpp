@@ -24,7 +24,7 @@ struct value_binder {
     using symbol_type = std::remove_cvref_t<S>;
     using value_type = std::remove_cvref_t<V>;
 
-    template<concepts::same_remove_cvref_t_as<V> _V>
+    template<same_remove_cvref_t_as<V> _V>
     constexpr value_binder(const S&, _V&& v) noexcept
     : _value{std::forward<_V>(v)}
     {}

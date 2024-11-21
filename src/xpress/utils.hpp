@@ -21,8 +21,11 @@ namespace xp {
 //! \addtogroup Utilities
 //! \{
 
-//! bring in all cpputils utilities
+// bring in all cpputils utilities
 using namespace cpputils;
+
+template<typename A, typename B>
+concept same_remove_cvref_t_as = std::is_same_v<std::remove_cvref_t<A>, std::remove_cvref_t<B>>;
 
 //! Null type
 struct none {};
@@ -215,13 +218,6 @@ inline constexpr void visit_indices_in(const md_shape<s...>& shape, visitor&& v)
     };
     index_visit(md_index_iterator{shape});
 }
-
-namespace concepts {
-
-template<typename A, typename B>
-concept same_remove_cvref_t_as = std::is_same_v<std::remove_cvref_t<A>, std::remove_cvref_t<B>>;
-
-}  // namespace concepts
 
 //! \} group Utilities
 
