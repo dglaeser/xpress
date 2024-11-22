@@ -13,7 +13,19 @@ on:
   workflow_call:
 
 jobs:
+  sanity-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout-repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: test-readme-code
+        run: python3 .github/test_readme_code.py -c /usr/bin/gcc-14 -x /usr/bin/g++-14 -r README.md
+
   test:
+    needs: sanity-check
     runs-on: ubuntu-24.04
     strategy:
       matrix:
@@ -50,6 +62,7 @@ jobs:
         run: cd build && ctest --output-on-failure
 
   test-installed-package:
+    needs: sanity-check
     runs-on: ubuntu-24.04
     steps:
       - name: checkout-repository
