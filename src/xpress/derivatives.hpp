@@ -18,6 +18,7 @@ namespace xp {
 //! \addtogroup Expressions
 //! \{
 
+//! Contains the expression of the derivative E of some expression with respect to V
 template<typename E, typename V>
 struct derivative {
     using expression = E;
@@ -47,8 +48,8 @@ namespace detail {
 }  // namespace detail
 #endif  // DOXYGEN
 
-template<typename... D>
-    requires(std::conjunction_v<detail::is_derivative<D>...>)
+//! Contains the expressions of the derivatives of an expression with respect to different variables
+template<typename... D> requires(std::conjunction_v<detail::is_derivative<D>...>)
 struct derivatives : private indexed<typename D::variable...> {
     constexpr derivatives(const D&...) noexcept {}
 
@@ -73,7 +74,7 @@ struct derivatives : private indexed<typename D::variable...> {
 
  private:
     template<typename E, typename V, typename... Vs>
-        requires(concepts::evaluatable_with<E, Vs...>)
+        requires(evaluatable_with<E, Vs...>)
     constexpr auto _binder_for(const derivative<E, V>&, const bindings<Vs...>& values) const noexcept {
         return value_binder{V{}, traits::value_of<E>::from(values)};
     }

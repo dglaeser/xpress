@@ -15,7 +15,7 @@
 #include "traits.hpp"
 
 
-namespace xp::concepts {
+namespace xp {
 
 //! \addtogroup Expressions
 //! \{
@@ -49,4 +49,4 @@ concept expression = traits::is_expression_v<T>;
 
 //! \} group Expressions
 
-}  // namespace xp::concepts
+}  // namespace xp

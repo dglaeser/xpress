@@ -34,7 +34,7 @@ struct pow : operator_base<traits::power_of, default_pow_operator> {};
 
 }  // namespace operators
 
-template<concepts::expression A, concepts::expression B>
+template<expression A, expression B>
 inline constexpr auto pow(const A&, const B&) noexcept {
     if constexpr (traits::is_zero_value_v<A>)
         return val<0>;

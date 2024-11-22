@@ -27,7 +27,7 @@ struct divide : operator_base<traits::division_of, std::divides<void>> {};
 
 }  // namespace operators
 
-template<concepts::expression A, concepts::expression B>
+template<expression A, expression B>
     requires( not requires(const A& a, const B& b) { { a.operator/(b) }; } )
 inline constexpr auto operator/(const A&, const B&) noexcept {
     static_assert(!traits::is_zero_value_v<B>, "Attempted division by zero.");

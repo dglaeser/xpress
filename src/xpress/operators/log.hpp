@@ -34,7 +34,7 @@ struct log : operator_base<traits::log_of, default_log_operator> {};
 
 }  // namespace operators
 
-template<concepts::expression A>
+template<expression A>
 inline constexpr auto log(const A&) noexcept {
     static_assert(!traits::is_zero_value_v<A>, "Logarithm of zero is not defined.");
     if constexpr (traits::is_unit_value_v<A>)
