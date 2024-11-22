@@ -26,6 +26,22 @@ namespace xp {
 //! \addtogroup Expressions
 //! \{
 
+//! An expression plus values bound to its symbols
+template<expression E, typename... V>
+struct bound_expression {
+    explicit constexpr bound_expression(const E&, bindings<V...>&& bindings)
+    : _bindings{std::move(bindings)}
+    {}
+
+    //! Return the value of the expression evaluated at the stored bindings
+    constexpr auto value() const noexcept requires(evaluatable_with<E, V...>) {
+        return traits::value_of<E>::from(_bindings);
+    }
+
+ private:
+    bindings<V...> _bindings;
+};
+
 //! Base class for negatable symbols/expressions
 struct negatable {
     template<typename Self>
@@ -39,10 +55,16 @@ template<typename T = dtype::any>
 struct bindable {
     using dtype = T;
 
-    //! bind the given value to this symbol
+    //! Bind the given value to this symbol/expression
     template<typename Self, bindable_to<dtype> V>
     constexpr auto operator=(this Self&& self, V&& value) noexcept {
         return value_binder(std::forward<Self>(self), std::forward<V>(value));
+    }
+
+    //! Construct a bound expression from this expression and the given binders
+    template<typename Self, binder... V>
+    constexpr auto with(this Self&& self, V&&... binders) noexcept {
+        return bound_expression{self, at(std::forward<V>(binders)...)};
     }
 };
 
