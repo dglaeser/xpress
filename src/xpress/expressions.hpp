@@ -197,3 +197,29 @@ inline constexpr auto wrt(const V&...) {
 //! \} group Expressions
 
 }  // namespace xp
+
+
+#include <format>
+#include <sstream>
+
+template<typename E, typename... V>
+struct std::formatter<xp::bound_expression<E, V...>> {
+
+    // todo: precision formatter?
+    template<typename parse_ctx>
+    constexpr parse_ctx::iterator parse(parse_ctx& ctx) {
+        auto it = ctx.begin();
+        if (it == ctx.end())
+            return it;
+        if (*it != '}')
+            throw std::format_error("xp::bound_expression does not support format args.");
+        return it;
+    }
+
+    template<typename fmt_ctx>
+    fmt_ctx::iterator format(const xp::bound_expression<E, V...>& e, fmt_ctx& ctx) const {
+        std::ostringstream out;
+        out << e;
+        return std::ranges::copy(std::move(out).str(), ctx.out()).out;
+    }
+};

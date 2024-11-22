@@ -1,5 +1,6 @@
 #include <string>
 #include <sstream>
+#include <format>
 
 #include <xpress/symbols.hpp>
 #include <xpress/operators.hpp>
@@ -27,6 +28,14 @@ int main() {
         std::ostringstream out;
         out << bound_expr;
         expect(eq(out.str(), std::string{"a + b + c"}));
+    };
+
+    "bound_expression_format"_test = [] () {
+        var a;
+        var b;
+        var c;
+        auto text = std::format("{}", (a + (b + c)).with(a = "a", b = "b", c = "c"));
+        expect(eq(text, std::string{"a + b + c"}));
     };
 
     "mixed_arithmetic_stream"_test = [] () {
