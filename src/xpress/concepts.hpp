@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 /*!
  * \file
- * \ingroup Concepts
+ * \ingroup Expressions
  * \brief Concepts for symbols, expressions and values.
  */
 #pragma once
@@ -11,23 +11,13 @@
 #include <concepts>
 #include <ostream>
 
-#include "utils.hpp"
-#include "traits.hpp"
 #include "bindings.hpp"
+#include "traits.hpp"
 
 
-namespace xp {
+namespace xp::concepts {
 
-template<typename T>
-struct is_expression : std::bool_constant<
-    is_complete_v<traits::value_of<T>> && is_complete_v<traits::derivative_of<T>> && is_complete_v<traits::nodes_of<T>>
-> {};
-template<typename T>
-inline constexpr bool is_expression_v = is_expression<T>::value;
-
-
-namespace concepts {
-//! \addtogroup Concepts
+//! \addtogroup Expressions
 //! \{
 
 template<typename Arg, typename T>
@@ -55,9 +45,8 @@ template<typename T>
 concept variable = traits::is_variable_v<T>;
 
 template<typename T>
-concept expression = is_expression_v<T>;
+concept expression = traits::is_expression_v<T>;
 
-//! \} group Concepts
+//! \} group Expressions
 
-}  // namespace concepts
-}  // namespace xp
+}  // namespace xp::concepts

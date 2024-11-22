@@ -27,7 +27,7 @@ namespace xp::solvers {
 //! \{
 
 //! Finds the roots of nonlinear equations using Newton's method
-template<typename T = double> requires(traits::is_scalar_v<T>)
+template<typename T = double> requires(is_scalar_v<T>)
 struct newton {
     constexpr newton(solver_options<T>&& opts) noexcept
     : _opts{std::move(opts)}
@@ -76,7 +76,7 @@ struct newton {
     }
 
     template<typename... S, typename R, typename G, typename V>
-        requires(traits::is_scalar_v<R>)
+        requires(is_scalar_v<R>)
     constexpr void _update(bindings<S...>& solution,
                            const R& residual,
                            const G& gradient,
@@ -107,7 +107,7 @@ struct newton {
         solution[V2{}] -= update[at<1>()];
     }
 
-    template<typename R> requires(traits::is_scalar_v<R>)
+    template<typename R> requires(is_scalar_v<R>)
     constexpr auto _squared_norm_of(const R& residual) const noexcept {
         return residual*residual;
     }

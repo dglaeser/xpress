@@ -3,7 +3,8 @@
 /*!
  * \file
  * \ingroup Utils
- * \brief Data structures to represent symbols from which expressions can be constructed.
+ * \brief Data structures to represent classes of value types.
+ *        Can be used to constrain symbols to only allow binding them to certain types.
  */
 #pragma once
 
