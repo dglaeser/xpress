@@ -38,6 +38,12 @@ struct bound_expression {
         return traits::value_of<E>::from(_bindings);
     }
 
+    //! Insert this expression into the given output stream
+    friend constexpr std::ostream& operator<<(std::ostream& s, const bound_expression& e) noexcept {
+        traits::stream<E>::to(s, e._bindings);
+        return s;
+    }
+
  private:
     bindings<V...> _bindings;
 };

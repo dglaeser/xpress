@@ -19,6 +19,16 @@ int main() {
         expect(eq(out.str(), std::string{"a + b + c"}));
     };
 
+    "bound_expression_stream"_test = [] () {
+        var a;
+        var b;
+        var c;
+        auto bound_expr = (a + (b + c)).with(a = "a", b = "b", c = "c");
+        std::ostringstream out;
+        out << bound_expr;
+        expect(eq(out.str(), std::string{"a + b + c"}));
+    };
+
     "mixed_arithmetic_stream"_test = [] () {
         var a;
         var b;
