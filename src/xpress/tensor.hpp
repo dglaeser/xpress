@@ -164,7 +164,7 @@ struct tensor_expression_builder {
     constexpr auto build() const noexcept {
         static_assert(sizeof...(T) > 0, "No entries of the tensor have been set yet.");
         static_assert(
-            std::conjunction_v<is_expression<T>...>,
+            std::conjunction_v<traits::is_expression<T>...>,
             "All entries of the tensor have to be set to expressions before it can be built."
         );
         return tensor_expression<shape, T...>{};

@@ -51,7 +51,7 @@ struct tensor {
         return self[md_ic<i>];
     }
 
-    template<typename V> requires(xp::traits::is_scalar_v<V>)
+    template<typename V> requires(is_scalar_v<V>)
     constexpr auto operator*(const V& value) const noexcept {
         return operators::traits::multiplication_of<tensor, V>{}(*this, value);
     }
@@ -86,11 +86,11 @@ template<std::size_t... s, typename T, std::size_t size>
 tensor(const md_shape<s...>&, std::array<T, size>&&) -> tensor<T, md_shape<s...>>;
 
 template<std::size_t... s, typename... Ts>
-    requires(std::conjunction_v<xp::traits::is_scalar<std::remove_cvref_t<Ts>>...>)
+    requires(std::conjunction_v<is_scalar<std::remove_cvref_t<Ts>>...>)
 tensor(const md_shape<s...>&, Ts&&...) -> tensor<std::common_type_t<Ts...>, md_shape<s...>>;
 
 template<std::size_t... s, typename... Ts>
-    requires(sizeof...(Ts) > 0 and !std::conjunction_v<xp::traits::is_scalar<std::remove_cvref_t<Ts>>...>)
+    requires(sizeof...(Ts) > 0 and !std::conjunction_v<is_scalar<std::remove_cvref_t<Ts>>...>)
 tensor(const md_shape<s...>&, Ts&&...) -> tensor<std::remove_cvref_t<first_t<type_list<Ts...>>>, md_shape<s...>>;
 
 namespace traits {
@@ -130,17 +130,17 @@ namespace detail {
 
     template<typename T, std::size_t... s>
     struct shape_of_indexable;
-    template<typename T, std::size_t... s> requires(!xp::traits::is_indexable_v<T>)
+    template<typename T, std::size_t... s> requires(!is_indexable_v<T>)
     struct shape_of_indexable<T, s...> : std::type_identity<md_shape<s...>> {};
-    template<typename T, std::size_t... s> requires(xp::traits::is_indexable_v<T>)
-    struct shape_of_indexable<T, s...> : shape_of_indexable<xp::traits::value_type_t<T>, s..., size_of_v<T>> {};
+    template<typename T, std::size_t... s> requires(is_indexable_v<T>)
+    struct shape_of_indexable<T, s...> : shape_of_indexable<value_type_t<T>, s..., size_of_v<T>> {};
 
 }  // namespace detail
 #endif  // DOXYGEN
 
 template<typename T>
 struct shape_of;
-template<typename T> requires(xp::traits::is_indexable_v<T>)
+template<typename T> requires(is_indexable_v<T>)
 struct shape_of<T> : detail::shape_of_indexable<T> {};
 template<typename T, typename shape>
 struct shape_of<tensor<T, shape>> : std::type_identity<shape> {};
@@ -156,7 +156,7 @@ struct access<tensor<T, shape>> {
         return tensor[idx];
     }
 };
-template<typename T> requires(xp::traits::is_indexable_v<T> and is_complete_v<shape_of<T>>)
+template<typename T> requires(is_indexable_v<T> and is_complete_v<shape_of<T>>)
 struct access<T> {
     template<same_remove_cvref_t_as<T> _T, std::size_t... i> requires(sizeof...(i) == shape_of_t<T>::dimensions)
     static constexpr decltype(auto) at(const md_index<i...>&, _T&& tensor) noexcept {
@@ -173,7 +173,6 @@ struct access<T> {
     }
 };
 
-
 }  // namespace traits
 
 
@@ -182,8 +181,8 @@ namespace concepts {
 template<typename T>
 concept tensor
 = std::is_default_constructible_v<std::remove_cvref_t<T>>  // TODO: can we relax this?
+and is_complete_v<scalar_type<std::remove_cvref_t<T>>>
 and is_complete_v<traits::shape_of<std::remove_cvref_t<T>>>
-and is_complete_v<xp::traits::scalar_type<std::remove_cvref_t<T>>>
 and is_complete_v<traits::access<std::remove_cvref_t<T>>>
 and requires(const T& t) {
     { traits::access<std::remove_cvref_t<T>>::at( *(md_index_iterator{traits::shape_of_t<std::remove_cvref_t<T>>{}}), t ) };
@@ -199,16 +198,13 @@ inline constexpr auto mat_mul(const T1& t1, const T2& t2) noexcept {
     static_assert(shape1::dimensions > 1, "First argument must be a tensor with 2 or more dimensions.");
     static_assert(shape1{}.last() == shape2{}.first(), "Tensor dimensions do not match.");
 
-    using scalar = std::common_type_t<
-        xp::traits::scalar_type_t<T1>,
-        xp::traits::scalar_type_t<T2>
-    >;
     constexpr md_shape new_shape{
         typename shape1::as_values_t{}.template crop<1>()
         + typename shape2::as_values_t{}.template drop<1>()
     };
 
     // todo: deduce return tensor type somehow?
+    using scalar = std::common_type_t<scalar_type_t<T1>, scalar_type_t<T2>>;
     linalg::tensor<scalar, decltype(new_shape)> result{scalar{0}};
     visit_indices_in(new_shape, [&] <std::size_t... i> (const md_index<i...>& idx) constexpr {
         visit_indices_in(shape<shape1{}.last()>, [&] <std::size_t j> (const md_index<j>&) constexpr {
@@ -252,19 +248,19 @@ inline constexpr auto determinant_of(const T& tensor) noexcept {
 // TODO: make these free functions and inject to default somehow? To make overloadable...
 namespace xp::operators::traits {
 
-template<linalg::concepts::tensor T, typename S> requires(xp::traits::is_scalar_v<S>)
+template<linalg::concepts::tensor T, typename S> requires(is_scalar_v<S>)
 struct multiplication_of<T, S> {
     template<same_remove_cvref_t_as<T> _T, same_remove_cvref_t_as<S> _S>
     constexpr T operator()(_T&& tensor, _S&& scalar) const noexcept {
         T result;
         visit_indices_in(linalg::traits::shape_of_t<T>{}, [&] (const auto& idx) {
-            xp::traits::scalar_type_t<T>& value_at_idx = xp::linalg::traits::access<T>::at(idx, result);
+            scalar_type_t<T>& value_at_idx = xp::linalg::traits::access<T>::at(idx, result);
             value_at_idx = xp::linalg::traits::access<T>::at(idx, tensor)*scalar;
         });
         return result;
     }
 };
-template<typename S, linalg::concepts::tensor T> requires(xp::traits::is_scalar_v<S>)
+template<typename S, linalg::concepts::tensor T> requires(is_scalar_v<S>)
 struct multiplication_of<S, T> {
     template<same_remove_cvref_t_as<S> _S, same_remove_cvref_t_as<T> _T>
     constexpr T operator()(_S&& scalar, _T&& tensor) const noexcept {
@@ -272,13 +268,13 @@ struct multiplication_of<S, T> {
     }
 };
 
-template<linalg::concepts::tensor T, typename S> requires(xp::traits::is_scalar_v<S>)
+template<linalg::concepts::tensor T, typename S> requires(is_scalar_v<S>)
 struct division_of<T, S> {
     template<same_remove_cvref_t_as<T> _T, same_remove_cvref_t_as<S> _S>
     constexpr T operator()(_T&& tensor, _S&& scalar) const noexcept {
         T result;
         visit_indices_in(linalg::traits::shape_of_t<T>{}, [&] (const auto& idx) {
-            xp::traits::scalar_type_t<T>& value_at_idx = xp::linalg::traits::access<T>::at(idx, result);
+            scalar_type_t<T>& value_at_idx = xp::linalg::traits::access<T>::at(idx, result);
             value_at_idx = xp::linalg::traits::access<T>::at(idx, tensor)/scalar;
         });
         return result;
@@ -290,7 +286,7 @@ template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
 struct multiplication_of<T1, T2> {
     template<same_remove_cvref_t_as<T1> _T1, same_remove_cvref_t_as<T2> _T2>
     constexpr auto operator()(_T1&& A, _T2&& B) const noexcept {
-        xp::traits::scalar_type_t<T1> result{0};
+        scalar_type_t<T1> result{0};
         visit_indices_in(linalg::traits::shape_of_t<T1>{}, [&] (const auto& idx) {
             result += xp::linalg::traits::access<T1>::at(idx, A)
                         *xp::linalg::traits::access<T2>::at(idx, B);
@@ -304,7 +300,7 @@ template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
 struct addition_of<T1, T2> {
     template<same_remove_cvref_t_as<T1> _T1, same_remove_cvref_t_as<T2> _T2>
     constexpr auto operator()(_T1&& A, _T2&& B) const noexcept {
-        using scalar = std::common_type_t<xp::traits::scalar_type_t<T1>, xp::traits::scalar_type_t<T2>>;
+        using scalar = std::common_type_t<scalar_type_t<T1>, scalar_type_t<T2>>;
         using shape = linalg::traits::shape_of_t<T1>;
         linalg::tensor<scalar, shape> result{};
         visit_indices_in(shape{}, [&] (const auto& idx) {
@@ -319,7 +315,7 @@ template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
 struct subtraction_of<T1, T2> {
     template<same_remove_cvref_t_as<T1> _T1, same_remove_cvref_t_as<T2> _T2>
     constexpr auto operator()(_T1&& A, _T2&& B) const noexcept {
-        using scalar = std::common_type_t<xp::traits::scalar_type_t<T1>, xp::traits::scalar_type_t<T2>>;
+        using scalar = std::common_type_t<scalar_type_t<T1>, scalar_type_t<T2>>;
         using shape = linalg::traits::shape_of_t<T1>;
         linalg::tensor<scalar, shape> result{};
         visit_indices_in(shape{}, [&] (const auto& idx) {
@@ -332,9 +328,9 @@ struct subtraction_of<T1, T2> {
 }  // namespace xp::operators::traits
 
 
-namespace xp::traits {
+namespace xp {
 
 template<typename T, typename shape>  // TODO: constrain on scalar T
 struct scalar_type<linalg::tensor<T, shape>> : std::type_identity<T> {};
 
-}  // namespace xp::traits
+}  // namespace xp

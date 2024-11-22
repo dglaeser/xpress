@@ -12,7 +12,6 @@
 #include <utility>
 #include <type_traits>
 
-#include <cpputils/type_traits.hpp>
 #include <cpputils/utility.hpp>
 
 
@@ -23,9 +22,6 @@ namespace xp {
 
 // bring in all cpputils utilities
 using namespace cpputils;
-
-template<typename A, typename B>
-concept same_remove_cvref_t_as = std::is_same_v<std::remove_cvref_t<A>, std::remove_cvref_t<B>>;
 
 //! Null type
 struct none {};
