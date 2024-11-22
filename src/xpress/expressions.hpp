@@ -26,6 +26,28 @@ namespace xp {
 //! \addtogroup Expressions
 //! \{
 
+//! An expression plus values bound to its symbols
+template<expression E, typename... V>
+struct bound_expression {
+    explicit constexpr bound_expression(const E&, bindings<V...>&& bindings)
+    : _bindings{std::move(bindings)}
+    {}
+
+    //! Return the value of the expression evaluated at the stored bindings
+    constexpr auto value() const noexcept requires(evaluatable_with<E, V...>) {
+        return traits::value_of<E>::from(_bindings);
+    }
+
+    //! Insert this expression into the given output stream
+    friend constexpr std::ostream& operator<<(std::ostream& s, const bound_expression& e) noexcept {
+        traits::stream<E>::to(s, e._bindings);
+        return s;
+    }
+
+ private:
+    bindings<V...> _bindings;
+};
+
 //! Base class for negatable symbols/expressions
 struct negatable {
     template<typename Self>
@@ -39,10 +61,16 @@ template<typename T = dtype::any>
 struct bindable {
     using dtype = T;
 
-    //! bind the given value to this symbol
+    //! Bind the given value to this symbol/expression
     template<typename Self, bindable_to<dtype> V>
     constexpr auto operator=(this Self&& self, V&& value) noexcept {
         return value_binder(std::forward<Self>(self), std::forward<V>(value));
+    }
+
+    //! Construct a bound expression from this expression and the given binders
+    template<typename Self, binder... V>
+    constexpr auto with(this Self&& self, V&&... binders) noexcept {
+        return bound_expression{self, at(std::forward<V>(binders)...)};
     }
 };
 
@@ -169,3 +197,29 @@ inline constexpr auto wrt(const V&...) {
 //! \} group Expressions
 
 }  // namespace xp
+
+
+#include <format>
+#include <sstream>
+
+template<typename E, typename... V>
+struct std::formatter<xp::bound_expression<E, V...>> {
+
+    // todo: precision formatter?
+    template<typename parse_ctx>
+    constexpr parse_ctx::iterator parse(parse_ctx& ctx) {
+        auto it = ctx.begin();
+        if (it == ctx.end())
+            return it;
+        if (*it != '}')
+            throw std::format_error("xp::bound_expression does not support format args.");
+        return it;
+    }
+
+    template<typename fmt_ctx>
+    fmt_ctx::iterator format(const xp::bound_expression<E, V...>& e, fmt_ctx& ctx) const {
+        std::ostringstream out;
+        out << e;
+        return std::ranges::copy(std::move(out).str(), ctx.out()).out;
+    }
+};
