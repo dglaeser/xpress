@@ -24,7 +24,7 @@ struct is_scalar : std::bool_constant<std::is_floating_point_v<T> || std::is_int
 template<typename T>
 inline constexpr bool is_scalar_v = is_scalar<T>::value;
 
-//! Trait to expose if a type implements operator[](std::size_t)
+//! Trait to expose if a type implements `operator[](std::size_t)`
 template<typename T>
 struct is_indexable : std::bool_constant< requires(const T& t) { {t[std::size_t{}] }; } > {};
 template<typename T>
