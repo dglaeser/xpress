@@ -65,7 +65,7 @@ int main() {
     };
 
     "tensor_concept"_test = [] () {
-        static_assert(linalg::concepts::tensor<linalg::tensor<int, md_shape<2, 2>>>);
+        static_assert(tensorial<linalg::tensor<int, md_shape<2, 2>>>);
     };
 
     return 0;

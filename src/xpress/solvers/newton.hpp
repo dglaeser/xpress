@@ -33,7 +33,7 @@ struct newton {
     : _opts{std::move(opts)}
     {}
 
-    template<concepts::expression E, typename... I>
+    template<expression E, typename... I>
     constexpr auto find_root_of(const E& equation, bindings<I...>&& initial_guess) const noexcept {
         static_assert(
             !std::conjunction_v<std::is_const<std::remove_reference_t<
@@ -85,7 +85,7 @@ struct newton {
     }
 
     template<typename... S, typename R, typename G, typename V1, typename V2>
-        requires(linalg::concepts::tensor<R>)
+        requires(tensorial<R>)
     constexpr void _update(bindings<S...>& solution,
                            const R& residual,
                            const G& gradient,
@@ -112,7 +112,7 @@ struct newton {
         return residual*residual;
     }
 
-    template<typename R> requires(linalg::concepts::tensor<R>)
+    template<typename R> requires(tensorial<R>)
     constexpr auto _squared_norm_of(const R& residual) const noexcept {
         return operators::traits::multiplication_of<R, R>{}(residual, residual);
     }

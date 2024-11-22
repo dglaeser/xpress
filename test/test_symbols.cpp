@@ -20,18 +20,18 @@ int main() {
         let a;
         var b;
         value<42> c;
-        static_assert(concepts::symbol<decltype(a)>);
-        static_assert(concepts::symbol<decltype(b)>);
-        static_assert(!concepts::symbol<decltype(c)>);
+        static_assert(symbol<decltype(a)>);
+        static_assert(symbol<decltype(b)>);
+        static_assert(!symbol<decltype(c)>);
     };
 
     "let_var_value_variable_concept"_test = [] () {
         var a;
         let b;
         value<42> c;
-        static_assert(concepts::symbol<decltype(a)>);
-        static_assert(!concepts::variable<decltype(b)>);
-        static_assert(!concepts::variable<decltype(c)>);
+        static_assert(symbol<decltype(a)>);
+        static_assert(!variable<decltype(b)>);
+        static_assert(!variable<decltype(c)>);
     };
 
     "let_var_value_nodes_of"_test = [] () {

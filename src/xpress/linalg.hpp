@@ -174,24 +174,31 @@ struct access<T> {
 };
 
 }  // namespace traits
+}  // namespace xp::linalg
 
 
-namespace concepts {
+namespace xp {
+
+template<typename T, typename shape>  // TODO: constrain on scalar T
+struct scalar_type<linalg::tensor<T, shape>> : std::type_identity<T> {};
 
 template<typename T>
-concept tensor
+concept tensorial
 = std::is_default_constructible_v<std::remove_cvref_t<T>>  // TODO: can we relax this?
 and is_complete_v<scalar_type<std::remove_cvref_t<T>>>
-and is_complete_v<traits::shape_of<std::remove_cvref_t<T>>>
-and is_complete_v<traits::access<std::remove_cvref_t<T>>>
+and is_complete_v<linalg::traits::shape_of<std::remove_cvref_t<T>>>
+and is_complete_v<linalg::traits::access<std::remove_cvref_t<T>>>
 and requires(const T& t) {
-    { traits::access<std::remove_cvref_t<T>>::at( *(md_index_iterator{traits::shape_of_t<std::remove_cvref_t<T>>{}}), t ) };
+    { linalg::traits::access<std::remove_cvref_t<T>>::at( *(md_index_iterator{linalg::traits::shape_of_t<std::remove_cvref_t<T>>{}}), t ) };
 };
 
-}  // namespace concepts
+}  // namespace xp
+
+
+namespace xp::linalg {
 
 //! Compute the matrix product of two tensors
-template<concepts::tensor T1, concepts::tensor T2>
+template<xp::tensorial T1, xp::tensorial T2>
 inline constexpr auto mat_mul(const T1& t1, const T2& t2) noexcept {
     using shape1 = traits::shape_of_t<T1>;
     using shape2 = traits::shape_of_t<T2>;
@@ -217,7 +224,7 @@ inline constexpr auto mat_mul(const T1& t1, const T2& t2) noexcept {
 }
 
 //! Return the determinant of the given tensor
-template<concepts::tensor T>
+template<xp::tensorial T>
     requires(traits::shape_of_t<T>{}.dimensions == 2)
 inline constexpr auto determinant_of(const T& tensor) noexcept {
     static constexpr auto rows = traits::shape_of_t<T>{}.at(ic<0>);
@@ -248,7 +255,7 @@ inline constexpr auto determinant_of(const T& tensor) noexcept {
 // TODO: make these free functions and inject to default somehow? To make overloadable...
 namespace xp::operators::traits {
 
-template<linalg::concepts::tensor T, typename S> requires(is_scalar_v<S>)
+template<xp::tensorial T, typename S> requires(is_scalar_v<S>)
 struct multiplication_of<T, S> {
     template<same_remove_cvref_t_as<T> _T, same_remove_cvref_t_as<S> _S>
     constexpr T operator()(_T&& tensor, _S&& scalar) const noexcept {
@@ -260,7 +267,7 @@ struct multiplication_of<T, S> {
         return result;
     }
 };
-template<typename S, linalg::concepts::tensor T> requires(is_scalar_v<S>)
+template<typename S, xp::tensorial T> requires(is_scalar_v<S>)
 struct multiplication_of<S, T> {
     template<same_remove_cvref_t_as<S> _S, same_remove_cvref_t_as<T> _T>
     constexpr T operator()(_S&& scalar, _T&& tensor) const noexcept {
@@ -268,7 +275,7 @@ struct multiplication_of<S, T> {
     }
 };
 
-template<linalg::concepts::tensor T, typename S> requires(is_scalar_v<S>)
+template<xp::tensorial T, typename S> requires(is_scalar_v<S>)
 struct division_of<T, S> {
     template<same_remove_cvref_t_as<T> _T, same_remove_cvref_t_as<S> _S>
     constexpr T operator()(_T&& tensor, _S&& scalar) const noexcept {
@@ -281,7 +288,7 @@ struct division_of<T, S> {
     }
 };
 
-template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
+template<xp::tensorial T1, xp::tensorial T2>
     requires(linalg::traits::shape_of_t<T1>{} == linalg::traits::shape_of_t<T2>{})
 struct multiplication_of<T1, T2> {
     template<same_remove_cvref_t_as<T1> _T1, same_remove_cvref_t_as<T2> _T2>
@@ -295,7 +302,7 @@ struct multiplication_of<T1, T2> {
     }
 };
 
-template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
+template<xp::tensorial T1, xp::tensorial T2>
     requires(linalg::traits::shape_of_t<T1>{} == linalg::traits::shape_of_t<T2>{})
 struct addition_of<T1, T2> {
     template<same_remove_cvref_t_as<T1> _T1, same_remove_cvref_t_as<T2> _T2>
@@ -310,7 +317,7 @@ struct addition_of<T1, T2> {
     }
 };
 
-template<linalg::concepts::tensor T1, linalg::concepts::tensor T2>
+template<xp::tensorial T1, xp::tensorial T2>
     requires(linalg::traits::shape_of_t<T1>{} == linalg::traits::shape_of_t<T2>{})
 struct subtraction_of<T1, T2> {
     template<same_remove_cvref_t_as<T1> _T1, same_remove_cvref_t_as<T2> _T2>
@@ -326,11 +333,3 @@ struct subtraction_of<T1, T2> {
 };
 
 }  // namespace xp::operators::traits
-
-
-namespace xp {
-
-template<typename T, typename shape>  // TODO: constrain on scalar T
-struct scalar_type<linalg::tensor<T, shape>> : std::type_identity<T> {};
-
-}  // namespace xp

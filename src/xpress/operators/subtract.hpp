@@ -27,7 +27,7 @@ struct subtract : operator_base<traits::subtraction_of, std::minus<void>> {};
 
 }  // namespace operators
 
-template<concepts::expression A, concepts::expression B>
+template<expression A, expression B>
     requires( not requires(const A& a, const B& b) { { a.operator-(b) }; } )
 inline constexpr auto operator-(const A&, const B&) noexcept {
     if constexpr (traits::is_zero_value_v<A>)

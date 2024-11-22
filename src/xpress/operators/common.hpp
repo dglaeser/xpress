@@ -51,7 +51,7 @@ struct operator_base {
 }  // namespace operators
 
 //! Represents an expression resulting from an operator applied to the given terms
-template<typename op, concepts::expression... Ts>
+template<typename op, expression... Ts>
 struct operation : bindable<traits::common_dtype_t<traits::dtype_of_t<Ts>...>>, negatable {
     using bindable<traits::common_dtype_t<traits::dtype_of_t<Ts>...>>::operator=;
 
