@@ -196,6 +196,50 @@ std::println("de_db = {}", derivs.wrt(b).with(a = "a", b = "b", c = "c"));
 // derivs.wrt(c);
 ```
 
+## Compile-time computations
+
+All interfaces of this library are `constexpr`, so as long as the variable values are known at compile-time,
+and your expression does not use functions that are not `constexpr` (for instance, `std::log` is not `constexpr` until c++-26),
+you can do all computations during compilation:
+
+
+```cpp <!-- {{xpress-comptimeeval-snippet}} -->
+constexpr var a;
+constexpr var b;
+constexpr auto de_da = derivative_of(a*a + a*b, wrt(a), at(a = 2, b = 3));
+static_assert(de_da == 2*2 + 3);
+```
+
+To simplify providing compile-time constants, the library provides `val`:
+
+```cpp <!-- {{xpress-val-snippet}} -->
+constexpr var a;
+constexpr auto de_da = derivative_of(val<42>*a*a, wrt(a), at(a = 3));
+static_assert(de_da == 42*2*3);
+```
+
+Compile-time derivatives can be useful if, for instance, a parameter of your
+application depends on the solution of a small nonlinear equation. The library
+provides a basic Newton solver that you can use to find the root of an expression
+(potentially at compile-time):
+
+```cpp <!-- {{xpress-newton-snippet}} -->
+// #include <xpress/solvers/newton.hpp>
+using namespace xp::solvers;
+constexpr var a;
+constexpr auto expression = a*a - val<1>;
+constexpr auto solver = newton{{
+    .threshold = 1e-6,
+    .max_iterations = 10
+}};
+// find_root_of yields an std::optional (extract the result via value())
+constexpr auto result = solver.find_root_of(expression, starting_from(a = 3.0))
+                              .value();
+// the solver supports vector expressions (see below), and thus, the result
+// type is a container with the solutions to all variables of the expression
+static_assert(result[a] - 1.0 < 1e-6);
+```
+
 ## Installation
 
 You may use `cmake` to install the library on your system, for instance, with the following sequence of commands.

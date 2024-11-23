@@ -41,6 +41,7 @@ def main_file_for(snippet: str) -> str:
 #include <vector>
 #include <array>
 #include <xpress/xp.hpp>
+#include <xpress/solvers/newton.hpp>
 
 int main() {{
     using namespace xp;
