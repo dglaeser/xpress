@@ -104,8 +104,8 @@ case you receive an evaluator object, which you can store and subsequently invok
 ```cpp <!-- {{xpress-exprevaluator-snippet}} -->
 var a;
 var b;
-auto expr = value_of(a*log(b));
-std::println("expr = {}", expr.at(a = 2.0, b = 3.0));
+auto f = value_of(a*log(b));
+std::println("f = {}", f(a = 2.0, b = 3.0));
 ```
 
 Finally, as we have seen before, you can create a `bound_expression` from an expression and simply extract the value:
@@ -115,6 +115,54 @@ var a;
 var b;
 auto bound_expr = (a*b + b*b).with(a = 2.0, b = 3.0);
 std::println("expr = {}", bound_expr.value());
+```
+
+Note that the primary use of `bound_expression` is to print an expression to the terminal (or to create a `std::string`), as we have seen before.
+
+## Deriving expressions
+
+Using `derivative_of`, you receive a new expression that is the derivative of the provided one with respect to the provided variables.
+
+```cpp <!-- {{xpress-deriv-snippet}} -->
+var a;
+var b;
+auto de_da = derivative_of(a*log(b), wrt(a));
+std::println("de_da = {}", de_da.with(a = "a", b = "b"));
+```
+
+To direclty compute the value of the derivative, you may provide values for the symbols of the expression:
+
+```cpp <!-- {{xpress-deriveval-snippet}} -->
+var a;
+var b;
+auto de_da = derivative_of(a*log(b), wrt(a), at(a = 42.0, b = 1.0));
+std::println("de_da = {}", de_da);
+```
+
+As a side note, since `a` does not appear in the above derivative anymore, we would not have to provide a value for it.
+However, usually you don't know the expression of the derivative in advance, and thus, providing values for all symbols should be the default.
+
+To get the derivatives with respect to multiple variables at once, you may use the `derivatives_of` and access the derivatives individually on the
+resulting data structure:
+
+```cpp <!-- {{xpress-derivs-snippet}} -->
+var a;
+var b;
+auto derivs = derivatives_of(a*log(b), wrt(a, b));
+std::println("de_da = {}", derivs.wrt(a).with(a = "a", b = "b"));
+std::println("de_db = {}", derivs.wrt(b).with(a = "a", b = "b"));
+```
+
+Of course you can also directly compute the values of the derivatives.
+The returned object allows you to extract the derivatives with respect
+to an individual variable by accessing it with that variable.
+
+```cpp <!-- {{xpress-derivseval-snippet}} -->
+var a;
+var b;
+auto derivs = derivatives_of(a*log(b), wrt(a, b), at(a = 1.0, b = 2.0));
+std::println("de_da = {}", derivs[a]);
+std::println("de_db = {}", derivs[b]);
 ```
 
 ## Installation
