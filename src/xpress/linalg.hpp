@@ -355,4 +355,32 @@ struct subtraction_of<T1, T2> {
     }
 };
 
+template<xp::tensorial T>
+struct log_of<T> {
+    template<same_remove_cvref_t_as<T> _T>
+    constexpr auto operator()(_T&& t) const noexcept {
+        using scalar = scalar_type_t<T>;
+        using shape = linalg::traits::shape_of_t<T>;
+        linalg::tensor<scalar, shape> result{};
+        visit_indices_in(shape{}, [&] (const auto& idx) {
+            result[idx] = operators::log{}(xp::linalg::traits::access<T>::at(idx, t));
+        });
+        return result;
+    }
+};
+
+template<xp::tensorial T, typename E>
+struct power_of<T, E> {
+    template<same_remove_cvref_t_as<T> _T, same_remove_cvref_t_as<E> _E>
+    constexpr auto operator()(_T&& t, _E&& e) const noexcept {
+        using scalar = scalar_type_t<T>;
+        using shape = linalg::traits::shape_of_t<T>;
+        linalg::tensor<scalar, shape> result{};
+        visit_indices_in(shape{}, [&] (const auto& idx) {
+            result[idx] = operators::pow{}(xp::linalg::traits::access<T>::at(idx, t), e);
+        });
+        return result;
+    }
+};
+
 }  // namespace xp::operators::traits
