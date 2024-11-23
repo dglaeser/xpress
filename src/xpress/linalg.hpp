@@ -10,6 +10,7 @@
 #include <concepts>
 #include <type_traits>
 #include <algorithm>
+#include <tuple>
 
 #include "utils.hpp"
 #include "traits.hpp"
@@ -49,6 +50,28 @@ struct tensor {
     template<typename S, std::size_t i> requires(shape::dimensions == 1)
     constexpr decltype(auto) operator[](this S&& self, const index_constant<i>&) noexcept {
         return self[md_ic<i>];
+    }
+
+    template<typename S> requires(shape::dimensions == 1)
+    constexpr decltype(auto) operator[](this S&& self, const std::size_t idx) noexcept {
+        return self._values[idx];
+    }
+
+    template<typename S, std::integral... is> requires(shape::dimensions > 1 and sizeof...(is) == shape::dimensions)
+    constexpr decltype(auto) operator[](this S&& self, const is&... indices) noexcept {
+        const auto index_tuple = std::forward_as_tuple(indices...);
+        const auto flat_index = [&] <std::size_t i0, std::size_t s0, std::size_t... s> (
+            this auto&& self,
+            const index_constant<i0>&,
+            const md_shape<s0, s...>&,
+            std::size_t accumulated
+        ) {
+            if constexpr (sizeof...(s) > 0)
+                return self(ic<i0+1>, md_shape<s...>{}, accumulated + std::get<i0>(index_tuple)*md_shape<s...>::count);
+            else
+                return accumulated + std::get<i0>(index_tuple);
+        };
+        return self._values[flat_index(ic<0>, shape{}, 0)];
     }
 
     template<typename V> requires(is_scalar_v<V>)
