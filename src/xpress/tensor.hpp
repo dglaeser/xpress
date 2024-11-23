@@ -339,6 +339,12 @@ struct derivative_of<tensor<T, _, dims...>> {
         else
             return val<0>;
     }
+
+    // derivative wrt an entry of this tensor
+    template<std::size_t... i>
+    static constexpr decltype(auto) wrt(const type_list<tensor_var<tensor<T, _, dims...>, i...>>&) {
+        return derivative_of<tensor_var<tensor<T, _, dims...>, i...>>::wrt(type_list<tensor<T, _, dims...>>{});
+    }
 };
 
 template<typename tensor, std::size_t... i>
