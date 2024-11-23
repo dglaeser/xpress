@@ -57,6 +57,48 @@ int main() {
         expect(result == linalg::tensor{shape<2>, 5, 11});
     };
 
+    "tensor_size_t_access"_test = [] () {
+        constexpr linalg::tensor A{shape<2, 2>, 1, 2, 3, 4};
+        static_assert(A[0, 0] == 1);
+        static_assert(A[0, 1] == 2);
+        static_assert(A[1, 0] == 3);
+        static_assert(A[1, 1] == 4);
+        expect(eq(A[0, 0], 1));
+        expect(eq(A[0, 1], 2));
+        expect(eq(A[1, 0], 3));
+        expect(eq(A[1, 1], 4));
+    };
+
+    "tensor_size_t_access_row_vector"_test = [] () {
+        constexpr linalg::tensor A{shape<1, 3>, 1, 2, 3};
+        static_assert(A[0, 0] == 1);
+        static_assert(A[0, 1] == 2);
+        static_assert(A[0, 2] == 3);
+        expect(eq(A[0, 0], 1));
+        expect(eq(A[0, 1], 2));
+        expect(eq(A[0, 2], 3));
+    };
+
+    "tensor_size_t_access_col_vector"_test = [] () {
+        constexpr linalg::tensor A{shape<3, 1>, 1, 2, 3};
+        static_assert(A[0, 0] == 1);
+        static_assert(A[1, 0] == 2);
+        static_assert(A[2, 0] == 3);
+        expect(eq(A[0, 0], 1));
+        expect(eq(A[1, 0], 2));
+        expect(eq(A[2, 0], 3));
+    };
+
+    "vector_size_t_access_col_vector"_test = [] () {
+        constexpr linalg::tensor v{shape<3>, 1, 2, 3};
+        static_assert(v[0] == 1);
+        static_assert(v[1] == 2);
+        static_assert(v[2] == 3);
+        expect(eq(v[0], 1));
+        expect(eq(v[1], 2));
+        expect(eq(v[2], 3));
+    };
+
     "tensor_export"_test = [] () {
         linalg::tensor A{shape<1, 3>, 1, 2, 3};
         std::array<std::array<int, 3>, 1> copied;
