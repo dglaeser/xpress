@@ -30,7 +30,7 @@ template<typename T = double>
 struct solver_options {
     T threshold;
     std::size_t max_iterations;
-    bool verbosity_level = 0;
+    unsigned int verbosity_level = 0;
 };
 
 //! Small wrapper around an std::ostream to activate/deactivate progress output
