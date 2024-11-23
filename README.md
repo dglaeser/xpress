@@ -68,6 +68,18 @@ cmake --build build
 cd build && ./my_app
 ```
 
+Alternatively, you can install the library on your system, for instance, with the following sequence of commands.
+
+```bash <!-- {{xpress-install-instructions}} -->
+git clone --recursive https://github.com/dglaeser/xpress.git
+cd xpress
+cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/xpress-install -DXPRESS_BUILD_TESTS=OFF -B build
+cmake --build build
+cmake --install build
+```
+
+Afterwards, you can use `find_package` in your project to let `cmake` find the library, and link against the `xpress::xpress` target.
+
 ## Evaluating expressions
 
 As mentioned, for evaluations we need to bind values to the variables of the expression.
@@ -239,17 +251,3 @@ constexpr auto result = solver.find_root_of(expression, starting_from(a = 3.0))
 // type is a container with the solutions to all variables of the expression
 static_assert(result[a] - 1.0 < 1e-6);
 ```
-
-## Installation
-
-You may use `cmake` to install the library on your system, for instance, with the following sequence of commands.
-
-```bash <!-- {{xpress-install-instructions}} -->
-git clone --recursive https://github.com/dglaeser/xpress.git
-cd xpress
-cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/xpress-install -DXPRESS_BUILD_TESTS=OFF -B build
-cmake --build build
-cmake --install build
-```
-
-Afterwards, you can use `find_package` to let `cmake` find the library, and link against the `xpress::xpress` target as described above.
