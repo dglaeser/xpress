@@ -391,3 +391,20 @@ auto dsp_dT = derivative_of(scalar_product, wrt(T), at(T = linalg::tensor{shape<
 // should print dsp_dt = [2, 4, 6, 8]
 std::println("dsp_dt = [{}, {}, {}, {}]", dsp_dT[0, 0], dsp_dT[0, 1], dsp_dT[1, 0], dsp_dT[1, 1]);
 ```
+
+
+## Custom vector/tensor types
+
+In the examples so far, we have used the `xp::linalg::tensor` class to represent tensorial/vectorial values. If you are working
+with custom data structures, you can make them compatible with the library by implementing a few traits classes.
+See the `tensorial` concept in [tensor.hpp](src/xpress/tensor.hpp) for details. However, if your tensor data structures
+are something like nested arrays, that is, expose an `operator[]` to obtain a "sub-tensor", then your data structures are likely
+to be compatible out-of-the-box. Tensorial results from evaluating expressions are always represented by `xp::linalg::tensor`s,
+however, if your type has been made compatible via the above-mentioned traits, you can easily export results back to your own data structures:
+
+```cpp <!-- {{xpress-tensorexport-snippet}} -->
+using my_tensor_type = std::array<std::array<int, 3>, 2>;
+linalg::tensor t{shape<2, 3>, 1, 2, 3, 4, 5, 6};
+my_tensor_type my_tensor;
+t.export_to(my_tensor);
+```
