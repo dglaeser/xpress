@@ -196,6 +196,17 @@ int main() {
         expect(dr_dT == v_value);
     };
 
+    "tensor_mat_mul_derivative_wrt_to_tensor_entry"_test = [] () {
+        const tensor T{shape<2, 2>};
+        const vector<2> v{};
+        const auto r = mat_mul(T, v);
+        constexpr linalg::tensor T_value{shape<2, 2>, 1, 2, 3, 4};
+        constexpr linalg::tensor v_value{shape<2>, 5, 6};
+        const auto dr_dT00 = derivative_of(r, wrt(T[md_ic<0, 0>]), at(T = T_value, v = v_value));
+        expect(eq(dr_dT00[0], 5));
+        expect(eq(dr_dT00[1], 0));
+    };
+
     "tensor_expression_mat_mul_derivative"_test = [] () {
         var a;
         var b;
