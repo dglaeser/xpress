@@ -37,6 +37,7 @@ cd build && ./{app_name}
 def main_file_for(snippet: str) -> str:
     return f"""
 #include <print>
+#include <format>
 #include <iostream>
 #include <vector>
 #include <array>
