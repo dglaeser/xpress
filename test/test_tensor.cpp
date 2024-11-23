@@ -136,6 +136,13 @@ int main() {
         expect(value_of(pow(t, val<2>), at(t = m)) == squared_m);
     };
 
+    "tensor_pow_operator_derivative"_test = [] () {
+        linalg::tensor m{shape<2, 2>, 1.0, 2.0, 3.0, 4.0};
+        const tensor t{shape<2, 2>};
+        const auto dlogT_dT = derivative_of(pow(t, val<2>), wrt(t), at(t = m));
+        expect(dlogT_dT == m*2.0);
+    };
+
     "tensor_mat_mul"_test = [] () {
         tensor T{shape<2, 2>};
         vector<2> v{};
