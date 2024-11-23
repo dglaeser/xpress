@@ -30,9 +30,8 @@ int main() {
 
     // For an evaluation of `expr` we need to provide values for the variables.
     // `expr.with` is one way to do so, which yields a `bound_expression`
-    // that can be inserted to an ostream or passed to std::print.
-    // Since we want to print the expression, we simply bind strings
-    // (actually, here `const char*`) to the variables.
+    // Since we want to print the expression, we simply bind names to the
+    // variables here.
     std::print("{}", expr.with(a = "a", b = "b"));  // prints "a + b"
 
     return 0;
@@ -67,6 +66,55 @@ to pass the `cmake` flags `-DCMAKE_C_COMPILER` and `-DCMAKE_CXX_COMPILER` to hav
 cmake -B build
 cmake --build build
 cd build && ./my_app
+```
+
+## Evaluating expressions
+
+As mentioned, for evaluations we need to bind values to the variables of the expression.
+All symbols and expression types allow to bind values to them via `operator=`,
+and we may use the `at` function to combine the results into a single data structure (you may also use the `with` function - which is the same as `at` - depending on your preferences).
+Finally, `value_of` evaluates the expression at the provided values.
+
+```cpp <!-- {{xpress-eval-snippet}} -->
+var a;
+var b;
+auto expr = a*a + b;
+std::println("expr = {}", value_of(expr, at(a = 2.0, b = 3.0)));
+```
+
+You can also bind values to sub-expressions, which may speed up the computations:
+
+```cpp <!-- {{xpress-subexpr-snippet}} -->
+var a;
+var b;
+auto arg = a*a + b;
+auto expr = log(arg) + arg*arg;
+auto arg_value = value_of(arg, at(a = 2.0, b = 3.0));
+std::println("expr = {}", value_of(expr, with(arg = arg_value)));
+```
+
+Since each `var` and each expressions are unique types, compilation will fail
+if you don't provide all the values required for an evaluation. By providing
+a value for `arg`, however, provision of values for the leaf symbols `a` and `b`
+becomes obsolete.
+
+You can also use `value_of` without providing any values for the symbols, in which
+case you receive an evaluator object, which you can store and subsequently invoke to get the values:
+
+```cpp <!-- {{xpress-exprevaluator-snippet}} -->
+var a;
+var b;
+auto expr = value_of(a*log(b));
+std::println("expr = {}", expr.at(a = 2.0, b = 3.0));
+```
+
+Finally, as we have seen before, you can create a `bound_expression` from an expression and simply extract the value:
+
+```cpp <!-- {{xpress-boundexpr-snippet}} -->
+var a;
+var b;
+auto bound_expr = (a*b + b*b).with(a = 2.0, b = 3.0);
+std::println("expr = {}", bound_expr.value());
 ```
 
 ## Installation

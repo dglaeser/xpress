@@ -163,6 +163,7 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--c-compiler", required=True)
     parser.add_argument("-x", "--cxx-compiler", required=True)
     parser.add_argument("-r", "--readme", required=True, help="Path to the README.md file")
+    parser.add_argument("-n", "--name", required=False, help="Specify a concrete example to run individually")
     args = vars(parser.parse_args())
 
     content = open(args["readme"]).read()
@@ -172,7 +173,10 @@ if __name__ == "__main__":
             continue
 
         name = extract_example_name_from(line)
-        if name is None or name in parsed_examples:
+        if args["name"] is not None and name != args["name"]:
+            continue
+
+        if name in parsed_examples:
             continue
 
         print("\n"*3)
