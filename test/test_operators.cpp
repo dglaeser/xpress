@@ -36,6 +36,18 @@ int main() {
         static constexpr var b;
         constexpr auto added = a + b;
         static_assert(added.with(a = 1, b = 2).value() == 3);
+        expect(eq(added.with(a = 1, b = 2).value(), 3));
+    };
+
+    "add_operator_value_from_expr_evaluator"_test = [] () {
+        static constexpr let a;
+        static constexpr var b;
+        constexpr auto f = value_of(a + b);
+        constexpr auto bindings = at(a = 1, b = 2);
+        static_assert(f(a = 1, b = 2) == 3);
+        static_assert(f(bindings) == 3);
+        expect(eq(f(a = 1, b = 2), 3));
+        expect(eq(f(bindings), 3));
     };
 
     "add_operator_derivative"_test = [] () {

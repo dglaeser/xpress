@@ -96,6 +96,19 @@ struct expression_evaluator {
 
     //! Evaluate the expression at the given (bound) values
     template<binder... V>
+    constexpr decltype(auto) operator()(V&&... values) const noexcept {
+        return at(bindings{std::forward<V>(values)...});
+    }
+
+    //! Evaluate the expression at the given value bindings
+    template<typename... V>
+        requires(evaluatable_with<E, V...>)
+    constexpr decltype(auto) operator()(const bindings<V...>& values) const noexcept {
+        return traits::value_of<E>::from(values);
+    }
+
+    //! Evaluate the expression at the given (bound) values
+    template<binder... V>
     constexpr decltype(auto) at(V&&... values) const noexcept {
         return at(bindings{std::forward<V>(values)...});
     }
