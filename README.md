@@ -165,6 +165,37 @@ std::println("de_da = {}", derivs[a]);
 std::println("de_db = {}", derivs[b]);
 ```
 
+## Computing gradients
+
+So far, we have provided the variables with respect to which we want to derive an expression.
+You can also simply derive with respect to all variables in an expression, i.e. compute its gradient.
+The `gradient_of` function essentially forwards to `derivatives_of`, so you again
+have the possibility to get an object containing the derivative expressions,
+or, compute the derivative values directly (see above). Here's an example for the latter case:
+
+```cpp <!-- {{xpress-grad-snippet}} -->
+var a;
+var b;
+auto derivs = gradient_of(a*log(b), at(a = 1.0, b = 2.0));
+std::println("de_da = {}", derivs[a]);
+std::println("de_db = {}", derivs[b]);
+```
+
+You may want to distinguish variables and parameters of your expression. To this end,
+you may use `let` besides `var`, which behaves the same with the exception that it is not
+interpreted as an independent variable, and thus, `gradient_of` will not differentiate with respect to `let`s:
+
+```cpp <!-- {{xpress-grad_let-snippet}} -->
+var a;
+var b;
+let c;
+auto derivs = gradient_of(a*log(b)*c);
+std::println("de_da = {}", derivs.wrt(a).with(a = "a", b = "b", c = "c"));
+std::println("de_db = {}", derivs.wrt(b).with(a = "a", b = "b", c = "c"));
+// this would not compile:
+// derivs.wrt(c);
+```
+
 ## Installation
 
 You may use `cmake` to install the library on your system, for instance, with the following sequence of commands.
