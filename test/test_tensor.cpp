@@ -122,6 +122,20 @@ int main() {
         expect(eq(value_of(t1*t2, at(t1 = m, t2 = m)), 1+4+9+16));
     };
 
+    "tensor_log_operator"_test = [] () {
+        linalg::tensor m{shape<2, 2>, 1.0, 2.0, 3.0, 4.0};
+        linalg::tensor log_m{shape<2, 2>, std::log(1.0), std::log(2.0), std::log(3.0), std::log(4.0)};
+        const tensor t{shape<2, 2>};
+        expect(value_of(log(t), at(t = m)) == log_m);
+    };
+
+    "tensor_pow_operator"_test = [] () {
+        linalg::tensor m{shape<2, 2>, 1.0, 2.0, 3.0, 4.0};
+        linalg::tensor squared_m{shape<2, 2>, 1.0, 4.0, 9.0, 16.0};
+        const tensor t{shape<2, 2>};
+        expect(value_of(pow(t, val<2>), at(t = m)) == squared_m);
+    };
+
     "tensor_mat_mul"_test = [] () {
         tensor T{shape<2, 2>};
         vector<2> v{};
