@@ -79,6 +79,15 @@ struct derivatives : private indexed<typename D::variable...> {
         return bindings{_binder_for(D{}, values)...};
     }
 
+    //! Visit all derivative expressions
+    template<typename V>
+    friend constexpr void visit(const derivatives&, V&& visitor) {
+        static_assert(std::conjunction_v<
+            std::is_invocable<V, typename D::variable, typename D::expression>...
+        >, "visitor must have the signature visitor(const auto& variable, const auto& expression)");
+        (..., visitor(typename D::variable{}, D{}.get()));
+    }
+
  private:
     template<typename E, typename V, typename... Vs>
         requires(evaluatable_with<E, Vs...>)
