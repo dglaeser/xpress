@@ -91,7 +91,7 @@ struct newton {
                            const G& gradient,
                            const type_list<V1, V2>&) const noexcept {
         static_assert(
-            linalg::traits::shape_of_t<R>{}.first() == 2,
+            shape_of_t<R>{}.first() == 2,
             "Newton update currently only implemented for scalar equations or 2d equation systems."
         );
         const linalg::tensor jacobian{shape<2, 2>,

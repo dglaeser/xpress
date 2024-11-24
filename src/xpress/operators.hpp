@@ -16,6 +16,11 @@
 #include "operators/pow.hpp"
 #include "operators/log.hpp"
 
+// operators on tensors
+#include "operators/det.hpp"
+#include "operators/mat_mul.hpp"
+
+
 namespace xp {
 
 //! Test two expressions for equality

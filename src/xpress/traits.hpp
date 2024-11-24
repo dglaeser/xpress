@@ -211,12 +211,6 @@ struct is_expression : std::bool_constant<
 template<typename T>
 inline constexpr bool is_expression_v = is_expression<T>::value;
 
-//! Trait to get the shape of a tensor
-template<typename T>
-struct shape_of;
-template<typename T>
-using shape_of_t = typename shape_of<T>::type;
-
 //! \} group Expressions
 
 }  // namespace xp::traits

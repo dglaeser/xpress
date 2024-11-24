@@ -9,14 +9,9 @@ int main() {
     using namespace xp::testing;
     using namespace xp;
 
-    "size_of_trait"_test = [] () {
-        static_assert(linalg::traits::size_of_v<std::array<int, 2>> == 2);
-        static_assert(linalg::traits::size_of_v<std::array<std::array<int, 3>, 2>> == 2);
-    };
-
     "shape_of_trait"_test = [] () {
-        static_assert(linalg::traits::shape_of_t<std::array<int, 2>>{} == shape<2>);
-        static_assert(linalg::traits::shape_of_t<std::array<std::array<int, 3>, 2>>{} == shape<2, 3>);
+        static_assert(shape_of_t<std::array<int, 2>>{} == shape<2>);
+        static_assert(shape_of_t<std::array<std::array<int, 3>, 2>>{} == shape<2, 3>);
     };
 
     "tensor_from_array"_test = [] () {
@@ -53,7 +48,7 @@ int main() {
         constexpr linalg::tensor T{shape<2, 2>, 1, 2, 3, 4};
         constexpr linalg::tensor v{shape<2>, 1, 2};
         const auto result = linalg::mat_mul(T, v);
-        static_assert(linalg::traits::shape_of_t<std::remove_cvref_t<decltype(result)>>{} == shape<2>);
+        static_assert(shape_of_t<std::remove_cvref_t<decltype(result)>>{} == shape<2>);
         expect(result == linalg::tensor{shape<2>, 5, 11});
     };
 

@@ -11,6 +11,7 @@
 
 #include "../values.hpp"
 #include "../expressions.hpp"
+#include "../linalg.hpp"
 #include "common.hpp"
 
 
@@ -21,7 +22,28 @@ namespace xp {
 
 namespace operators {
 
-namespace traits { template<typename A, typename B> struct subtraction_of; }
+namespace traits {
+
+template<typename A, typename B>
+struct subtraction_of;
+
+//! (Default) specialization for tensors
+template<tensorial T1, tensorial T2>
+    requires(shape_of_t<T1>{} == shape_of_t<T2>{})
+struct subtraction_of<T1, T2> {
+    template<same_remove_cvref_t_as<T1> _T1, same_remove_cvref_t_as<T2> _T2>
+    constexpr auto operator()(_T1&& A, _T2&& B) const noexcept {
+        using scalar = std::common_type_t<scalar_type_t<T1>, scalar_type_t<T2>>;
+        using shape = shape_of_t<T1>;
+        linalg::tensor<scalar, shape> result{};
+        visit_indices_in(shape{}, [&] (const auto& idx) {
+            result[idx] = access<T1>::at(idx, A) - access<T2>::at(idx, B);
+        });
+        return result;
+    }
+};
+
+}  // namespace traits
 
 struct subtract : operator_base<traits::subtraction_of, std::minus<void>> {};
 

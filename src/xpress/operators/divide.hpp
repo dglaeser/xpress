@@ -11,6 +11,7 @@
 
 #include "../values.hpp"
 #include "../expressions.hpp"
+#include "../linalg.hpp"
 #include "common.hpp"
 
 
@@ -21,7 +22,26 @@ namespace xp {
 
 namespace operators {
 
-namespace traits { template<typename A, typename B> struct division_of; }
+namespace traits {
+
+template<typename A, typename B>
+struct division_of;
+
+//! (Default) specialization for tensors with scalars
+template<tensorial T, typename S> requires(is_scalar_v<S>)
+struct division_of<T, S> {
+    template<same_remove_cvref_t_as<T> _T, same_remove_cvref_t_as<S> _S>
+    constexpr T operator()(_T&& tensor, _S&& scalar) const noexcept {
+        T result;
+        visit_indices_in(shape_of_t<T>{}, [&] (const auto& idx) {
+            scalar_type_t<T>& value_at_idx = access<T>::at(idx, result);
+            value_at_idx = access<T>::at(idx, tensor)/scalar;
+        });
+        return result;
+    }
+};
+
+}  // namespace traits
 
 struct divide : operator_base<traits::division_of, std::divides<void>> {};
 
