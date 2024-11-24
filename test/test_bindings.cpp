@@ -68,5 +68,23 @@ int main() {
         expect(eq(binders[s2], 44));
     };
 
+    "bindings_concatenation"_test = [] () {
+        int v1 = 42;
+        int v2 = 44;
+        symbol<int> s1{};
+        symbol<char> s2{};
+        auto binders = xp::bindings{s1 = v1}.concatenated_with(xp::bindings{s2 = v2});
+        static_assert(std::is_same_v<decltype(binders), xp::bindings<
+            xp::value_binder<symbol<int>, int&>,
+            xp::value_binder<symbol<char>, int&>
+        >>);
+        expect(eq(binders[s1], 42));
+        expect(eq(binders[s2], 44));
+
+        auto binders2 = xp::bindings{s1 = v1} & xp::bindings{s2 = v2};
+        expect(eq(binders2[s1], 42));
+        expect(eq(binders2[s2], 44));
+    };
+
     return 0;
 }
