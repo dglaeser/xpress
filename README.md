@@ -433,3 +433,8 @@ linalg::tensor{shape<2, 3>, 1, 2, 3, 4, 5, 6}.export_to(my_tensor);
 
 Contributions are highly welcome! For bug reports, please file an [issue](https://github.com/dglaeser/xpress/issues).
 If you want to contribute with features, improvements or bug fixes please fork this project and open a merge request into the main branch of this repository.
+
+
+## Acknowledgements
+
+An initial implementation of this library has been largely refactored after inspiration from Vincent Reverdy's [talk at CppCon2023](https://www.youtube.com/watch?v=lPfA4SFojao). Moreover, some of the API design is inspired by the [autodiff library](https://github.com/autodiff/autodiff).
