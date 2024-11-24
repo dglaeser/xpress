@@ -55,7 +55,7 @@ concept binder = requires(const T& t) {
 
 //! Data structure to store values bound to symbols.
 template<binder... B>
-    requires(are_unique_v<B...>)
+    requires(are_unique_v<typename B::symbol_type...>)
 struct bindings : private indexed_tuple<B...> {
  private:
     using base = indexed_tuple<B...>;
@@ -91,6 +91,22 @@ struct bindings : private indexed_tuple<B...> {
     template<typename S, typename T> requires(has_bindings_for<T>)
     constexpr decltype(auto) operator[](this S&& self, const T&) noexcept {
         return self.get(self.template index_of<binder_type<T>>()).get();
+    }
+
+    //! Concatenate these bindings with the given ones
+    template<binder... Bs>
+        requires(are_unique_v<typename Bs::symbol_type..., typename B::symbol_type...>)
+    constexpr auto concatenated_with(bindings<Bs...>&& other) && noexcept {
+        return xp::bindings{
+            this->get(this->template index_of<B>())...,
+            value_binder{typename Bs::symbol_type{}, std::move(other)[typename Bs::symbol_type{}]}...
+        };
+    }
+
+    //! Concatenation operator
+    template<binder... Bs>
+    friend constexpr auto operator&(bindings&& left, bindings<Bs...>&& right) noexcept {
+        return std::move(left).concatenated_with(std::move(right));
     }
 };
 
