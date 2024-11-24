@@ -10,6 +10,14 @@ int main() {
     using namespace xp;
     using namespace xp::testing;
 
+    "symbol_eq_operator"_test = [] () {
+        constexpr var a;
+        constexpr var b;
+        static_assert(a != b);
+        static_assert(a == a);
+        static_assert(b == b);
+    };
+
     "value_operators"_test = [] {
         static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<42> + val<43>)>, value<85>>);
         static_assert(std::is_same_v<std::remove_cvref_t<decltype(val<42> - val<41>)>, value<1>>);
