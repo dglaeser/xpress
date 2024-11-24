@@ -211,6 +211,22 @@ std::println("de_db = {}", derivs[b].with(a = "a", b = "b", c = "c"));
 // derivs[c];
 ```
 
+The data structures storing derivative expressions or values also allow you to iterate over all contained derivatives generically:
+
+```cpp <!-- {{xpress-gradvisit-snippet}} -->
+var a;
+var b;
+auto deriv_exprs = gradient_of(a*log(b));
+visit(deriv_exprs, [&] (const auto& symbol, const auto& deriv_expr) {
+    std::println("de_d{} = {}", (symbol == a ? "a" : "b"), deriv_expr.with(a = "a", b = "b"));
+});
+auto deriv_values = gradient_of(a*log(b), at(a = 1.0, b = 2.0));
+visit(deriv_values, [&] (const auto& symbol, const auto& value) {
+    std::println("de_d{} = {}", (symbol == a ? "a" : "b"), value);
+});
+```
+
+
 ## Constraining symbols on value types
 
 By default, any type can be bound to a variable. If you want to constrain this, you may provide
