@@ -195,10 +195,10 @@ int main() {
         static constexpr auto expression = val<42>*(a + val<2>*b) + c;
         static constexpr auto derivs = derivatives_of(expression, wrt(a, b, c));
 
-        // evaluation via value_of interface
-        static_assert(value_of(derivs.wrt(a), at(a = 0, b = 0, c = 0)) == 42);
-        static_assert(value_of(derivs.wrt(b), at(a = 0, b = 0, c = 0)) == 84);
-        static_assert(value_of(derivs.wrt(c), at(a = 0, b = 0, c = 0)) == 1);
+        // evaluation via value_of interface (test both [] and wrt())
+        static_assert(value_of(derivs[a], at(a = 0, b = 0, c = 0)) == 42);
+        static_assert(value_of(derivs[b], at(a = 0, b = 0, c = 0)) == 84);
+        static_assert(value_of(derivs[c], at(a = 0, b = 0, c = 0)) == 1);
         expect(eq(value_of(derivs.wrt(a), at(a = 0, b = 0, c = 0)), 42));
         expect(eq(value_of(derivs.wrt(b), at(a = 0, b = 0, c = 0)), 84));
         expect(eq(value_of(derivs.wrt(c), at(a = 0, b = 0, c = 0)), 1));
