@@ -59,22 +59,10 @@ using vector = tensor<T, _, dim>;
 
 namespace traits {
 
-template<typename T>
-struct shape_of;
-
 template<typename T, auto _, std::size_t... d>
 struct shape_of<tensor<T, _, d...>> : std::remove_cvref<decltype(tensor<T, _, d...>::shape)> {};
 
-template<typename T>
-using shape_of_t = typename shape_of<T>::type;
-
 }  // namespace traits
-
-
-template<typename T>
-concept tensorial_expression = expression<T> and is_complete_v<traits::shape_of<T>> and requires(const T& t) {
-    { t[ *(md_index_iterator{traits::shape_of_t<T>{}}) ] } -> expression;
-};
 
 
 namespace operators {
