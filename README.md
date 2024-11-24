@@ -428,3 +428,8 @@ using my_tensor_type = std::array<std::array<int, 3>, 2>;
 my_tensor_type my_tensor;
 linalg::tensor{shape<2, 3>, 1, 2, 3, 4, 5, 6}.export_to(my_tensor);
 ```
+
+## Contribution guidelines
+
+Contributions are highly welcome! For bug reports, please file an [issue](https://github.com/dglaeser/xpress/issues).
+If you want to contribute with features, improvements or bug fixes please fork this project and open a merge request into the main branch of this repository.
