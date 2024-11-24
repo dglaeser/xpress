@@ -91,8 +91,8 @@ namespace detail {
 
 //! Exposes an interface for the evaluation of an expression
 template<expression E>
-struct expression_evaluator {
-    constexpr expression_evaluator(const E&) noexcept {}
+struct evaluator {
+    constexpr evaluator(const E&) noexcept {}
 
     //! Evaluate the expression at the given (bound) values
     template<binder... V>
@@ -123,8 +123,8 @@ struct expression_evaluator {
 
 //! Exposes an interface for the differentiation of an expression
 template<expression E>
-struct expression_differentiator {
-    constexpr expression_differentiator(const E&) noexcept {}
+struct differentiator {
+    constexpr differentiator(const E&) noexcept {}
 
     //! Return the expression of the derivative w.r.t. to the given variable
     template<differentiable_wrt<E> V>
@@ -139,29 +139,17 @@ struct expression_differentiator {
     }
 };
 
-//! Return an evaluator for the given expression
-template<expression E>
-inline constexpr auto value_of(const E& expr) noexcept {
-    return expression_evaluator{expr};
-}
-
 //! Evaluate the given expression from the given value bindings
 template<expression E, typename... V>
     requires(evaluatable_with<E, V...>)
 inline constexpr decltype(auto) value_of(const E& expr, const bindings<V...>& values) noexcept {
-    return value_of(expr).at(values);
-}
-
-//! Return a differentiator for the given expression
-template<expression E>
-inline constexpr auto derivatives_of(const E& expr) noexcept {
-    return expression_differentiator{expr};
+    return evaluator{expr}.at(values);
 }
 
 //! Return the expression of the derivative of the given expression w.r.t the given variable
 template<expression E, typename V>
 inline constexpr auto derivative_of(const E& expr, const type_list<V>&) noexcept {
-    return derivatives_of(expr).wrt(V{});
+    return differentiator{expr}.wrt(V{});
 }
 
 //! Return the derivative of the given expression w.r.t the given variable, evaluated at the given values
@@ -173,7 +161,7 @@ inline constexpr decltype(auto) derivative_of(const E& expr, const type_list<V>&
 //! Return the derivatives of the given expression w.r.t the given variables
 template<expression E, typename... V>
 inline constexpr auto derivatives_of(const E& expr, const type_list<V...>&) noexcept {
-    return derivatives_of(expr).wrt_n(V{}...);
+    return differentiator{expr}.wrt_n(V{}...);
 }
 
 //! Return the derivatives of the given expression w.r.t the given variables, evaluated at the given values

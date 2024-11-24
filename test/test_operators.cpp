@@ -27,8 +27,8 @@ int main() {
         expect(eq(value_of(added, at(a = 1, b = 2)), 3));
 
         // alternative syntax via evaluator
-        static_assert(value_of(added).at(a = 1, b = 2) == 3);
-        expect(eq(value_of(added).at(a = 1, b = 2), 3));
+        static_assert(evaluator{added}.at(a = 1, b = 2) == 3);
+        expect(eq(evaluator{added}.at(a = 1, b = 2), 3));
     };
 
     "add_operator_value_from_bound_expression"_test = [] () {
@@ -42,7 +42,7 @@ int main() {
     "add_operator_value_from_expr_evaluator"_test = [] () {
         static constexpr let a;
         static constexpr var b;
-        constexpr auto f = value_of(a + b);
+        constexpr evaluator f = a + b;
         constexpr auto bindings = at(a = 1, b = 2);
         static_assert(f(a = 1, b = 2) == 3);
         static_assert(f(bindings) == 3);
