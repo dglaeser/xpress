@@ -1,13 +1,13 @@
-`xpress` is a header-only C++ template library that let's you write strongly-typed mathematical expressions,
-and, for instance, derive them with respect to one or more variables at compile-time. To use the library,
-simply add this repository as git submodule to yours, or, if your project uses `cmake`, you may use `FetchContent`
-to pull it upon configuration. Alernatively, you can install the library locally on your system. See below for examples
-on the latter two approaches.
+`xpress` is a header-only C++ template library that let's you write strongly-typed mathematical expressions and,
+for instance, derive them with respect to one or more variables at compile-time. To use the library, you may add
+this repository as git submodule to yours, or, if your project uses `cmake`, you may use `FetchContent` to pull
+it upon configuration. Alernatively, you can install the library locally on your system. See the documentation below
+for examples on the latter two approaches.
 
 ## Prerequisites
 
 - `cmake` (> 3.18)
-- Compiler with support for `c++-23`
+- Compiler with support for `C++-23`
 
 ## Quick start
 
@@ -27,11 +27,13 @@ int main() {
 
     // the actual expression
     auto expr = a + b;
+
+    // evaluating the expression for specific values bound to the variables
     auto value = value_of(expr, at(a = 1, b = 2));
     std::println("v = {}", value);
 
     // invoking `with` on an expression, we can also bind values to the
-    // symbols and create a printable version of our expression
+    // symbols and create a printable (or streamable) `bound_expression`
     std::println("{}", expr.with(a = "a", b = "b")); // prints "a + b"
     std::println("{}", expr.with(a = 1, b = 2));     // prints "1 + 2"
 
@@ -39,8 +41,8 @@ int main() {
 }
 ```
 
-The following is an exemplary `CMakeLists.txt` file that brings in `xpress` automatically at configuration,
-and which you can use to generate the build files for compiling the above example:
+The following is an exemplary `CMakeLists.txt` file that makes `xpress` automatically available upon configuration
+and defines a single executable linked against the library.
 
 ```cmake <!-- {{xpress-minimal-cmakelists}} -->
 # CMakeLists.txt
@@ -61,8 +63,7 @@ target_link_libraries(my_app PRIVATE xpress::xpress)
 ```
 
 With the two files above present in the same directory, you can compile and run this example with the following
-sequence of commands (this assumes that your default compilers are recent enough; otherwise you have to pass the
-`cmake` flags `-DCMAKE_C_COMPILER` and `-DCMAKE_CXX_COMPILER` to have `cmake` use suitable compilers):
+sequence of commands:
 
 ```bash <!-- {{xpress-minimal-bash}} -->
 cmake -B build
@@ -70,6 +71,8 @@ cmake --build build
 cd build && ./my_app
 ```
 
+Note that this assumes that your default compilers are recent enough. If not, you have to pass the
+`cmake` flags `-DCMAKE_C_COMPILER` and `-DCMAKE_CXX_COMPILER` to have `cmake` use suitable compilers.
 An alternative way of using the library is to install it on your system, for instance, with the following sequence
 of commands:
 
@@ -97,7 +100,8 @@ auto expr = a*a + b;
 std::println("expr = {}", value_of(expr, at(a = 2.0, b = 3.0)));
 ```
 
-You can also bind values to (sub-)expressions, which may speed up the computations:
+You can also bind values to (sub-)expressions, which can speed up the computations if a sub-expression occurs multiple
+times:
 
 ```cpp <!-- {{xpress-subexpr-snippet}} -->
 var a;
@@ -108,8 +112,8 @@ auto arg_value = value_of(arg, at(a = 2.0, b = 3.0));
 std::println("expr = {}", value_of(expr, with(arg = arg_value)));
 ```
 
-Note that we have used `with` here, which is the same as `at`, but the different names allow for distinguishing binding
-values to leaf symbols or (sub-)expressions (you can also concatenate multiple invocations, e.g. `at(...) & with(...)`).
+Note that we have used `with` here, which is the same as `at`, but the different names allow you to distinguish binding
+values to leaf symbols or (sub-)expressions (you can also concatenate multiple invocations, e.g. `auto bindings = at(...) & with(...)`).
 Note also that since each `var` and each expression are unique types, compilation will fail if you don't provide all the
 values required for an evaluation. By providing a value for `arg`, provision of values for the leaf symbols `a` and `b`
 becomes obsolete in this example.
@@ -127,7 +131,7 @@ std::println("f(a=2, b=3) = {}", f(a = 2.0, b = 3.0));
 
 To enable an operator (e.g. `*`, or `log`) for expressions, a small set of traits has to be implemented (depending on the
 features you want to have available for it). All currently available operators can be found in the directory
-[src/xpress/operators] (src/xpress/operators). The implementations can also be used as a blueprint to add new operators.
+[src/xpress/operators](src/xpress/operators). These implementations can serve as a blueprint for adding new operators.
 If you find yourself implementing a generally useful operator, consider contributing it back to this project
 (see [contribution guidelines](#contribution-guidelines)).
 
@@ -155,8 +159,8 @@ As a side note, since `a` does not appear in the above derivative anymore, we wo
 However, usually you don't know the expression of the derivative in advance, and thus, providing values for all symbols should
 be the default.
 
-To get the derivatives with respect to multiple variables at once, you may use the `derivatives_of` and access the derivative
-expressions individually on the resulting data structure:
+To get the derivatives with respect to multiple variables at once, you may use the `derivatives_of` function and access the
+derivative expressions individually on the resulting data structure:
 
 ```cpp <!-- {{xpress-derivs-snippet}} -->
 var a;
@@ -166,7 +170,7 @@ std::println("de_da = {}", deriv_expressions[a].with(a = "a", b = "b"));
 std::println("de_db = {}", deriv_expressions[b].with(a = "a", b = "b"));
 ```
 
-Of course you can also directly compute the values of all derivatives. The returned object also allows you to extract the
+Again, you can also directly compute the values of all derivatives. The returned object also allows you to extract the
 derivatives with respect to an individual variable by indexing into it with that variable.
 
 ```cpp <!-- {{xpress-derivseval-snippet}} -->
@@ -180,9 +184,9 @@ std::println("de_db = {}", deriv_values[b]);
 ## Computing gradients
 
 So far, we have provided the variables with respect to which we want to derive an expression.
-You can also simply derive with respect to all variables in an expression, i.e. compute its gradient.
+You can also simply derive an expression with respect to all its variables, i.e. compute its gradient.
 The `gradient_of` function is available in the same two variants as the `derivatives_of` function (see above),
-with the only difference that you must omit passing the variables with respect to which to differentiate:
+with the only difference that you don't pass in the variables with respect to which to differentiate:
 
 ```cpp <!-- {{xpress-grad-snippet}} -->
 var a;
@@ -369,9 +373,8 @@ std::println("dT11_da = {}", dT_da[1, 1]);
 
 ## Vectors and tensors
 
-Besides tensorial expressions, you can also define tensors or vectors, which are leaf symbols of your
-expression (which again contain sub-symbols). For instance, let's define a tensor and a vector symbol and
-compute the matrix-vector product:
+Besides tensorial expressions, you can also define tensors or vectors, which act as leaf symbols of expressions
+(which again contain sub-symbols). For instance, let's define a tensor and a vector and compute the matrix-vector product:
 
 ```cpp <!-- {{xpress-vecandtens-snippet}} -->
 tensor T{shape<2, 2>};
@@ -409,15 +412,15 @@ is again a tensor containing the derivatives of the expression with respect to t
 tensor T{shape<2, 2>};
 auto scalar_product = T*T;
 auto dsp_dT = derivative_of(scalar_product, wrt(T), at(T = linalg::tensor{shape<2, 2>, 1.0, 2.0, 3.0, 4.0}));
-// should print dsp_dt = [2, 4, 6, 8]
-std::println("dsp_dT = [{}, {}, {}, {}]", dsp_dT[0, 0], dsp_dT[0, 1], dsp_dT[1, 0], dsp_dT[1, 1]);
+// should print dsp_dt = [2  4; 6 8]
+std::println("dsp_dT = [{} {}; {} {}]", dsp_dT[0, 0], dsp_dT[0, 1], dsp_dT[1, 0], dsp_dT[1, 1]);
 ```
 
 ### Custom vector/tensor types
 
 In the examples so far, we have used the `xp::linalg::tensor` class to represent tensorial/vectorial values. If you are working
 with custom data structures, you can make them compatible with the library by implementing a few traits classes.
-See the `tensorial` concept in [tensor.hpp](src/xpress/tensor.hpp) for details. However, if your tensor data structures
+See the `tensorial` concept in [tensor.hpp](src/xpress/tensor.hpp) for details. If your tensor data structures
 are something like nested arrays, that is, expose an `operator[]` to obtain a "sub-tensor", then your data structures are likely
 to be compatible out-of-the-box (because then the default implementations of the traits would be available for your type).
 Tensorial results from evaluating expressions are always represented by `xp::linalg::tensor`s, however, if your type is compatible
@@ -430,13 +433,13 @@ linalg::tensor{shape<2, 3>, 1, 2, 3, 4, 5, 6}.export_to(my_tensor);
 ```
 
 Note also that the library provides a mechanism that allows you to hook into custom operator implementation on your tensor types,
-by specializing the respective traits in the namespace `xp::operators::traits` (see any of the available operators).
+by specializing the respective traits in the namespace `xp::operators::traits` (see any of the available operators in [src/xpress/operators](src/xpress/operators)).
 
 
 ## Contribution guidelines
 
 Contributions are highly welcome! For bug reports, please file an [issue](https://github.com/dglaeser/xpress/issues).
-If you want to contribute with features, improvements or bug fixes please fork this project and open a merge request into the main branch of this repository.
+If you want to contribute with features, improvements or bug fixes please fork this project and open a pull request into the main branch of this repository.
 
 
 ## Acknowledgements
