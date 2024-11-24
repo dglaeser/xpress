@@ -225,11 +225,14 @@ int main() {
         var b;
         auto e = a*b;
         auto derivs = derivatives_of(e, wrt(a, b));
+        int count = 0;
         visit(derivs, [&] (const auto& variable, const auto& expression) {
             auto val = value_of(expression, at(a = 2, b = 3));
             expect(eq(val, 3) or neq(variable, a));
             expect(eq(val, 2) or neq(variable, b));
+            count++;
         });
+        expect(eq(count, 2));
     };
 
     "operation_direct_derivatives_evaluation"_test = [] () {

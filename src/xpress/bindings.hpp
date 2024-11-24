@@ -108,6 +108,15 @@ struct bindings : private indexed_tuple<B...> {
     friend constexpr auto operator&(bindings&& left, bindings<Bs...>&& right) noexcept {
         return std::move(left).concatenated_with(std::move(right));
     }
+
+    //! Visit all symbols and their bound values
+    template<typename V>
+    friend constexpr void visit(const bindings& bindings, V&& visitor) {
+        static_assert(std::conjunction_v<
+            std::is_invocable<V, typename B::symbol_type, const typename B::value_type>...
+        >, "visitor must have the signature visitor(const auto& symbol, const auto& bound_value)");
+        (..., visitor(typename B::symbol_type{}, bindings[typename B::symbol_type{}]));
+    }
 };
 
 //! Specialization for a zero number of symbols (for compatibility purposes)
