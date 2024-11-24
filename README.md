@@ -11,8 +11,7 @@ on the latter two approaches.
 
 ## Quick start
 
-The following is a minimal example application that uses this library
-to define an expression and print it to the terminal.
+The following is a minimal example application that defines a simple expression, evaluates it and prints it to the terminal.
 
 ```cpp <!-- {{xpress-minimal-main}} -->
 // my_app.cpp
@@ -21,24 +20,27 @@ to define an expression and print it to the terminal.
 
 int main() {
     using namespace xp;
+
     // the variables of our expression
     var a;
     var b;
 
     // the actual expression
-    constexpr auto expr = a + b;
+    auto expr = a + b;
+    auto value = value_of(expr, at(a = 1, b = 2));
+    std::println("v = {}", value);
 
-    // For an evaluation of `expr` we need to provide values for the variables.
-    // `expr.with` is one way to do so, which yields a `bound_expression`
-    // Since we want to print the expression, we simply bind names to the
-    // variables here.
-    std::print("{}", expr.with(a = "a", b = "b"));  // prints "a + b"
+    // invoking `with` on an expression, we can also bind values to the
+    // symbols and create a printable version of our expression
+    std::println("{}", expr.with(a = "a", b = "b")); // prints "a + b"
+    std::println("{}", expr.with(a = 1, b = 2));     // prints "1 + 2"
 
     return 0;
 }
 ```
 
-With the following `CMakeLists.txt` file being present in the same directory as the above main file:
+The following is an exemplary `CMakeLists.txt` file that brings in `xpress` automatically at configuration,
+and which you can use to generate the build files for compiling the above example:
 
 ```cmake <!-- {{xpress-minimal-cmakelists}} -->
 # CMakeLists.txt
@@ -58,9 +60,9 @@ add_executable(my_app my_app.cpp)
 target_link_libraries(my_app PRIVATE xpress::xpress)
 ```
 
-you can compile and run this code with the following sequence of commands
-(this assumes that your default compilers are recent enough; otherwise you have
-to pass the `cmake` flags `-DCMAKE_C_COMPILER` and `-DCMAKE_CXX_COMPILER` to have `cmake` use suitable compilers):
+With the two files above present in the same directory, you can compile and run this example with the following
+sequence of commands (this assumes that your default compilers are recent enough; otherwise you have to pass the
+`cmake` flags `-DCMAKE_C_COMPILER` and `-DCMAKE_CXX_COMPILER` to have `cmake` use suitable compilers):
 
 ```bash <!-- {{xpress-minimal-bash}} -->
 cmake -B build
@@ -68,7 +70,8 @@ cmake --build build
 cd build && ./my_app
 ```
 
-Alternatively, you can install the library on your system, for instance, with the following sequence of commands.
+An alternative way of using the library is to install it on your system, for instance, with the following sequence
+of commands:
 
 ```bash <!-- {{xpress-install-instructions}} -->
 git clone --recursive https://github.com/dglaeser/xpress.git
@@ -78,13 +81,13 @@ cmake --build build
 cmake --install build
 ```
 
-Afterwards, you can use `find_package` in your project to let `cmake` find the library, and link against the `xpress::xpress` target.
+Omit the `-DCMAKE_INSTALL_PREFIX` flag for a system-wide installation. After installation, you can use `cmake`'s
+`find_package` command in your project to let `cmake` find the library, and link against the `xpress::xpress` target.
 
 ## Evaluating expressions
 
-As mentioned, for evaluations we need to bind values to the variables of the expression.
-All symbols and expression types allow to bind values to them via `operator=`,
-and we may use the `at` function to combine the results into a single data structure (you may also use the `with` function - which is the same as `at` - depending on your preferences).
+In order to evaluate an expression, we need to bind values to its leaf symbols. All symbols and expression types allow
+to bind values to them via `operator=`, and we may use the `at` function to combine the results into a single data structure.
 Finally, `value_of` evaluates the expression at the provided values.
 
 ```cpp <!-- {{xpress-eval-snippet}} -->
@@ -94,7 +97,7 @@ auto expr = a*a + b;
 std::println("expr = {}", value_of(expr, at(a = 2.0, b = 3.0)));
 ```
 
-You can also bind values to sub-expressions, which may speed up the computations:
+You can also bind values to (sub-)expressions, which may speed up the computations:
 
 ```cpp <!-- {{xpress-subexpr-snippet}} -->
 var a;
@@ -105,31 +108,28 @@ auto arg_value = value_of(arg, at(a = 2.0, b = 3.0));
 std::println("expr = {}", value_of(expr, with(arg = arg_value)));
 ```
 
-Since each `var` and each expressions are unique types, compilation will fail
-if you don't provide all the values required for an evaluation. By providing
-a value for `arg`, however, provision of values for the leaf symbols `a` and `b`
-becomes obsolete.
+Note that we have used `with` here, which is the same as `at`, but the different names allow for distinguishing binding
+values to leaf symbols or (sub-)expressions (you can also concatenate multiple invocations, e.g. `at(...) & with(...)`).
+Note also that since each `var` and each expression are unique types, compilation will fail if you don't provide all the
+values required for an evaluation. By providing a value for `arg`, provision of values for the leaf symbols `a` and `b`
+becomes obsolete in this example.
 
-You can also use `value_of` without providing any values for the symbols, in which
-case you receive an evaluator object, which you can store and subsequently invoke to get the values:
+You can also create a callable from an expression by constructing an `evaluator` from it:
 
 ```cpp <!-- {{xpress-exprevaluator-snippet}} -->
 var a;
 var b;
-auto f = value_of(a*log(b));
-std::println("f = {}", f(a = 2.0, b = 3.0));
+evaluator f = a*log(b);
+std::println("f(a=2, b=3) = {}", f(a = 2.0, b = 3.0));
 ```
 
-Finally, as we have seen before, you can create a `bound_expression` from an expression and simply extract the value:
+### Available operators
 
-```cpp <!-- {{xpress-boundexpr-snippet}} -->
-var a;
-var b;
-auto bound_expr = (a*b + b*b).with(a = 2.0, b = 3.0);
-std::println("expr = {}", bound_expr.value());
-```
-
-Note that the primary use of `bound_expression` is to print an expression to the terminal (or to create a `std::string`), as we have seen before.
+To enable an operator (e.g. `*`, or `log`) for expressions, a small set of traits has to be implemented (depending on the
+features you want to have available for it). All currently available operators can be found in the directory
+[src/xpress/operators] (src/xpress/operators). The implementations can also be used as a blueprint to add new operators.
+If you find yourself implementing a generally useful operator, consider contributing it back to this project
+(see [contribution guidelines](#contribution-guidelines)).
 
 ## Deriving expressions
 
@@ -142,7 +142,7 @@ auto de_da = derivative_of(a*log(b), wrt(a));
 std::println("de_da = {}", de_da.with(a = "a", b = "b"));
 ```
 
-To direclty compute the value of the derivative, you may provide values for the symbols of the expression:
+To directly compute the value of the derivative, you may provide values for the symbols of the expression:
 
 ```cpp <!-- {{xpress-deriveval-snippet}} -->
 var a;
@@ -152,38 +152,37 @@ std::println("de_da = {}", de_da);
 ```
 
 As a side note, since `a` does not appear in the above derivative anymore, we would not have to provide a value for it.
-However, usually you don't know the expression of the derivative in advance, and thus, providing values for all symbols should be the default.
+However, usually you don't know the expression of the derivative in advance, and thus, providing values for all symbols should
+be the default.
 
-To get the derivatives with respect to multiple variables at once, you may use the `derivatives_of` and access the derivatives individually on the
-resulting data structure:
+To get the derivatives with respect to multiple variables at once, you may use the `derivatives_of` and access the derivative
+expressions individually on the resulting data structure:
 
 ```cpp <!-- {{xpress-derivs-snippet}} -->
 var a;
 var b;
-auto derivs = derivatives_of(a*log(b), wrt(a, b));
-std::println("de_da = {}", derivs.wrt(a).with(a = "a", b = "b"));
-std::println("de_db = {}", derivs.wrt(b).with(a = "a", b = "b"));
+auto deriv_expressions = derivatives_of(a*log(b), wrt(a, b));
+std::println("de_da = {}", deriv_expressions[a].with(a = "a", b = "b"));
+std::println("de_db = {}", deriv_expressions[b].with(a = "a", b = "b"));
 ```
 
-Of course you can also directly compute the values of the derivatives.
-The returned object allows you to extract the derivatives with respect
-to an individual variable by accessing it with that variable.
+Of course you can also directly compute the values of all derivatives. The returned object also allows you to extract the
+derivatives with respect to an individual variable by indexing into it with that variable.
 
 ```cpp <!-- {{xpress-derivseval-snippet}} -->
 var a;
 var b;
-auto derivs = derivatives_of(a*log(b), wrt(a, b), at(a = 1.0, b = 2.0));
-std::println("de_da = {}", derivs[a]);
-std::println("de_db = {}", derivs[b]);
+auto deriv_values = derivatives_of(a*log(b), wrt(a, b), at(a = 1.0, b = 2.0));
+std::println("de_da = {}", deriv_values[a]);
+std::println("de_db = {}", deriv_values[b]);
 ```
 
 ## Computing gradients
 
 So far, we have provided the variables with respect to which we want to derive an expression.
 You can also simply derive with respect to all variables in an expression, i.e. compute its gradient.
-The `gradient_of` function essentially forwards to `derivatives_of`, so you again
-have the possibility to get an object containing the derivative expressions,
-or, compute the derivative values directly (see above). Here's an example for the latter case:
+The `gradient_of` function is available in the same two variants as the `derivatives_of` function (see above),
+with the only difference that you must omit passing the variables with respect to which to differentiate:
 
 ```cpp <!-- {{xpress-grad-snippet}} -->
 var a;
@@ -193,25 +192,48 @@ std::println("de_da = {}", derivs[a]);
 std::println("de_db = {}", derivs[b]);
 ```
 
-You may want to distinguish variables and parameters of your expression. To this end,
-you may use `let` besides `var`, which behaves the same with the exception that it is not
-interpreted as an independent variable, and thus, `gradient_of` will not differentiate with respect to `let`s:
+You may want to distinguish variables and parameters of your expression. To this end, you can use `let` besides `var`, which behaves
+the same with the exception that it is not interpreted as an independent variable, and thus, `gradient_of` will not differentiate
+with respect to `let`s:
 
 ```cpp <!-- {{xpress-grad_let-snippet}} -->
 var a;
 var b;
 let c;
 auto derivs = gradient_of(a*log(b)*c);
-std::println("de_da = {}", derivs.wrt(a).with(a = "a", b = "b", c = "c"));
-std::println("de_db = {}", derivs.wrt(b).with(a = "a", b = "b", c = "c"));
+std::println("de_da = {}", derivs[a].with(a = "a", b = "b", c = "c"));
+std::println("de_db = {}", derivs[b].with(a = "a", b = "b", c = "c"));
 // this would not compile:
-// derivs.wrt(c);
+// derivs[c];
 ```
+
+## Constraining symbols on value types
+
+By default, any type can be bound to a variable. If you want to constrain this, you may provide
+an allowed data type as template argument:
+
+```cpp <!-- {{xpress-dtype-snippet}} -->
+var any;
+var<int> only_int;
+var<double> only_double;
+var<dtype::real> any_floating_point;
+var<dtype::integral> any_int;
+
+any = "a";              // OK
+only_double = 1.0;      // OK
+only_double = 1;        // OK, int can be safely cast to double
+only_int = 1;           // OK
+// only_int = 1.0;      // compiler error, double cannot be safely cast to int
+any_floating_point = 1; // OK, int to float is fine
+any_int = 1;            // OK
+// any_int = 1.0;       // compiler error, float to int is not possible
+```
+
 
 ## Compile-time computations
 
 All interfaces of this library are `constexpr`, so as long as the variable values are known at compile-time,
-and your expression does not use functions that are not `constexpr` (for instance, `std::log` is not `constexpr` until c++-26),
+and your expression does not use functions that are not `constexpr` (for instance, `log` - which uses `std::log` under the hood - is not `constexpr` until c++-26),
 you can do all computations during compilation:
 
 
@@ -222,7 +244,7 @@ constexpr auto de_da = derivative_of(a*a + a*b, wrt(a), at(a = 2, b = 3));
 static_assert(de_da == 2*2 + 3);
 ```
 
-To simplify providing compile-time constants, the library provides `val`:
+To simplify providing compile-time constant values, the library provides `val`:
 
 ```cpp <!-- {{xpress-val-snippet}} -->
 constexpr var a;
@@ -230,9 +252,8 @@ constexpr auto de_da = derivative_of(val<42>*a*a, wrt(a), at(a = 3));
 static_assert(de_da == 42*2*3);
 ```
 
-Compile-time derivatives can be useful if, for instance, a parameter of your
-application depends on the solution of a small nonlinear equation. The library
-provides a basic Newton solver that you can use to find the root of an expression
+Compile-time derivatives can be useful if, for instance, a parameter of your application depends on the solution of a small
+nonlinear equation. The library provides a basic Newton solver that you can use to find the root of an expression
 (potentially at compile-time):
 
 ```cpp <!-- {{xpress-newton-snippet}} -->
@@ -275,8 +296,8 @@ auto dv_da = derivative_of(velocity, wrt(a)); // this a vector expr containing (
 
 // to extract an individual expression in the vector expression, you can use
 // an `index_constant`. With the template variable `ic` you can easily create them.
-std::println("dv_da[0] = {}", dv_da[ic<0>].with(a = "a", b = "b"));
-std::println("dv_da[1] = {}", dv_da[ic<1>].with(a = "a", b = "b"));
+std::println("dv0_da = {}", dv_da[ic<0>].with(a = "a", b = "b"));
+std::println("dv1_da = {}", dv_da[ic<1>].with(a = "a", b = "b"));
 ```
 
 And, again, you can also directly evaluate the expressions:
@@ -286,8 +307,8 @@ var a;
 var b;
 auto velocity = vector_expression::from(a/b, a*b);
 auto dv_da = derivative_of(velocity, wrt(a), at(a = 1.0, b =2.0));
-std::println("dv_da[0] = {}", dv_da[0]);
-std::println("dv_da[1] = {}", dv_da[1]);
+std::println("dv0_da = {}", dv_da[0]);
+std::println("dv1_da = {}", dv_da[1]);
 ```
 
 A vectorial expression is actually a `tensorial_expression` with one dimension,
@@ -297,7 +318,7 @@ construct tensorial expressions, you can use the `tensor_expression_builder`:
 ```cpp <!-- {{xpress-tensorexpr-snippet}} -->
 var a;
 var b;
-// `at` is a convenience function to create `md_index` instances. You
+// `at<size_t...>` is a convenience function to create `md_index` instances. You
 // can also use the `md_ic` template variable, but here `at` reads better.
 auto tensor = tensor_expression_builder{shape<2, 2>}
                 .with(a*b, at<0, 0>())
@@ -309,7 +330,7 @@ auto tensor = tensor_expression_builder{shape<2, 2>}
 std::println("tensor[0, 0] = {}", tensor[md_ic<0, 0>].with(a = "a", b = "b"));
 ```
 
-Evaluation of a tensorial expression yields a `xp::linalg::tensor`:
+Evaluation of a tensorial expression yields a `xp::linalg::tensor` (the vectorial examples above did so, too, btw):
 
 ```cpp <!-- {{xpress-tensorexpreval-snippet}} -->
 var a;
@@ -340,16 +361,16 @@ auto T = tensor_expression_builder{shape<2, 2>}
                 .with(a-b, at<1, 1>())
                 .build();
 auto dT_da = derivative_of(T, wrt(a), at(a = 1.0, b = 2.0));
-std::println("dT_da[0, 0] = {}", dT_da[0, 0]);
-std::println("dT_da[0, 1] = {}", dT_da[0, 1]);
-std::println("dT_da[1, 0] = {}", dT_da[1, 0]);
-std::println("dT_da[1, 1] = {}", dT_da[1, 1]);
+std::println("dT00_da = {}", dT_da[0, 0]);
+std::println("dT01_da = {}", dT_da[0, 1]);
+std::println("dT10_da = {}", dT_da[1, 0]);
+std::println("dT11_da = {}", dT_da[1, 1]);
 ```
 
 ## Vectors and tensors
 
 Besides tensorial expressions, you can also define tensors or vectors, which are leaf symbols of your
-expression (which contain sub-symbols). For instance, let's define a tensor and a vector symbol and
+expression (which again contain sub-symbols). For instance, let's define a tensor and a vector symbol and
 compute the matrix-vector product:
 
 ```cpp <!-- {{xpress-vecandtens-snippet}} -->
@@ -359,7 +380,7 @@ auto Tv_expression = mat_mul(T, v);
 // We have to bind tensors and vectors with the right shape
 auto Tv = value_of(Tv_expression, at(
     T = xp::linalg::tensor{shape<2, 2>, 1, 2, 3, 4},
-    v = std::array{1, 1}
+    v = std::array{1, 1}  // could also be a linalg::tensor{shape<2>,...}
 ));
 // Tv is a vector with two entries
 std::println("Tv[0] = {}", Tv[0]);
@@ -377,34 +398,33 @@ auto dTv_dT00 = derivative_of(Tv_expression, wrt(T[md_ic<0, 0>]), at(
     T = xp::linalg::tensor{shape<2, 2>, 1, 1, 1, 1},
     v = std::array{2, 3}
 ));
-std::println("dTv_dT00[0] = {} (should be 2)", dTv_dT00[0]);
-std::println("dTv_dT00[1] = {} (should be 0)", dTv_dT00[1]);
+std::println("dTv0_dT00 = {} (should be 2)", dTv_dT00[0]);
+std::println("dTv1_dT00 = {} (should be 0)", dTv_dT00[1]);
 ```
 
 Finally, the following example computes the derivative of a scalar expression with respect to a tensor. The derivative
-is again a tensor containing the derivatives with respect to the individual entries.
+is again a tensor containing the derivatives of the expression with respect to the individual tensor entries.
 
 ```cpp <!-- {{xpress-tensderiv-snippet}} -->
 tensor T{shape<2, 2>};
 auto scalar_product = T*T;
 auto dsp_dT = derivative_of(scalar_product, wrt(T), at(T = linalg::tensor{shape<2, 2>, 1.0, 2.0, 3.0, 4.0}));
 // should print dsp_dt = [2, 4, 6, 8]
-std::println("dsp_dt = [{}, {}, {}, {}]", dsp_dT[0, 0], dsp_dT[0, 1], dsp_dT[1, 0], dsp_dT[1, 1]);
+std::println("dsp_dT = [{}, {}, {}, {}]", dsp_dT[0, 0], dsp_dT[0, 1], dsp_dT[1, 0], dsp_dT[1, 1]);
 ```
 
-
-## Custom vector/tensor types
+### Custom vector/tensor types
 
 In the examples so far, we have used the `xp::linalg::tensor` class to represent tensorial/vectorial values. If you are working
 with custom data structures, you can make them compatible with the library by implementing a few traits classes.
 See the `tensorial` concept in [tensor.hpp](src/xpress/tensor.hpp) for details. However, if your tensor data structures
 are something like nested arrays, that is, expose an `operator[]` to obtain a "sub-tensor", then your data structures are likely
-to be compatible out-of-the-box. Tensorial results from evaluating expressions are always represented by `xp::linalg::tensor`s,
-however, if your type has been made compatible via the above-mentioned traits, you can easily export results back to your own data structures:
+to be compatible out-of-the-box (because then the default implementations of the traits would be available for your type).
+Tensorial results from evaluating expressions are always represented by `xp::linalg::tensor`s, however, if your type is compatible
+(via the above-mentioned traits), you can easily export results back to your own data structures:
 
 ```cpp <!-- {{xpress-tensorexport-snippet}} -->
 using my_tensor_type = std::array<std::array<int, 3>, 2>;
-linalg::tensor t{shape<2, 3>, 1, 2, 3, 4, 5, 6};
 my_tensor_type my_tensor;
-t.export_to(my_tensor);
+linalg::tensor{shape<2, 3>, 1, 2, 3, 4, 5, 6}.export_to(my_tensor);
 ```
