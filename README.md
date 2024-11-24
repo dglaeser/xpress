@@ -429,6 +429,10 @@ my_tensor_type my_tensor;
 linalg::tensor{shape<2, 3>, 1, 2, 3, 4, 5, 6}.export_to(my_tensor);
 ```
 
+Note also that the library provides a mechanism that allows you to hook into custom operator implementation on your tensor types,
+by specializing the respective traits in the namespace `xp::operators::traits` (see any of the available operators).
+
+
 ## Contribution guidelines
 
 Contributions are highly welcome! For bug reports, please file an [issue](https://github.com/dglaeser/xpress/issues).
