@@ -129,7 +129,6 @@ class Application:
         print("Using the following build commands:\n", self._build_commands)
         if self._main_file is None and self._cmake_lists is None:
             subprocess.run(str(self._build_commands), shell=True, check=True)
-            subprocess.run(str(self._build_commands), shell=True, check=True)
         else:
             print("Using the following cmake file:\n", self._cmake_lists)
             print("Using the following main file:\n", self._main_file)
