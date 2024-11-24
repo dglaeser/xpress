@@ -53,7 +53,14 @@ template<typename... D> requires(std::conjunction_v<detail::is_derivative<D>...>
 struct derivatives : private indexed<typename D::variable...> {
     constexpr derivatives(const D&...) noexcept {}
 
-    //! Return the derivative w.r.t. the given variable
+    //! Return the expression of the derivative w.r.t. the given variable
+    template<typename V>
+        requires(is_any_of_v<V, typename D::variable...>)
+    constexpr auto operator[](const V& var) const noexcept {
+        return wrt(var);
+    }
+
+    //! Return the expression of the derivative w.r.t. the given variable
     template<typename V>
         requires(is_any_of_v<V, typename D::variable...>)
     constexpr auto wrt(const V& var) const noexcept {
