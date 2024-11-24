@@ -49,8 +49,8 @@ template<typename T>
 concept expression = traits::is_expression_v<T>;
 
 template<typename T>
-concept tensorial_expression = expression<T> and is_complete_v<traits::shape_of<T>> and requires(const T& t) {
-    { t[ *(md_index_iterator{traits::shape_of_t<T>{}}) ] } -> expression;
+concept tensorial_expression = expression<T> and is_complete_v<shape_of<T>> and requires(const T& t) {
+    { t[ *(md_index_iterator{shape_of_t<T>{}}) ] } -> expression;
 };
 
 //! \} group Expressions

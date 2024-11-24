@@ -11,6 +11,9 @@
 
 #include <cpputils/type_traits.hpp>
 
+#include "utils.hpp"
+
+
 namespace xp {
 
 //! \addtogroup TypeTraits
@@ -63,6 +66,16 @@ struct scalar_type<T> : detail::indexable_scalar_type<T> {};
 template<typename T>
 using scalar_type_t = typename scalar_type<T>::type;
 
+//! Trait to get the shape of a multi-dimensional container
+template<typename T>
+struct shape_of;
+template<typename T>
+using shape_of_t = typename shape_of<T>::type;
+
+//! Trait (or metafunction) to access values in multi-dimensional containers
+template<typename T>
+struct access;
+
 //! \} group TypeTraits
 
 //! \addtogroup Concepts
@@ -71,6 +84,17 @@ using scalar_type_t = typename scalar_type<T>::type;
 //! Two types being the same except for const or reference qualifiers
 template<typename A, typename B>
 concept same_remove_cvref_t_as = std::is_same_v<std::remove_cvref_t<A>, std::remove_cvref_t<B>>;
+
+//! A type that can be used for tensorial values
+template<typename T>
+concept tensorial
+= std::is_default_constructible_v<std::remove_cvref_t<T>>  // TODO: can we relax this?
+and is_complete_v<scalar_type<std::remove_cvref_t<T>>>
+and is_complete_v<shape_of<std::remove_cvref_t<T>>>
+and is_complete_v<access<std::remove_cvref_t<T>>>
+and requires(const T& t) {
+    { access<std::remove_cvref_t<T>>::at( *(md_index_iterator{shape_of_t<std::remove_cvref_t<T>>{}}), t ) };
+};
 
 //! \} group Concepts
 

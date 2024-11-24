@@ -11,6 +11,7 @@
 
 #include "../values.hpp"
 #include "../expressions.hpp"
+#include "../linalg.hpp"
 #include "common.hpp"
 
 
@@ -31,6 +32,25 @@ struct default_log_operator {
 };
 
 struct log : operator_base<traits::log_of, default_log_operator> {};
+
+namespace traits {
+
+//! (Default) specialization for tensors
+template<xp::tensorial T>
+struct log_of<T> {
+    template<same_remove_cvref_t_as<T> _T>
+    constexpr auto operator()(_T&& t) const noexcept {
+        using scalar = scalar_type_t<T>;
+        using shape = shape_of_t<T>;
+        linalg::tensor<scalar, shape> result{};
+        visit_indices_in(shape{}, [&] (const auto& idx) {
+            result[idx] = operators::log{}(access<T>::at(idx, t));
+        });
+        return result;
+    }
+};
+
+}  // namespace traits
 
 }  // namespace operators
 
