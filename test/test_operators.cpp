@@ -220,6 +220,18 @@ int main() {
         expect(eq(derivs.at(a = 0, b = 0, c = 0)[c], 1));
     };
 
+    "derivatives_visit"_test = [] () {
+        var a;
+        var b;
+        auto e = a*b;
+        auto derivs = derivatives_of(e, wrt(a, b));
+        visit(derivs, [&] (const auto& variable, const auto& expression) {
+            auto val = value_of(expression, at(a = 2, b = 3));
+            expect(eq(val, 3) or neq(variable, a));
+            expect(eq(val, 2) or neq(variable, b));
+        });
+    };
+
     "operation_direct_derivatives_evaluation"_test = [] () {
         static constexpr let a;
         static constexpr var b;

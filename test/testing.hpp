@@ -8,6 +8,7 @@ namespace xp::testing {
 
 using boost::ut::operator""_test;
 using boost::ut::expect;
+using boost::ut::neq;
 using boost::ut::eq;
 
 template<typename A, typename B, typename E = std::common_type_t<A, B>>
