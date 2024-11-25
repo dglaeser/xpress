@@ -33,6 +33,17 @@ struct newton {
     : _opts{std::move(opts)}
     {}
 
+    template<expression E, typename I>
+    constexpr auto find_scalar_root_of(const E& equation, bindings<I>&& initial_guess) const noexcept {
+        using symbol_t = typename I::symbol_type;
+        using value_t = typename I::value_type;
+        using result_t = std::optional<value_t>;
+        auto root = find_root_of(equation, std::move(initial_guess));
+        if (root)
+            return result_t{std::move(root).value()[symbol_t{}]};
+        return result_t{};
+    }
+
     template<expression E, typename... I>
     constexpr auto find_root_of(const E& equation, bindings<I...>&& initial_guess) const noexcept {
         static_assert(

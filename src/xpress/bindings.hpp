@@ -90,7 +90,7 @@ struct bindings : private indexed_tuple<B...> {
     //! Return the value bound to the given symbol
     template<typename S, typename T> requires(has_bindings_for<T>)
     constexpr decltype(auto) operator[](this S&& self, const T&) noexcept {
-        return self.get(self.template index_of<binder_type<T>>()).get();
+        return std::forward<S>(self).get(self.template index_of<binder_type<T>>()).get();
     }
 
     //! Concatenate these bindings with the given ones

@@ -286,11 +286,8 @@ constexpr auto solver = newton{{
     .max_iterations = 10
 }};
 // find_root_of yields an std::optional (extract the result via value())
-constexpr auto result = solver.find_root_of(expression, starting_from(a = 3.0))
-                              .value();
-// the solver supports vector expressions (see below), and thus, the result
-// type is a container with the solutions to all variables of the expression
-static_assert(result[a] - 1.0 < 1e-6);
+constexpr auto solution = solver.find_scalar_root_of(expression, starting_from(a = 3.0)).value();
+static_assert(solution - 1.0 < 1e-6);
 ```
 
 ## Vectorial and tensorial expressions

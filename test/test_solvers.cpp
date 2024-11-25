@@ -18,6 +18,16 @@ int main() {
         static_assert(fuzzy_eq((*solution)[a], 1.0));
     };
 
+    "netwon_solver_scalar_constexpr"_test = [] () {
+        var a;
+        constexpr auto solution = solvers::newton{{
+            .threshold = 1e-6,
+            .max_iterations = 20
+        }}.find_scalar_root_of(a*a - val<1.0>, starting_from(a = 3));
+        static_assert(solution.has_value());
+        static_assert(fuzzy_eq(*solution, 1.0));
+    };
+
     "newton_solver_at_runtime"_test = [] () {
         var a;
         expect(fuzzy_eq(solvers::newton{{
