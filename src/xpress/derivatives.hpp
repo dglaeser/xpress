@@ -81,7 +81,7 @@ struct derivatives : private indexed<typename D::variable...> {
 
     //! Iterate over all derivative expressions
     template<typename V>
-    friend constexpr void for_each(const derivatives& derivs, V&& visitor) {
+    friend constexpr void for_each(const derivatives&, V&& visitor) {
         static_assert(std::conjunction_v<
             std::is_invocable<V, typename D::variable, typename D::expression>...
         >, "visitor must have the signature visitor(const auto& variable, const auto& expression)");
