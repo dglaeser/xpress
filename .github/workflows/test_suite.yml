@@ -24,6 +24,9 @@ jobs:
         with:
           submodules: true
 
+      - name: check-reuse-compliance
+        uses: fsfe/reuse-action@v2
+
       - name: test-readme-code
         run: |
           GIT_TREE=${{ github.head_ref }}
