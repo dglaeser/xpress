@@ -154,6 +154,13 @@ int main() {
         );
     };
 
+    "tensor_determinant_stream"_test = [] () {
+        std::ostringstream s;
+        tensor T{shape<2, 2>};
+        write_to(s, det(T), at(T = "T"));
+        expect(eq(s.str(), std::string{"det(T)"}));
+    };
+
     "tensor_determinant"_test = [] () {
         const tensor T22{shape<2, 2>};
         const tensor T33{shape<3, 3>};

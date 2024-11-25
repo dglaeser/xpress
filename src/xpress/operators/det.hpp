@@ -74,13 +74,13 @@ struct derivative_of<operation<operators::determinant, T>> {
     }
 };
 
-// template<tensorial_expression T>
-// struct stream<operation<operators::determinant, T>> {
-//     template<typename... V>
-//     static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
-//         out << "det("; write_to(out, T{}, values); out << ")";
-//     }
-// };
+template<tensorial_expression T>
+struct stream<operation<operators::determinant, T>> {
+    template<typename... V>
+    static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
+        out << "det("; write_to(out, T{}, values); out << ")";
+    }
+};
 
 }  // namespace traits
 
