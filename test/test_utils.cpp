@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 Dennis Gläser <dennis.glaeser@iws.uni-stuttgart.de>
+// SPDX-License-Identifier: MIT
+
 #include <functional>
 #include <type_traits>
 #include <algorithm>

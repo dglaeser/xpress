@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 Dennis Gläser <dennis.glaeser@iws.uni-stuttgart.de>
+# SPDX-License-Identifier: MIT
+
 name: test-suite
 
 on:
@@ -20,6 +23,9 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
+
+      - name: check-reuse-compliance
+        uses: fsfe/reuse-action@v2
 
       - name: test-readme-code
         run: |
