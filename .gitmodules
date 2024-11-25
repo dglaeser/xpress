@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 Dennis Gläser <dennis.glaeser@iws.uni-stuttgart.de>
+# SPDX-License-Identifier: MIT
+
 [submodule "deps/cpputils"]
 	path = deps/cpputils
 	url = https://github.com/dglaeser/cpputils.git

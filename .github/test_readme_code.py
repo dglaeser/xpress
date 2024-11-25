@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024 Dennis Gläser <dennis.glaeser@iws.uni-stuttgart.de>
+# SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 

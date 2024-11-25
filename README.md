@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2024 Dennis Gläser <dennis.glaeser@iws.uni-stuttgart.de> -->
+<!-- SPDX-License-Identifier: MIT -->
+
 `xpress` is a header-only C++ template library that let's you write strongly-typed mathematical expressions and,
 for instance, derive them with respect to one or more variables at compile-time. To use the library, you may add
 this repository as git submodule to yours, or, if your project uses `cmake`, you may use `FetchContent` to pull
