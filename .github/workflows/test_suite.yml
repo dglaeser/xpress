@@ -22,7 +22,16 @@ jobs:
           submodules: true
 
       - name: test-readme-code
-        run: python3 .github/test_readme_code.py -c /usr/bin/gcc-14 -x /usr/bin/g++-14 -r README.md
+        run: |
+          GIT_TREE=${{ github.head_ref }}
+          if [[ -z "${{github.head_ref}}" ]]; then
+            GIT_TREE=${{ github.sha }}
+          fi
+          python3 .github/test_readme_code.py \
+            -c /usr/bin/gcc-14 \
+            -x /usr/bin/g++-14 \
+            -r README.md \
+            -t $GIT_TREE
 
   test:
     needs: sanity-check

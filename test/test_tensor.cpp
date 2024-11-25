@@ -154,6 +154,21 @@ int main() {
         );
     };
 
+     "tensor_mat_mul_stream"_test = [] () {
+        tensor T{shape<2, 2>};
+        vector<2> v{};
+        std::ostringstream s;
+        write_to(s, mat_mul(T, v), at(T = "T", v = "v"));
+        expect(eq(s.str(), std::string{"T*v"}));
+    };
+
+    "tensor_determinant_stream"_test = [] () {
+        std::ostringstream s;
+        tensor T{shape<2, 2>};
+        write_to(s, det(T), at(T = "T"));
+        expect(eq(s.str(), std::string{"det(T)"}));
+    };
+
     "tensor_determinant"_test = [] () {
         const tensor T22{shape<2, 2>};
         const tensor T33{shape<3, 3>};

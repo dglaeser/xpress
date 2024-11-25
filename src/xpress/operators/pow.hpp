@@ -11,6 +11,7 @@
 
 #include "../values.hpp"
 #include "../expressions.hpp"
+#include "../linalg.hpp"
 #include "common.hpp"
 
 
@@ -32,6 +33,24 @@ struct default_pow_operator {
 
 struct pow : operator_base<traits::power_of, default_pow_operator> {};
 
+namespace traits {
+
+//! (Default) specialization for tensors
+template<tensorial T, typename E>
+struct power_of<T, E> {
+    template<same_remove_cvref_t_as<T> _T, same_remove_cvref_t_as<E> _E>
+    constexpr auto operator()(_T&& t, _E&& e) const noexcept {
+        using scalar = scalar_type_t<T>;
+        using shape = shape_of_t<T>;
+        linalg::tensor<scalar, shape> result{};
+        visit_indices_in(shape{}, [&] (const auto& idx) {
+            result[idx] = operators::pow{}(access<T>::at(idx, t), e);
+        });
+        return result;
+    }
+};
+
+}  // namespace traits
 }  // namespace operators
 
 template<expression A, expression B>

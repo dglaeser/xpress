@@ -7,7 +7,7 @@ import argparse
 import subprocess
 
 
-def default_cmake_lists(app_name: str = "my_app") -> str:
+def default_cmake_lists(app_name: str = "my_app", git_tree: str = "main") -> str:
     return f"""
 cmake_minimum_required(VERSION 3.18)
 project(xpress_example)
@@ -17,7 +17,7 @@ include(FetchContent)
 FetchContent_Declare(
     xpress
     GIT_REPOSITORY https://github.com/dglaeser/xpress.git
-    GIT_TAG main
+    GIT_TAG {git_tree}
 )
 FetchContent_MakeAvailable(xpress)
 
@@ -67,15 +67,17 @@ class Application:
         name: str,
         cmake_lists: str | None,
         main_file: str | None,
-        build_commands: str | None
+        build_commands: str | None,
+        git_tree: str
     ) -> None:
         self._app_name = name
         self._cmake_lists = cmake_lists
         self._main_file = main_file
         self._build_commands = build_commands
+        self._git_tree = git_tree
 
     @staticmethod
-    def from_readme(content: str, name: str) -> Application:
+    def from_readme(content: str, name: str, git_tree: str) -> Application:
         def parse_code_block_at(remainder: str) -> CodeBlock:
             assert(remainder.startswith("```"))
             header, remainder = remainder.split("\n", maxsplit=1)
@@ -116,7 +118,8 @@ class Application:
             name=app_name,
             cmake_lists=cmake,
             main_file=main or (main_file_for(snippet) if snippet is not None else None),
-            build_commands=cmds or default_compile_commands(app_name)
+            build_commands=cmds or default_compile_commands(app_name),
+            git_tree=git_tree
         )
 
     def run_with(self, c_compiler: str, cxx_compiler: str) -> None:
@@ -132,7 +135,10 @@ class Application:
         else:
             print("Using the following cmake file:\n", self._cmake_lists)
             print("Using the following main file:\n", self._main_file)
-            with open("CMakeLists.txt", "w") as cmake_file: cmake_file.write(self._cmake_lists or default_cmake_lists(self._app_name))
+            with open("CMakeLists.txt", "w") as cmake_file: cmake_file.write(self._cmake_lists or default_cmake_lists(
+                app_name=self._app_name,
+                git_tree=self._git_tree
+            ))
             with open(f"{self._app_name}.cpp", "w") as main: main.write(str(self._main_file))
             subprocess.run(str(self._build_commands), shell=True, check=True)
         os.chdir(cwd)
@@ -165,6 +171,7 @@ if __name__ == "__main__":
     parser.add_argument("-x", "--cxx-compiler", required=True)
     parser.add_argument("-r", "--readme", required=True, help="Path to the README.md file")
     parser.add_argument("-n", "--name", required=False, help="Specify a concrete example to run individually")
+    parser.add_argument("-t", "--git-tree", required=False, help="Set a commit/branch at which to check out xpress (if not specified otherwise)")
     args = vars(parser.parse_args())
 
     content = open(args["readme"]).read()
@@ -174,6 +181,9 @@ if __name__ == "__main__":
             continue
 
         name = extract_example_name_from(line)
+        if name is None:
+            continue
+
         if args["name"] is not None and name != args["name"]:
             continue
 
@@ -182,7 +192,7 @@ if __name__ == "__main__":
 
         print("\n"*3)
         print(f"Running readme code '{name}'")
-        Application.from_readme(content, name=name).run_with(
+        Application.from_readme(content, name=name, git_tree=args["git_tree"] or "main").run_with(
             c_compiler=args["c_compiler"],
             cxx_compiler=args["cxx_compiler"]
         )

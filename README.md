@@ -217,11 +217,11 @@ The data structures storing derivative expressions or values also allow you to i
 var a;
 var b;
 auto deriv_exprs = gradient_of(a*log(b));
-visit(deriv_exprs, [&] (const auto& symbol, const auto& deriv_expr) {
+for_each(deriv_exprs, [&] (const auto& symbol, const auto& deriv_expr) {
     std::println("de_d{} = {}", (symbol == a ? "a" : "b"), deriv_expr.with(a = "a", b = "b"));
 });
 auto deriv_values = gradient_of(a*log(b), at(a = 1.0, b = 2.0));
-visit(deriv_values, [&] (const auto& symbol, const auto& value) {
+for_each(deriv_values, [&] (const auto& symbol, const auto& value) {
     std::println("de_d{} = {}", (symbol == a ? "a" : "b"), value);
 });
 ```
