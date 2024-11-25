@@ -86,14 +86,14 @@ int main() {
         expect(eq(binders2[s2], 44));
     };
 
-    "bindings_visitor"_test = [] () {
+    "bindings_for_each"_test = [] () {
         int v1 = 42;
         int v2 = 44;
         symbol<int> s1{};
         symbol<char> s2{};
         xp::bindings binders{s1 = v1, s2 = v2};
         int count = 0;
-        visit(binders, [&] <typename S> (const S&, const int& v) {
+        for_each(binders, [&] <typename S> (const S&, const int& v) {
             expect(eq(v, 42) or !std::is_same_v<S, symbol<int>>);
             expect(eq(v, 44) or !std::is_same_v<S, symbol<char>>);
             count++;
