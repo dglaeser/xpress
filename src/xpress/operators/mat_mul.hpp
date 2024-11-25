@@ -62,13 +62,10 @@ struct derivative_of<operation<operators::mat_mul, T1, T2>> {
     }
 };
 
-// template<tensorial_expression T>
-// struct stream<operation<operators::determinant, T>> {
-//     template<typename... V>
-//     static constexpr void to(std::ostream& out, const bindings<V...>& values) noexcept {
-//         out << "det("; write_to(out, T{}, values); out << ")";
-//     }
-// };
+// stream it the same way as multiplication
+template<tensorial_expression T1, tensorial_expression T2>
+struct stream<operation<operators::mat_mul, T1, T2>>
+: stream<operation<operators::multiply, T1, T2>> {};
 
 }  // namespace traits
 
