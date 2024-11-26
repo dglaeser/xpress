@@ -10,6 +10,7 @@
 #include <concepts>
 #include <type_traits>
 #include <algorithm>
+#include <array>
 #include <tuple>
 
 #include "utils.hpp"
@@ -177,25 +178,16 @@ struct scalar_type<linalg::tensor<T, shape>> : std::type_identity<T> {};
 #ifndef DOXYGEN
 namespace detail {
 
-    template<std::size_t s>
-    void _invoke_with_constexpr_size() {}
-
     template<typename T>
-    concept has_constexpr_size = requires(const T& t) {
-        { t.size() } -> std::convertible_to<std::size_t>;
-        { _invoke_with_constexpr_size<T{}.size()>() };
-    };
-
-    template<typename T>
-    concept has_constexpr_size_constant = requires {
+    concept has_static_size = requires {
         { T::size } -> std::convertible_to<std::size_t>;
     };
 
     template<typename T>
     struct size_of;
-    template<detail::has_constexpr_size T>
-    struct size_of<T> : std::integral_constant<std::size_t, T{}.size()> {};
-    template<detail::has_constexpr_size_constant T>
+    template<typename T, std::size_t s>
+    struct size_of<std::array<T, s>> : std::integral_constant<std::size_t, s> {};
+    template<detail::has_static_size T>
     struct size_of<T> : std::integral_constant<std::size_t, T::size> {};
     template<typename T> requires(is_complete_v<size_of<T>>)
     inline constexpr std::size_t size_of_v = size_of<T>::value;
