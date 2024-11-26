@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Dennis Gläser <dennis.glaeser@iws.uni-stuttgart.de>
+// SPDX-FileCopyrightText: 2024 Dennis Gläser <dennis.a.glaeser@gmail.com>
 // SPDX-License-Identifier: MIT
 
 #include <xpress/xp.hpp>
