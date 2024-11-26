@@ -38,7 +38,7 @@ inline constexpr bool is_indexable_v = is_indexable<T>::value;
 template<typename T>
 struct value_type;
 template<typename T> requires(is_indexable_v<T>)
-struct value_type<T> : std::type_identity<std::remove_cvref_t<decltype(T{}[std::size_t{0}])>> {};
+struct value_type<T> : std::type_identity<std::remove_cvref_t<decltype(std::declval<T>()[std::size_t{0}])>> {};
 template<typename T>
 using value_type_t = typename value_type<T>::type;
 
