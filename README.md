@@ -452,6 +452,45 @@ Note also that the library provides a mechanism that allows you to hook into cus
 by specializing the respective traits in the namespace `xp::operators::traits` (see any of the available operators in [src/xpress/operators](src/xpress/operators)).
 
 
+## Caveats
+
+Each symbol and expression is a unique type. This means that the template depth of an expression grows with the number of terms.
+Compilers usually have a limit on how deep nested template instantiations may be, and if your expression exceeds that limit,
+compilation will fail. On `clang`, you may override that limit using the [`-ftemplate-depth`](https://clang.llvm.org/docs/UsersManual.html#cmdoption-ftemplate-depth) option.
+
+Uniqueness of each symbol is achieved by having a lambda expression as default template argument:
+
+```cpp
+template<..., auto = [] () {}>
+struct var {...};
+```
+
+Each time you write `var v;`, `v` is a new type since the lambda instantiation occurs on the call site. However, we observed
+that with `clang`, something like the following does not compile (works with `gcc`, though):
+
+```cpp
+#include <xpress/xp.hpp>
+
+template<typename T>
+struct some_type {
+    static void some_function() {
+        var a;
+        var b;
+        auto c = a*b;
+    }
+};
+
+some_type<double>::some_function();
+some_type<int>::some_function();
+```
+
+It seems that `clang` instantiates the `operator*` for `a` and `b` when invoking the function on `some_type<double>`, and when invoking
+it on `some_type<int>`, it tries to match (the different) `a` and `b` against that operator instead of instantiating a new one.
+Matching fails, however, because the types are not the same (the lambda template argument in the second instantiation differs)
+and compilation fails. To make this work with `clang`, you could specify the template arguments explicitly, or simply write
+´var<> a; var<> b;` instead of `var a; var b;`.
+
+
 ## Contribution guidelines
 
 Contributions are highly welcome! For bug reports, please file an [issue](https://github.com/dglaeser/xpress/issues).
