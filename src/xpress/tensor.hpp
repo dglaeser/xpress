@@ -29,31 +29,35 @@ struct tensor_var : negatable {
 };
 
 
-template<typename T = dtype::any, auto _ = [] () {}, std::size_t... dims> requires(sizeof...(dims) > 0)
+template<typename tshape, typename T = dtype::any, auto _ = [] () {}> requires(tshape::dimensions > 0)
 struct tensor : bindable<T>, negatable {
-    static constexpr md_shape<dims...> shape{};
+    static constexpr tshape shape{};
 
     using bindable<T>::operator=;
 
     constexpr tensor() = default;
-    constexpr tensor(md_shape<dims...>) noexcept {}
+    constexpr tensor(const tshape&) noexcept {}
+    constexpr tensor(const T&, const tshape&) noexcept {}
 
     template<std::size_t... i>
     constexpr auto operator[](const md_index<i...>&) const noexcept {
         static_assert(md_index<i...>{}.is_contained_in(shape), "Given index is not contained in this tensor's shape.");
-        return tensor_var<tensor<T, _, dims...>, i...>{};
+        return tensor_var<tensor<tshape, T, _>, i...>{};
     }
 
     // for better compiler error messages about symbols being unique (not copyable)
-    template<typename _T, auto __>
-    constexpr tensor& operator=(const tensor<_T, __>&) = delete;
+    template<typename _s, typename _T, auto __>
+    constexpr tensor& operator=(const tensor<_s, _T, __>&) = delete;
 };
 
 template<auto _ = [] () {}, std::size_t... dims>
-tensor(const md_shape<dims...>&) -> tensor<dtype::any, _, dims...>;
+tensor(const md_shape<dims...>&) -> tensor<md_shape<dims...>, dtype::any, _>;
+
+template<typename T, auto _ = [] () {}, std::size_t... dims>
+tensor(const T&, const md_shape<dims...>&) -> tensor<md_shape<dims...>, T, _>;
 
 template<std::size_t dim, typename T = dtype::any, auto _ = [] () {}>
-using vector = tensor<T, _, dim>;
+using vector = tensor<md_shape<dim>, T, _>;
 
 
 template<typename shape, expression... E>
@@ -76,8 +80,8 @@ struct tensor_expression {
 };
 
 
-template<typename T, auto _, std::size_t... d>
-struct shape_of<tensor<T, _, d...>> : std::remove_cvref<decltype(tensor<T, _, d...>::shape)> {};
+template<typename shape, typename T, auto _>
+struct shape_of<tensor<shape, T, _>> : std::type_identity<shape> {};
 
 template<typename shape, typename... E>
 struct shape_of<tensor_expression<shape, E...>> : std::type_identity<shape> {};
@@ -168,11 +172,11 @@ using vector_expression_builder = tensor_expression_builder<md_shape<n>>;
 
 namespace traits {
 
-template<typename T, auto _, std::size_t... dims>
-struct stream<tensor<T, _, dims...>> {
+template<typename shape, typename T, auto _>
+struct stream<tensor<shape, T, _>> {
     template<typename... V>
     static constexpr void to(std::ostream& out, const bindings<V...>& values) {
-        using self = tensor<T, _, dims...>;
+        using self = tensor<shape, T, _>;
         out << values[self{}];
     }
 };
@@ -205,11 +209,11 @@ struct stream<tensor_expression<shape, E...>> {
     static constexpr void _write_args_to(std::ostream& out, const bindings<V...>& values, const type_list<>&) {}
 };
 
-template<typename T, auto _, std::size_t... dims>
-struct value_of<tensor<T, _, dims...>> {
+template<typename shape, typename T, auto _>
+struct value_of<tensor<shape, T, _>> {
     template<typename... V>
     static constexpr decltype(auto) from(const bindings<V...>& values) {
-        using self = tensor<T, _, dims...>;
+        using self = tensor<shape, T, _>;
         using bound_type = std::remove_cvref_t<decltype(values[self{}])>;
         static_assert(tensorial<bound_type>, "Value type bound to tensor does not implement the concept 'tensorial'");
         return values[self{}];
@@ -234,9 +238,9 @@ struct value_of<tensor_expression<shape, E...>> {
     }
 };
 
-template<typename T, auto _, std::size_t... dims>
-struct nodes_of<tensor<T, _, dims...>> {
-    using type = type_list<tensor<T, _, dims...>>;
+template<typename shape, typename T, auto _>
+struct nodes_of<tensor<shape, T, _>> {
+    using type = type_list<tensor<shape, T, _>>;
 };
 
 template<typename tensor, std::size_t... i>
@@ -249,11 +253,11 @@ struct nodes_of<tensor_expression<shape, E...>> {
     using type = merged_t<type_list<tensor_expression<shape, E...>>, merged_nodes_of_t<E...>>;
 };
 
-template<typename T, auto _, std::size_t... dims>
-struct derivative_of<tensor<T, _, dims...>> {
+template<typename shape, typename T, auto _>
+struct derivative_of<tensor<shape, T, _>> {
     template<typename V>
     static constexpr decltype(auto) wrt(const type_list<V>&) {
-        if constexpr (std::is_same_v<V, tensor<T, _, dims...>>)
+        if constexpr (std::is_same_v<V, tensor<shape, T, _>>)
             return val<1>;
         else
             return val<0>;
@@ -261,8 +265,8 @@ struct derivative_of<tensor<T, _, dims...>> {
 
     // derivative wrt an entry of this tensor
     template<std::size_t... i>
-    static constexpr decltype(auto) wrt(const type_list<tensor_var<tensor<T, _, dims...>, i...>>&) {
-        return derivative_of<tensor_var<tensor<T, _, dims...>, i...>>::wrt(type_list<tensor<T, _, dims...>>{});
+    static constexpr decltype(auto) wrt(const type_list<tensor_var<tensor<shape, T, _>, i...>>&) {
+        return derivative_of<tensor_var<tensor<shape, T, _>, i...>>::wrt(type_list<tensor<shape, T, _>>{});
     }
 };
 
