@@ -488,7 +488,7 @@ It seems that `clang` instantiates the `operator*` for `a` and `b` when invoking
 it on `some_type<int>`, it tries to match (the different) `a` and `b` against that operator instead of instantiating a new one.
 Matching fails, however, because the types are not the same (the lambda template argument in the second instantiation differs)
 and compilation fails. To make this work with `clang`, you could specify the template arguments explicitly, or simply write
-´var<> a; var<> b;` instead of `var a; var b;`.
+`var<> a; var<> b;` instead of `var a; var b;`.
 
 
 ## Contribution guidelines
