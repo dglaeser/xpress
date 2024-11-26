@@ -13,6 +13,7 @@
 
 #include "utils.hpp"
 #include "traits.hpp"
+#include "type_traits.hpp"
 
 
 namespace xp {
@@ -29,15 +30,18 @@ struct integral {};
 namespace traits {
 
 template<typename Arg>
-struct is_bindable<dtype::any, Arg> : public std::true_type {};
+struct is_bindable<dtype::any, Arg> : std::true_type {};
 template<typename Arg>
-struct is_bindable<dtype::integral, Arg> : public std::is_integral<std::remove_cvref_t<Arg>> {};
+struct is_bindable<dtype::integral, Arg> : std::is_integral<std::remove_cvref_t<Arg>> {};
 template<typename Arg>
-struct is_bindable<dtype::real, Arg> : public std::bool_constant<
+struct is_bindable<dtype::real, Arg> : std::bool_constant<
     std::is_floating_point_v<std::remove_cvref_t<Arg>> ||
     std::is_integral_v<std::remove_cvref_t<Arg>>
 > {};
-
+template<tensorial Arg>
+struct is_bindable<dtype::real, Arg> : is_bindable<dtype::real, scalar_type_t<Arg>> {};
+template<tensorial Arg>
+struct is_bindable<dtype::integral, Arg> : is_bindable<dtype::integral, scalar_type_t<Arg>> {};
 
 #ifndef DOXYGEN
 namespace detail {

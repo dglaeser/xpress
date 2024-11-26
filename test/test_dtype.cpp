@@ -1,7 +1,11 @@
 // SPDX-FileCopyrightText: 2024 Dennis Gläser <dennis.glaeser@iws.uni-stuttgart.de>
 // SPDX-License-Identifier: MIT
 
+#include <string>
+
 #include <xpress/dtype.hpp>
+#include <xpress/concepts.hpp>
+#include <xpress/linalg.hpp>
 
 #include "testing.hpp"
 
@@ -12,6 +16,16 @@ int main() {
     using namespace xp::testing;
     using namespace xp::dtype;
     using namespace xp::traits;
+    using namespace xp;
+
+    static_assert(bindable_to<const double&, real>);
+    static_assert(bindable_to<double&, real>);
+    static_assert(bindable_to<int, real>);
+    static_assert(bindable_to<linalg::tensor<double, md_shape<2, 2>>, real>);
+
+    static_assert(!bindable_to<std::string, real>);
+    static_assert(!bindable_to<linalg::tensor<double, md_shape<2, 2>>, integral>);
+    static_assert(bindable_to<linalg::tensor<int, md_shape<2, 2>>, integral>);
 
     static_assert(verify_same<common_dtype_t<integral, real>, real>);
     static_assert(verify_same<common_dtype_t<real, integral>, real>);
