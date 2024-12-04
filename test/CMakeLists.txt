@@ -9,7 +9,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ut)
 
-find_package(xpress)
 function (ad_add_test NAME SOURCE)
     add_executable(${NAME} ${SOURCE})
     target_link_libraries(${NAME} PRIVATE xpress::xpress Boost::ut)
