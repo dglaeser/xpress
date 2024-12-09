@@ -72,7 +72,7 @@ struct derivative_of<operation<operators::pow, T1, T2>> {
     template<typename V>
     static constexpr auto wrt(const type_list<V>& var) noexcept {
         return T2{}*pow(T1{}, T2{} - val<1>)*xp::detail::differentiate<T1>(var)
-            + pow(T1{}, T2{})*log(T2{})*xp::detail::differentiate<T2>(var);
+            + pow(T1{}, T2{})*log(T1{})*xp::detail::differentiate<T2>(var);
     }
 };
 
