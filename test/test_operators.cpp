@@ -167,7 +167,7 @@ int main() {
         var a;
         let b;
         expect(eq(derivative_of(pow(a, b), wrt(a), at(a = 2, b = 3)), 3*2*2));
-        expect(eq(derivative_of(pow(a, b), wrt(b), at(a = 2, b = 3)), 2*2*2*std::log(3)));
+        expect(eq(derivative_of(pow(a, b), wrt(b), at(a = 2, b = 3)), 2*2*2*std::log(2)));
     };
 
     "log_operator"_test = [] () {
