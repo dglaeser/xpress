@@ -10,6 +10,10 @@ option(XPRESS_BUILD_TESTS "Control if tests should be built" ON)
 # option(XPRESS_BUILD_EXAMPLES "Control if examples should be built" OFF)
 option(XPRESS_BUILD_BENCHMARK "Control if benchmarks should be built" OFF)
 
+if (NOT EXISTS "${CMAKE_SOURCE_DIR}/deps/cpputils/README.md")
+    message(FATAL_ERROR "Dependency submodules missing. Run `git submodule update --init` to clone them.")
+endif ()
+
 include(GNUInstallDirs)
 add_library(xpress INTERFACE)
 target_compile_features(xpress INTERFACE cxx_std_23)
