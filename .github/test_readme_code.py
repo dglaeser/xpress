@@ -20,6 +20,7 @@ FetchContent_Declare(
     xpress
     GIT_REPOSITORY https://github.com/dglaeser/xpress.git
     GIT_TAG {git_tree}
+    GIT_SUBMODULES_RECURSE true
 )
 FetchContent_MakeAvailable(xpress)
 
